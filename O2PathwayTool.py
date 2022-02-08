@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter import ttk
 
-from modules.app import *
-from modules.settings import *
+from objects.app import *
+#from objects.settings import *
 from modules.menubar import *
-from modules.notification import *
-from modules.sidePanel import *
-from modules.details import *
-from modules.plotting import *
+from modules.notification import notification
+from modules.panel_side import SidePanel
+from modules.panel_details import DetailsPanel
+from modules.panel_plotting import PlottingPanel
 
 root = Tk()
 root.title("O2 Pathway Tool")
@@ -15,15 +15,16 @@ root.geometry("1000x750")
 
 # Mainframe
 mainframe = ttk.Frame(root)
-mainframe.pack(expand=True, fill=BOTH)
+mainframe.pack(expand=TRUE, fill=BOTH)
 
 # Menubar
 menu = createMenu(root)
 
-# Notificationframe
-infoFrame = ttk.Frame(mainframe, height="20")
-infoFrame.pack(side=TOP, fill=X)
-notification.setParent(infoFrame)
+# Panels
+sidePanel = SidePanel(mainframe)
+notification.setParent(mainframe)
+detailsPanel = DetailsPanel(mainframe)
+plottingPanel = PlottingPanel(mainframe)
 
 root.config(menu=menu)
 
