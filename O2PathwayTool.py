@@ -13,6 +13,8 @@ root = Tk()
 root.title("O2 Pathway Tool")
 root.geometry("1000x750")
 
+app.strVars = []
+
 # Mainframe
 mainframe = ttk.Frame(root)
 mainframe.pack(expand=TRUE, fill=BOTH)

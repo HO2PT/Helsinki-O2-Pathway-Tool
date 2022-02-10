@@ -6,9 +6,10 @@ class App(object):
     sidepanel_testList = None
     projectDetailModule = None
     testDetailModule = None
+    strVars = None
+    tkRoot = None
 
     def __init__(self):
-        print("App instance created") 
         self.activeProject = None
         self.activeSubject = None
         self.activeTest = None
@@ -18,6 +19,9 @@ class App(object):
 
     def setActiveTest(self, test):
         self.activeTest = test
+
+    def getActiveTest(self):
+        return self.activeTest
 
     def setActiveSubject(self, subject):
         self.activeSubject = subject

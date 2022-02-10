@@ -7,8 +7,6 @@ from objects.app import app
 
 class SidePanel(object):
     def __init__(self, mainFrame):
-        print("SidePanel instance created")
-
         s = ttk.Style()
         s.configure('sidePanel.TFrame', background="green")
 

@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from objects.project import Project
 from objects.subject import Subject
 from objects.test import Test
 from objects.app import app
@@ -24,12 +25,29 @@ class TestList(object):
     def createTest(self):
         # Check if there is an active subject or should subject be created
         if app.getActiveSubject() == None:
-            index = app.sidepanel_subjectList.subjectList.size()
+
+            # Check if there is an active project
+            if app.getActiveProject() == None:
+                # Create project and set it active
+                project = Project()
+                app.setActiveProject(project)
+
+                # Update app state
+                app.sidepanel_projectList.addToList(project.id)
+                app.addProject(project)
+            else:
+                project = app.getActiveProject()
+
+            # Create subject with index based on the size of subject list
+            index = len(project.getSubjects())
             subject = Subject(index)
 
+            # Add subject to project
+            project.addSubject(subject)
+
+            # Add test to subject
             test = Test()
             subject.addTest(test)
-            #print(subject.tests)
 
             # Update app state
             app.setActiveSubject(subject)
@@ -38,43 +56,60 @@ class TestList(object):
             #Refresh view
             subjectList = app.sidepanel_subjectList
             subjectList.addToList(subject.id)
-            #print(subjectList.subjectList)
             subjectList.updateSelection()
-            self.addToTestList(test.id)
+            self.addToList(test.id)
             app.testDetailModule.refreshTestDetails()
+            app.projectDetailModule.refreshDetails()
 
             # Make current selection
-            self.testList.selection_set('end')
+            self.testList.selection_set(0)
 
         else:
             subject = app.getActiveSubject()
+            
+            # Add test to subject
             test = Test()
             subject.addTest(test)
+
+            # Make current selection
+            self.testList.insert('end', test.id)
+            self.testList.selection_clear(0, 'end')
+            self.testList.selection_set('end')
 
             # Update app state
             app.setActiveTest(test)
 
             #Refresh view
-            self.testList.insert('end', test.id)
             app.testDetailModule.refreshTestDetails()
-
-            # Make current selection
-            self.testList.selection_set('end')
             app.sidepanel_projectList.projectList.selection_set(0)
 
-    def addToTestList(self, id):
+        # Create load tab
+        #print(test.workLoads)
+        app.testDetailModule.addLoad()
+
+    def addToList(self, id):
         self.testList.insert('end', id)
+        self.testList.selection_clear(0, 'end')
+        self.testList.selection_set('end')
 
     def refreshList(self):
         activeSubject = app.getActiveSubject()
-        tests = activeSubject.getTests()
-        print(tests)
+        try:
+            tests = activeSubject.getTests()
+        except AttributeError:
+            tests = []
+        #print(tests)
         self.testList.delete(0, 'end')
         for t in tests:
             self.testList.insert('end', t.id)
 
     def handleListboxSelect(self):
-        #app.setActiveTest(self.testList.curselection())
-        testId = self.testList.curselection()[0]
-        app.setActiveTest(app.getActiveSubject().tests[testId])
+        # Set selected subject as active subject by index
+        index = self.testList.curselection()[0]
+        test = app.getActiveSubject().tests[index]
+        
+        # Refresh app state
+        app.setActiveTest(test)
+
+        # Refresh views
         app.testDetailModule.refreshTestDetails()

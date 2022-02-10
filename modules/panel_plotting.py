@@ -3,7 +3,6 @@ from tkinter import ttk
 
 class PlottingPanel(object):
     def __init__(self, mainFrame):
-        print("PlottingPanel instance created")
 
         #s = ttk.Style()
         #s.configure('plottingPanel.TFrame', background="blue")

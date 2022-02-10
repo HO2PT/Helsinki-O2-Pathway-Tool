@@ -3,7 +3,6 @@ from re import sub
 
 class Project(object):
     def __init__(self):
-        print("Project instance created")
         self.id = 'Project'
         self.subjects = []
 

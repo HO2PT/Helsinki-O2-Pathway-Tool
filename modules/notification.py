@@ -3,7 +3,6 @@ from tkinter import ttk
 
 class NotificationPanel(object):
     def __init__(self):
-        print("Notification instance created")
         self.parent = None
 
     def create(self, type, text, timeout):

@@ -1,11 +1,7 @@
-from tkinter.messagebox import NO
-
-
 import uuid
 
 class Test(object):
     def __init__(self):
-        print("Test instance created")
         self.id = uuid.uuid1()
         self.date = None
         self.data = None
@@ -13,4 +9,13 @@ class Test(object):
         self.envDetails = None
         self.workLoadCount = None
         self.endWorkLoad = None
-        self.workLoads = []
+        self.workLoads = [] 
+
+    def getWorkLoads(self):
+        return self.workLoads
+
+    def addWorkLoad(self, load):
+        self.workLoads.append(load)
+
+    def nWorkLoads(self):
+        return len(self.workLoads)
