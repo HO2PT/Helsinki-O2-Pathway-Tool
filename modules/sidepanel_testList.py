@@ -58,8 +58,8 @@ class TestList(object):
             subjectList.addToList(subject.id)
             subjectList.updateSelection()
             self.addToList(test.id)
-            app.testDetailModule.refreshTestDetails()
-            app.projectDetailModule.refreshDetails()
+            #app.testDetailModule.refreshTestDetails()
+            #app.projectDetailModule.refreshDetails()
 
             # Make current selection
             self.testList.selection_set(0)
@@ -80,12 +80,15 @@ class TestList(object):
             app.setActiveTest(test)
 
             #Refresh view
-            app.testDetailModule.refreshTestDetails()
-            app.sidepanel_projectList.projectList.selection_set(0)
+            #app.testDetailModule.refreshTestDetails()
+            #app.sidepanel_projectList.projectList.selection_set(0)
 
         # Create load tab
         #print(test.workLoads)
-        app.testDetailModule.addLoad()
+        app.getActiveTest().initWorkLoad()
+        app.projectDetailModule.refreshDetails()
+        app.testDetailModule.refreshTestDetails()
+        #app.testDetailModule.addLoad()
 
     def addToList(self, id):
         self.testList.insert('end', id)

@@ -29,7 +29,10 @@ class DetailsPanel(object):
         i = 1
         for t in app.getActiveSubject().getTests():
             print( f'LOADS OF TEST-{i}: {t.nWorkLoads()}' )
+            for w in t.getWorkLoads():
+                print(w.getWorkLoadDetails())
             i = i+1
+
         #print(app.getActiveProject(), app.getActiveSubject(), app.getActiveTest())
         """ workLoads = app.activeTest.getWorkLoads()
         print( f'N OF WORKLOADS: {len(workLoads)}' )

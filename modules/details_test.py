@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
-from objects.workLoadDetails import WorkLoadDetails
 
 class TestDetailModule(object):    
     def __init__(self, detailsPanel):
@@ -19,8 +18,8 @@ class TestDetailModule(object):
         #
 
         ## Load notebook frame
-        loadsContainer = ttk.Frame(container)
-        loadsContainer.pack(side=RIGHT)
+        self.loadsContainer = ttk.Frame(container)
+        self.loadsContainer.pack(side=RIGHT)
 
         # Add 'x'-button to tabs
         style = ttk.Style()
@@ -74,7 +73,7 @@ class TestDetailModule(object):
 
         ## Notebook
         #self.loadNotebook = ttk.Notebook(loadsContainer, style='loadNotebook.TNotebook')
-        self.loadNotebook = ttk.Notebook(loadsContainer)
+        self.loadNotebook = ttk.Notebook(self.loadsContainer)
         
         self.loadNotebook.pack(expand=TRUE)
         self.loadNotebook.bind('<Button-1>', lambda e: self.handleTabClick(e))
@@ -84,6 +83,9 @@ class TestDetailModule(object):
         self.tab0.pack(expand=TRUE)
         
         self.loadNotebook.add(self.tab0, text='+')
+
+        # Add button
+        ttk.Button(self.loadsContainer, text='ADD', command=lambda: self.addLoad()).pack(side=BOTTOM)
 
     def handleTabClick(self, e):
         clickedTabIndex = self.loadNotebook.index(f'@{e.x},{e.y}')
@@ -113,10 +115,7 @@ class TestDetailModule(object):
 
         # Add load to active test
         activeTest = app.getActiveTest()
-        print(f'WORKING WITH TEST: {activeTest.id}')
-        workLoadObject = WorkLoadDetails()
-        activeTest.addWorkLoad(workLoadObject)
-        #print(f'WORKING WITH ID: {workLoadObject.id}')
+        workLoadObject = activeTest.initWorkLoad()
 
         temp = []
         i = 0
@@ -144,20 +143,52 @@ class TestDetailModule(object):
         pass
 
     def refreshTestDetails(self):
+        # Hide previous tabs
+        for t in self.loadNotebook.tabs():
+            self.loadNotebook.forget(t)
+        
+        self.loadNotebook.add(self.tab0, text='+')
+
         activeTest = app.getActiveTest()
+
+        # Refresh details
         self.testId.config(text=f'Id: {activeTest.id}')
 
         # Refresh load notebook
         loads = activeTest.getWorkLoads()
-        print(f'LOADS: {loads}')
+        
+        for l in loads:
+            loadFrame = ttk.Frame(self.loadNotebook)
+            loadFrame.pack(expand=TRUE)
+
+            temp = []
+            i = 0
+
+            # Iterate through load details and print to Details module
+            for key, value in l.getWorkLoadDetails().items():
+
+                if i == 3:
+                    rowFrame = ttk.Frame(loadFrame)
+                    rowFrame.pack(fill=X)
+                    TestDetailRow(rowFrame, temp, l)
+                        
+                    temp=[]
+                    i = 0
+                    
+                temp.append([key, value])
+                i = i + 1
+            
+            # Append tab
+            tabCount = self.loadNotebook.index('end')
+            self.loadNotebook.insert(tabCount-1, loadFrame, text=f'Load{tabCount}')
+            self.loadNotebook.select(tabCount-1)
+            
 
 class TestDetailRow(object):
 
     def __init__(self, rowFrame, temp, workLoadObject):
         self.workLoadObject = workLoadObject
         self.flag = 0
-
-        #print(f'CREATING ROWS FOR LOAD WITH ID: {self.workLoadObject.id}')
 
         if temp[0][0] == 'id':
             self.label = temp[1][0]
@@ -176,24 +207,22 @@ class TestDetailRow(object):
         ttk.Label(rowFrame, text=self.label, anchor='w').pack(side=LEFT)
   
         #Value
-        self.valueVar = StringVar(value=self.value, name=f'{self.label}-{self.workLoadObject.id}')
+        self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
         app.strVars.append(self.valueVar)
         self.valueEntry = ttk.Entry(rowFrame, width=7, textvariable=self.valueVar)
         self.valueEntry.pack(side=LEFT)
-        #self.valueVar.trace( 'w', lambda name, index, mode, sv=self.valueVar: self.updateValue(name, workLoadObject) )
         self.valueVar.trace('w', self.updateValue)
 
         #Unit
-        self.unitVar = StringVar(value=self.unit, name=f'{self.unitLabel}-{self.workLoadObject.id}')
+        self.unitVar = StringVar(value=self.unit, name=f'{self.unitLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
         app.strVars.append(self.unitVar)
         self.unitEntry = ttk.Entry(rowFrame, width=7, textvariable=self.unitVar)
         self.unitEntry.pack(side=LEFT)
-        #self.unitEntry.insert(0, self.unit)
         self.unitVar.trace('w', self.updateUnit)
 
         if self.flag != 1:
             # Measured/Calculated
-            self.mcVar = IntVar(value=self.radio, name=f'{self.radioLabel}-{self.workLoadObject.id}')
+            self.mcVar = IntVar(value=self.radio, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
             app.strVars.append(self.mcVar)
             self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
             self.radio1.pack(side=LEFT)
@@ -203,20 +232,13 @@ class TestDetailRow(object):
             self.mcVar.trace('w', self.updateMC)
     
     def updateValue(self, name, index, mode):
-        #print(f'UPDATING LOAD WITH ID: {self.workLoadObject.id}')
         name = name.split('-')[0]
-        #print( f'{name} BEFORE: {getattr(self.workLoadObject, name)}' )
         setattr(self.workLoadObject, name, self.valueVar.get())
-        #print( f'{name} AFTER: {getattr(self.workLoadObject, name)}' )
 
     def updateUnit(self, name, index, mode):
-        #print( f'{name} BEFORE: {getattr(self.workLoadObject, name)}' )
         name = name.split('-')[0]
         setattr(self.workLoadObject, name, self.unitVar.get())
-        #print( f'{name} AFTER: {getattr(self.workLoadObject, name)}' )
     
     def updateMC(self, name, index, mode):
-        #print( f'{name} BEFORE: {getattr(self.workLoadObject, name)}' )
         name = name.split('-')[0]
         setattr(self.workLoadObject, name, self.mcVar.get())
-        #print( f'{name} AFTER: {getattr(self.workLoadObject, name)}' )

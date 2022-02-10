@@ -1,5 +1,7 @@
 import uuid
 
+from objects.workLoadDetails import WorkLoadDetails
+
 class Test(object):
     def __init__(self):
         self.id = uuid.uuid1()
@@ -19,3 +21,8 @@ class Test(object):
 
     def nWorkLoads(self):
         return len(self.workLoads)
+
+    def initWorkLoad(self):
+        newWorkLoadDetail = WorkLoadDetails(self)
+        self.workLoads.append( newWorkLoadDetail )
+        return newWorkLoadDetail

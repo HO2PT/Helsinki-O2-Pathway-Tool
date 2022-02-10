@@ -1,8 +1,6 @@
-from objects.app import app
-
 class WorkLoadDetails(object):
-    def __init__(self):
-        self.id = app.getActiveTest().nWorkLoads()
+    def __init__(self,test):
+        self.id = test.nWorkLoads()
         self.load = 0
         self.vo2 = 0
         self.hr = 0
