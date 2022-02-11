@@ -12,7 +12,7 @@ class EnvDetailModule(object):
 
     def create(self):
         self.container = ttk.Frame(self.frame)
-        self.container.grid(column=2, row=5)
+        self.container.grid()
 
         self.elevLabel = ttk.Label(self.container, text='')
         self.elevLabel.grid(column=0, row=0)

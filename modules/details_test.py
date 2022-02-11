@@ -1,3 +1,5 @@
+from cgitb import text
+from json import load
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
@@ -100,28 +102,33 @@ class TestDetailModule(object):
 
     def addLoad(self):
         loadFrame = ttk.Frame(self.loadNotebook)
-        loadFrame.pack(expand=TRUE)
+        loadFrame.grid()
 
         # Add load to active test
         activeTest = app.getActiveTest()
         workLoadObject = activeTest.initWorkLoad()
 
+        ttk.Label(loadFrame, text='Value').grid(column=1, row=0)
+        ttk.Label(loadFrame, text='Unit').grid(column=2, row=0)
+        ttk.Label(loadFrame, text='Meas.').grid(column=3, row=0)
+        ttk.Label(loadFrame, text='Calc.').grid(column=4, row=0)
+
         temp = []
         i = 0
+        j = 1
 
         # Iterate through load details and print to Details module
         for key, value in workLoadObject.getWorkLoadDetails().items():
 
             if i == 3:
-                rowFrame = ttk.Frame(loadFrame)
-                rowFrame.pack(fill=X)
-                TestDetailRow(rowFrame, temp, workLoadObject)
+                TestDetailRow(loadFrame, temp, workLoadObject, j)
                     
                 temp=[]
                 i = 0
                 
             temp.append([key, value])
             i = i + 1
+            j = j + 1
 
         # Append tab
         tabCount = self.loadNotebook.index('end')
@@ -148,24 +155,29 @@ class TestDetailModule(object):
         
         for l in loads:
             loadFrame = ttk.Frame(self.loadNotebook)
-            loadFrame.pack(expand=TRUE)
+            loadFrame.grid()
+
+            ttk.Label(loadFrame, text='Value').grid(column=1, row=0)
+            ttk.Label(loadFrame, text='Unit').grid(column=2, row=0)
+            ttk.Label(loadFrame, text='Meas.').grid(column=3, row=0)
+            ttk.Label(loadFrame, text='Calc.').grid(column=4, row=0)
 
             temp = []
             i = 0
+            j = 1
 
             # Iterate through load details and print to Details module
             for key, value in l.getWorkLoadDetails().items():
 
                 if i == 3:
-                    rowFrame = ttk.Frame(loadFrame)
-                    rowFrame.pack(fill=X)
-                    TestDetailRow(rowFrame, temp, l)
+                    TestDetailRow(loadFrame, temp, l, j)
                         
                     temp=[]
                     i = 0
                     
                 temp.append([key, value])
                 i = i + 1
+                j = j + 1
             
             # Append tab
             tabCount = self.loadNotebook.index('end')
@@ -175,7 +187,7 @@ class TestDetailModule(object):
 
 class TestDetailRow(object):
 
-    def __init__(self, rowFrame, temp, workLoadObject):
+    def __init__(self, rowFrame, temp, workLoadObject, row):
         self.workLoadObject = workLoadObject
         self.flag = 0
 
@@ -193,7 +205,7 @@ class TestDetailRow(object):
             self.radioLabel = temp[2][0]
             self.radio = temp[2][1]
 
-        ttk.Label(rowFrame, text=self.label, anchor='w').pack(side=LEFT)
+        ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row)
   
         #Value
         self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
@@ -203,7 +215,7 @@ class TestDetailRow(object):
             app.strVars.append(self.valueVar)
         
         self.valueEntry = ttk.Entry(rowFrame, width=7, textvariable=self.valueVar)
-        self.valueEntry.pack(side=LEFT)
+        self.valueEntry.grid(column=1, row=row)
         self.valueVar.trace('w', self.updateValue)
 
         #Unit
@@ -213,7 +225,7 @@ class TestDetailRow(object):
             app.strVars.append(self.unitVar)
 
         self.unitEntry = ttk.Entry(rowFrame, width=7, textvariable=self.unitVar)
-        self.unitEntry.pack(side=LEFT)
+        self.unitEntry.grid(column=2, row=row)
         self.unitVar.trace('w', self.updateUnit)
 
         if self.flag != 1:
@@ -224,10 +236,10 @@ class TestDetailRow(object):
                 app.strVars.append(self.mcVar)
                 
             self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
-            self.radio1.pack(side=LEFT)
+            self.radio1.grid(column=3, row=row)
 
             self.radio2 = ttk.Radiobutton(rowFrame, value=1, variable=self.mcVar)
-            self.radio2.pack(side=LEFT)
+            self.radio2.grid(column=4, row=row)
             self.mcVar.trace('w', self.updateMC)
     
     def updateValue(self, name, index, mode):
