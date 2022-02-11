@@ -20,18 +20,20 @@ class DetailsPanel(object):
         app.testDetailModule = testDetails
         
         envDetails = EnvDetailModule(detailsPanel)
+        app.envDetailModule = envDetails
 
-        #ttk.Button(detailsPanel, text='Plot', command=lambda: print(app.activeProject, app.activeSubject, app.activeTest) ).pack(side=RIGHT)
         ttk.Button(detailsPanel, text='Plot', command=lambda: self.debugPrint()).pack(side=RIGHT)
 
     def debugPrint(self):
-        print( f'n-of-TESTS: {len(app.getActiveSubject().getTests())}' )
+        print(len(app.strVars))
+        print( app.getActiveTest().getEnvDetails().getDetails() )
+        """ print( f'n-of-TESTS: {len(app.getActiveSubject().getTests())}' )
         i = 1
         for t in app.getActiveSubject().getTests():
             print( f'LOADS OF TEST-{i}: {t.nWorkLoads()}' )
             for w in t.getWorkLoads():
                 print(w.getWorkLoadDetails())
-            i = i+1
+            i = i+1 """
 
         #print(app.getActiveProject(), app.getActiveSubject(), app.getActiveTest())
         """ workLoads = app.activeTest.getWorkLoads()

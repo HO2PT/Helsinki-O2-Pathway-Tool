@@ -98,17 +98,6 @@ class TestDetailModule(object):
         else:
             self.addLoad() """
 
-    """ def createTab(self, e):
-        # Make sure '+'-tab is pressed
-        clickedTabIndex = self.loadNotebook.index(f'@{e.x},{e.y}')
-        tabCount = self.loadNotebook.index('end')      
-
-        if clickedTabIndex == tabCount-1:
-            load = ttk.Frame(self.loadNotebook, width=300, height=200)
-            load.pack(expand=TRUE)
-            ttk.Label(load, text="qwerty").pack()
-            self.loadNotebook.insert(tabCount-1, load, text=f'Load{tabCount}') """
-
     def addLoad(self):
         loadFrame = ttk.Frame(self.loadNotebook)
         loadFrame.pack(expand=TRUE)
@@ -208,14 +197,21 @@ class TestDetailRow(object):
   
         #Value
         self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-        app.strVars.append(self.valueVar)
+        
+        # Check if StringVar is already in memory -> prevent recreate
+        if self.valueVar not in app.strVars:
+            app.strVars.append(self.valueVar)
+        
         self.valueEntry = ttk.Entry(rowFrame, width=7, textvariable=self.valueVar)
         self.valueEntry.pack(side=LEFT)
         self.valueVar.trace('w', self.updateValue)
 
         #Unit
         self.unitVar = StringVar(value=self.unit, name=f'{self.unitLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-        app.strVars.append(self.unitVar)
+        
+        if self.unitVar not in app.strVars:
+            app.strVars.append(self.unitVar)
+
         self.unitEntry = ttk.Entry(rowFrame, width=7, textvariable=self.unitVar)
         self.unitEntry.pack(side=LEFT)
         self.unitVar.trace('w', self.updateUnit)
@@ -223,7 +219,10 @@ class TestDetailRow(object):
         if self.flag != 1:
             # Measured/Calculated
             self.mcVar = IntVar(value=self.radio, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-            app.strVars.append(self.mcVar)
+            
+            if self.mcVar not in app.strVars:
+                app.strVars.append(self.mcVar)
+                
             self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
             self.radio1.pack(side=LEFT)
 

@@ -6,6 +6,7 @@ class App(object):
     sidepanel_testList = None
     projectDetailModule = None
     testDetailModule = None
+    envDetailModule = None
     strVars = None
     tkRoot = None
 

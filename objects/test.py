@@ -1,5 +1,5 @@
 import uuid
-
+from objects.envDetails import EnvDetails
 from objects.workLoadDetails import WorkLoadDetails
 
 class Test(object):
@@ -8,7 +8,7 @@ class Test(object):
         self.date = None
         self.data = None
         self.subjectDetails = None
-        self.envDetails = None
+        self.envDetails = EnvDetails()
         self.workLoadCount = None
         self.endWorkLoad = None
         self.workLoads = [] 
@@ -26,3 +26,6 @@ class Test(object):
         newWorkLoadDetail = WorkLoadDetails(self)
         self.workLoads.append( newWorkLoadDetail )
         return newWorkLoadDetail
+
+    def getEnvDetails(self):
+        return self.envDetails
