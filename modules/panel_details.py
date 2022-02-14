@@ -25,8 +25,13 @@ class DetailsPanel(object):
         ttk.Button(detailsPanel, text='Plot', command=lambda: self.debugPrint()).pack(side=RIGHT)
 
     def debugPrint(self):
-        print(len(app.strVars))
-        print( app.getActiveTest().getEnvDetails().getDetails() )
+        """ workLoads = app.activeTest.getWorkLoads()
+        for w in workLoads:
+            print(w.getWorkLoadDetails())
+            print(app.getActiveTest().getEnvDetails().getDetails()) """
+        app.getPlottingPanel().plot()
+        #print(len(app.strVars))
+        #print( app.getActiveTest().getEnvDetails().getDetails() )
         """ print( f'n-of-TESTS: {len(app.getActiveSubject().getTests())}' )
         i = 1
         for t in app.getActiveSubject().getTests():

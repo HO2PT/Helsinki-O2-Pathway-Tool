@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter.messagebox import askokcancel
 from tkinter import ttk
 
 from objects.app import *
@@ -27,8 +28,15 @@ sidePanel = SidePanel(mainframe)
 notification.setParent(mainframe)
 detailsPanel = DetailsPanel(mainframe)
 plottingPanel = PlottingPanel(mainframe)
+app.plottingPanel = plottingPanel
 
 root.config(menu=menu)
+
+def on_closing():
+    if askokcancel("Quit", "Do you want to quit?"):
+        root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
 
 if __name__ == '__main__':
     root.mainloop()

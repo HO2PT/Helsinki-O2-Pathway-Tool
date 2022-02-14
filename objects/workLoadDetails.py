@@ -1,122 +1,122 @@
 class WorkLoadDetails(object):
     def __init__(self,test):
         self.id = test.nWorkLoads()
-        self.load = 0
-        self.vo2 = 0
-        self.hr = 0
-        self.sv = 0
-        self.q = 0
-        self.hb = 0
-        self.sao2 = 0
-        self.cao2 = 0
-        self.svo2 = 0
-        self.cvo2 = 0
-        self.cavo2 = 0
-        self.qao2 = 0
-        self.t = 0
-        self.ph = 0
-        self.pvo2 = 0
-        self.do2 = 0
+        self.Load = 0
+        self.VO2 = 0
+        self.HR = 0
+        self.Sv = 0
+        self.Q = 0
+        self.Hb = 0
+        self.SaO2 = 0
+        self.CaO2 = 0
+        self.SvO2 = 0
+        self.CvO2 = 0
+        self.CavO2 = 0
+        self.QaO2 = 0
+        self.T = 0
+        self.pH = 0
+        self.pVO2 = 0
+        self.DO2 = 0
 
-        self.load_unit = 0
-        self.vo2_unit = 0
-        self.hr_unit = 0
-        self.sv_unit = 0
-        self.q_unit = 0
-        self.hb_unit = 0
-        self.sao2_unit = 0
-        self.cao2_unit = 0
-        self.svo2_unit = 0
-        self.cvo2_unit = 0
-        self.cavo2_unit = 0
-        self.qao2_unit = 0
-        self.t_unit = 0
-        self.ph_unit = 0
-        self.pvo2_unit = 0
-        self.do2_unit = 0
+        self.Load_unit = 0
+        self.VO2_unit = 0
+        self.HR_unit = 0
+        self.Sv_unit = 0
+        self.Q_unit = 0
+        self.Hb_unit = 0
+        self.SaO2_unit = 0
+        self.CaO2_unit = 0
+        self.SvO2_unit = 0
+        self.CvO2_unit = 0
+        self.CavO2_unit = 0
+        self.QaO2_unit = 0
+        self.T_unit = 0
+        self.pH_unit = 0
+        self.pVO2_unit = 0
+        self.DO2_unit = 0
 
         # 0 = Measured
         # 1 = Calculated
-        self.vo2_MC = 0
+        self.VO2_MC = 0
         self.hr_MC = 0
-        self.sv_MC = 0
-        self.q_MC = 0
-        self.hb_MC = 0
-        self.sao2_MC = 0
-        self.cao2_MC = 0
-        self.svo2_MC = 0
-        self.cvo2_MC = 0
-        self.cavo2_MC = 0
-        self.qao2_MC = 0
-        self.t_MC = 0
-        self.ph_MC = 0
-        self.pvo2_MC = 0
-        self.do2_MC = 0
+        self.Sv_MC = 0
+        self.Q_MC = 0
+        self.Hb_MC = 0
+        self.SaO2_MC = 0
+        self.CaO2_MC = 0
+        self.SvO2_MC = 0
+        self.CvO2_MC = 0
+        self.CavO2_MC = 0
+        self.QaO2_MC = 0
+        self.T_MC = 0
+        self.pH_MC = 0
+        self.pVO2_MC = 0
+        self.DO2_MC = 0
 
     def getWorkLoadDetails(self):
         return {
             'id': self.id,
             
-            'Load': self.load,
-            'Load_unit': self.load_unit,
+            'Load': self.Load,
+            'Load_unit': self.Load_unit,
 
-            'VO2': self.vo2,
-            'VO2_unit': self.vo2_unit,
-            'VO2_MC': self.vo2_MC,
+            'VO2': self.VO2,
+            'VO2_unit': self.VO2_unit,
+            'VO2_MC': self.VO2_MC,
 
-            'HR': self.hr,
-            'HR_unit': self.hr_unit,
+            'HR': self.HR,
+            'HR_unit': self.HR_unit,
             'HR_MC': self.hr_MC,
 
-            'Sv': self.sv,
-            'Sv_unit': self.sv_unit,
-            'Sv_MC': self.sv_MC,
+            'Sv': self.Sv,
+            'Sv_unit': self.Sv_unit,
+            'Sv_MC': self.Sv_MC,
 
-            'Q': self.q,
-            'Q_unit': self.q_unit,
-            'Q_MC': self.q_MC,
+            'Q': self.Q,
+            'Q_unit': self.Q_unit,
+            'Q_MC': self.Q_MC,
 
-            'Hb': self.hb,
-            'Hb_unit': self.hb_unit,
-            'Hb_MC': self.hb_MC,
+            'Hb': self.Hb,
+            'Hb_unit': self.Hb_unit,
+            'Hb_MC': self.Hb_MC,
 
-            'SaO2': self.sao2,
-            'SaO2_unit': self.sao2_unit,
-            'SaO2_MC': self.sao2_MC,
+            'SaO2': self.SaO2,
+            'SaO2_unit': self.SaO2_unit,
+            'SaO2_MC': self.SaO2_MC,
 
-            'CaO2': self.cao2,
-            'CaO2_unit': self.cao2_unit,
-            'CaO2_MC': self.cao2_MC,
+            'CaO2': self.CaO2,
+            'CaO2_unit': self.CaO2_unit,
+            'CaO2_MC': self.CaO2_MC,
 
-            'SvO2': self.svo2,
-            'SvO2_unit': self.svo2_unit,
-            'SvO2_MC': self.svo2_MC,
+            'SvO2': self.SvO2,
+            'SvO2_unit': self.SvO2_unit,
+            'SvO2_MC': self.SvO2_MC,
 
-            'CvO2': self.cvo2,
-            'CvO2_unit': self.cvo2_unit,
-            'CvO2_MC': self.cvo2_MC,
+            'CvO2': self.CvO2,
+            'CvO2_unit': self.CvO2_unit,
+            'CvO2_MC': self.CvO2_MC,
 
-            'CavO2': self.cavo2,
-            'CavO2_unit': self.cavo2_unit,
-            'CavO2_MC': self.cavo2_MC,
+            'CavO2': self.CavO2,
+            'CavO2_unit': self.CavO2_unit,
+            'CavO2_MC': self.CavO2_MC,
 
-            'QaO2': self.qao2,
-            'QaO2_unit': self.qao2_unit,
-            'QaO2_MC': self.qao2_MC,
+            'QaO2': self.QaO2,
+            'QaO2_unit': self.QaO2_unit,
+            'QaO2_MC': self.QaO2_MC,
 
-            'T': self.t,
-            'T_unit': self.t_unit,
-            'T_MC': self.t_MC,
+            'T': self.T,
+            'T_unit': self.T_unit,
+            'T_MC': self.T_MC,
 
-            'pH': self.ph,
-            'pH_unit': self.ph_unit,
-            'pH_MC': self.ph_MC,
+            'pH': self.pH,
+            'pH_unit': self.pH_unit,
+            'pH_MC': self.pH_MC,
 
-            'pVO2': self.pvo2,
-            'pVO2_unit': self.pvo2_unit,
-            'pVO2_MC': self.pvo2_MC,
+            'pVO2': self.pVO2,
+            'pVO2_unit': self.pVO2_unit,
+            'pVO2_MC': self.pVO2_MC,
 
-            'DO2': self.do2,
-            'DO2_unit': self.do2_unit,
-            'DO2_MC': self.do2_MC
+            'DO2': self.DO2,
+            'DO2_unit': self.DO2_unit,
+            'DO2_MC': self.DO2_MC
         }

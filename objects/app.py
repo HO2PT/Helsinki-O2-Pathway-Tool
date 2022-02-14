@@ -1,14 +1,14 @@
-from objects.test import Test
-
 class App(object):
     sidepanel_projectList = None
     sidepanel_subjectList = None
     sidepanel_testList = None
+
     projectDetailModule = None
     testDetailModule = None
     envDetailModule = None
+    plottingPanel = None
+   
     strVars = None
-    tkRoot = None
 
     def __init__(self):
         self.activeProject = None
@@ -38,5 +38,8 @@ class App(object):
     
     def addProject(self, project):
         self.projects.append(project)
+
+    def getPlottingPanel(self):
+        return self.plottingPanel
 
 app = App()
