@@ -1,14 +1,17 @@
 class App(object):
+    sidePanel = None
     sidepanel_projectList = None
     sidepanel_subjectList = None
     sidepanel_testList = None
 
+    detailsPanel = None
     projectDetailModule = None
     testDetailModule = None
     envDetailModule = None
     plottingPanel = None
    
     strVars = None
+    intVars = None
 
     def __init__(self):
         self.activeProject = None

@@ -6,20 +6,20 @@ from objects.subject import Subject
 
 class SubjectList(object):
     def __init__(self, sidePanel):
-        container = LabelFrame(sidePanel, text="Subjects")
-        container.pack(fill = BOTH, expand=TRUE)
+        self.container = LabelFrame(sidePanel, text="Subjects")
+        self.container.pack(fill = BOTH, expand=TRUE)
 
-        self.subjectList = Listbox(container, exportselection=FALSE)
+        self.subjectList = Listbox(self.container, exportselection=FALSE)
         self.subjectList.pack(fill = BOTH, expand=TRUE)
         self.subjectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
 
-        buttonContainer = ttk.Frame(container)
+        buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add', command=lambda: self.createSubject()).pack(side=LEFT)
         ttk.Button(buttonContainer, text='Edit').pack(side=LEFT)
         ttk.Button(buttonContainer, text='Del').pack(side=LEFT)
         
-        ttk.Button(container, text='Import...').pack()
+        ttk.Button(self.container, text='Import...').pack()
 
     def createSubject(self):
         if app.getActiveProject() == None:

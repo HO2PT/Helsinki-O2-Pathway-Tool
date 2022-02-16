@@ -1,16 +1,14 @@
-from cgitb import text
-from json import load
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
 
 class TestDetailModule(object):    
     def __init__(self, detailsPanel):
-        container = ttk.Labelframe(detailsPanel, text="Test details")
-        container.pack(side = LEFT, fill = BOTH, expand=TRUE)
+        self.container = ttk.Labelframe(detailsPanel, text="Test details")
+        self.container.pack(side = LEFT, fill = BOTH, expand=TRUE)
 
         ## Details frame
-        details = ttk.Frame(container)
+        details = ttk.Frame(self.container)
         details.pack(side=LEFT, fill = BOTH, expand=TRUE)
 
         self.testId = ttk.Label(details, text=None)
@@ -20,7 +18,7 @@ class TestDetailModule(object):
         #
 
         ## Load notebook frame
-        self.loadsContainer = ttk.Frame(container)
+        self.loadsContainer = ttk.Frame(self.container)
         self.loadsContainer.pack(side=RIGHT)
 
         # Add 'x'-button to tabs
@@ -210,7 +208,7 @@ class TestDetailRow(object):
         #Value
         self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
         
-        # Check if StringVar is already in memory -> prevent recreate
+        # Check if StringVar is already in memory -> prevent recreation
         if self.valueVar not in app.strVars:
             app.strVars.append(self.valueVar)
         
@@ -218,15 +216,16 @@ class TestDetailRow(object):
         self.valueEntry.grid(column=1, row=row)
         self.valueVar.trace('w', self.updateValue)
 
-        #Unit
-        self.unitVar = StringVar(value=self.unit, name=f'{self.unitLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-        
-        if self.unitVar not in app.strVars:
-            app.strVars.append(self.unitVar)
+        # Unit
+        if self.label != 'pH':
+            self.unitVar = StringVar(value=self.unit, name=f'{self.unitLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
+            
+            if self.unitVar not in app.strVars:
+                app.strVars.append(self.unitVar)
 
-        self.unitEntry = ttk.Entry(rowFrame, width=7, textvariable=self.unitVar)
-        self.unitEntry.grid(column=2, row=row)
-        self.unitVar.trace('w', self.updateUnit)
+            self.unitEntry = ttk.Entry(rowFrame, width=7, textvariable=self.unitVar)
+            self.unitEntry.grid(column=2, row=row)
+            self.unitVar.trace('w', self.updateUnit)
 
         if self.flag != 1:
             # Measured/Calculated

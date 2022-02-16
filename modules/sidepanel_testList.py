@@ -7,20 +7,20 @@ from objects.app import app
 
 class TestList(object):
     def __init__(self, sidePanel):
-        container = LabelFrame(sidePanel, text="Tests")
-        container.pack(fill = BOTH, expand=TRUE)
+        self.container = LabelFrame(sidePanel, text="Tests")
+        self.container.pack(fill = BOTH, expand=TRUE)
 
-        self.testList = Listbox(container, exportselection=FALSE)
+        self.testList = Listbox(self.container, exportselection=FALSE)
         self.testList.pack(fill = BOTH, expand=TRUE)
         self.testList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
 
-        buttonContainer = ttk.Frame(container)
+        buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add', command=lambda: self.createTest()).pack(side=LEFT)
         ttk.Button(buttonContainer, text='Edit').pack(side=LEFT)
         ttk.Button(buttonContainer, text='Del').pack(side=LEFT)
         
-        ttk.Button(container, text='Import...').pack()
+        ttk.Button(self.container, text='Import...').pack()
 
     def createTest(self):
         # Check if there is an active subject or should subject be created

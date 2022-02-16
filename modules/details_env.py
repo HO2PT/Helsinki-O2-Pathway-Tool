@@ -53,8 +53,6 @@ class EnvDetailModule(object):
         self.calcMethod.config(text='PiO2 calculation method')
         envDetailRow(self.calcMethod, 'pio2Method')
 
-        #ttk.Button(self.container, text="Calculate", command=lambda: notification.create('info', 'Toimii', 3000)).pack(side=BOTTOM)
-
 class envDetailRow(object):
     def __init__(self, container, label):
         self.container = container
@@ -68,7 +66,6 @@ class envDetailRow(object):
             if self.elevVar not in app.strVars:
                 app.strVars.append(self.elevVar)
             self.elevEntry = ttk.Entry(self.container, width=7, textvariable=self.elevVar)
-            #self.elevEntry.pack(side=LEFT)
             self.elevEntry.grid(column=1, row=0)
 
         if label == 'atm':
@@ -77,7 +74,6 @@ class envDetailRow(object):
             if self.atmVar not in app.strVars:
                 app.strVars.append(self.atmVar)
             self.atmEntry = ttk.Entry(self.container, width=7, textvariable=self.atmVar)
-            #self.atmEntry.pack(side=LEFT)
             self.atmEntry.grid(column=1, row=1)
 
         if label == 'fio2':
@@ -86,7 +82,6 @@ class envDetailRow(object):
             if self.fio2Var not in app.strVars:
                 app.strVars.append(self.fio2Var)
             self.fio2Entry = ttk.Entry(self.container, width=7, textvariable=self.fio2Var)
-            #self.fio2Entry.pack(side=LEFT)
             self.fio2Entry.grid(column=1, row=2)
 
         if label == 'temp':
@@ -95,7 +90,6 @@ class envDetailRow(object):
             if self.tempVar not in app.strVars:
                 app.strVars.append(self.tempVar)
             self.tempEntry = ttk.Entry(self.container, width=7, textvariable=self.tempVar)
-            #self.tempEntry.pack(side=LEFT)
             self.tempEntry.grid(column=1, row=3)
 
         if label == 'pio2Method':

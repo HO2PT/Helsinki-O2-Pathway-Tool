@@ -7,17 +7,15 @@ from objects.app import app
 
 class SidePanel(object):
     def __init__(self, mainFrame):
-        s = ttk.Style()
-        s.configure('sidePanel.TFrame', background="green")
 
-        sidePanel = ttk.Frame(mainFrame, style='sidePanel.TFrame', width=200)
-        sidePanel.pack(side=LEFT, fill=Y)
+        self.sidePanel = ttk.Frame(mainFrame, width=200)
+        self.sidePanel.pack(side=LEFT, fill=Y)
 
-        projects = ProjectList(sidePanel)
+        projects = ProjectList(self.sidePanel)
         app.sidepanel_projectList = projects
 
-        subjects = SubjectList(sidePanel)
+        subjects = SubjectList(self.sidePanel)
         app.sidepanel_subjectList = subjects
         
-        tests = TestList(sidePanel)
+        tests = TestList(self.sidePanel)
         app.sidepanel_testList = tests

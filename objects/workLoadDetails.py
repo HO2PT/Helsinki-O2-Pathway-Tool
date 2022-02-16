@@ -1,5 +1,9 @@
+from objects.app import app
+
 class WorkLoadDetails(object):
     def __init__(self,test):
+        testDefaults = app.settings.getTestDef()
+
         self.id = test.nWorkLoads()
         self.Load = 0
         self.VO2 = 0
@@ -13,45 +17,49 @@ class WorkLoadDetails(object):
         self.CvO2 = 0
         self.CavO2 = 0
         self.QaO2 = 0
-        self.T = 0
-        self.pH = 0
+        self.T = testDefaults['T']
+        self.pH = testDefaults['pH']
         self.pVO2 = 0
         self.DO2 = 0
 
-        self.Load_unit = 0
-        self.VO2_unit = 0
-        self.HR_unit = 0
-        self.Sv_unit = 0
-        self.Q_unit = 0
-        self.Hb_unit = 0
-        self.SaO2_unit = 0
-        self.CaO2_unit = 0
-        self.SvO2_unit = 0
-        self.CvO2_unit = 0
-        self.CavO2_unit = 0
-        self.QaO2_unit = 0
-        self.T_unit = 0
+        defUnits = app.settings.getUnitDef()
+
+        self.Load_unit = defUnits['Load_unit']
+        self.VO2_unit = defUnits['VO2_unit']
+        self.HR_unit = defUnits['HR_unit']
+        self.Sv_unit = defUnits['Sv_unit']
+        self.Q_unit = defUnits['Q_unit']
+        self.Hb_unit = defUnits['Hb_unit']
+        self.SaO2_unit = defUnits['SaO2_unit']
+        self.CaO2_unit = defUnits['CaO2_unit']
+        self.SvO2_unit = defUnits['SvO2_unit']
+        self.CvO2_unit = defUnits['CvO2_unit']
+        self.CavO2_unit = defUnits['CavO2_unit']
+        self.QaO2_unit = defUnits['QaO2_unit']
+        self.T_unit = defUnits['T_unit']
         self.pH_unit = 0
-        self.pVO2_unit = 0
-        self.DO2_unit = 0
+        self.pVO2_unit = defUnits['pVO2_unit']
+        self.DO2_unit = defUnits['DO2_unit']
+
+        defMc = app.settings.getMcDef()
 
         # 0 = Measured
         # 1 = Calculated
-        self.VO2_MC = 0
-        self.hr_MC = 0
-        self.Sv_MC = 0
-        self.Q_MC = 0
-        self.Hb_MC = 0
-        self.SaO2_MC = 0
-        self.CaO2_MC = 0
-        self.SvO2_MC = 0
-        self.CvO2_MC = 0
-        self.CavO2_MC = 0
-        self.QaO2_MC = 0
-        self.T_MC = 0
-        self.pH_MC = 0
-        self.pVO2_MC = 0
-        self.DO2_MC = 0
+        self.VO2_MC = defMc['VO2_mc']
+        self.HR_MC = defMc['HR_mc']
+        self.Sv_MC = defMc['Sv_mc']
+        self.Q_MC = defMc['Q_mc']
+        self.Hb_MC = defMc['Hb_mc']
+        self.SaO2_MC = defMc['SaO2_mc']
+        self.CaO2_MC = defMc['CaO2_mc']
+        self.SvO2_MC = defMc['SvO2_mc']
+        self.CvO2_MC = defMc['CvO2_mc']
+        self.CavO2_MC = defMc['CavO2_mc']
+        self.QaO2_MC = defMc['QaO2_mc']
+        self.T_MC = defMc['T_mc']
+        self.pH_MC = defMc['pH_mc']
+        self.pVO2_MC = defMc['pVO2_mc']
+        self.DO2_MC = defMc['DO2_mc']
 
     def getWorkLoadDetails(self):
         return {
@@ -66,7 +74,7 @@ class WorkLoadDetails(object):
 
             'HR': self.HR,
             'HR_unit': self.HR_unit,
-            'HR_MC': self.hr_MC,
+            'HR_MC': self.HR_MC,
 
             'Sv': self.Sv,
             'Sv_unit': self.Sv_unit,
@@ -120,3 +128,12 @@ class WorkLoadDetails(object):
             'DO2_unit': self.DO2_unit,
             'DO2_MC': self.DO2_MC
         }
+
+    def setCalcResults(self, QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2, PvO2):
+        self.CaO2 = CaO2
+        self.SvO2 = SvO2
+        self.CvO2 = CvO2
+        self.CavO2 = Ca_vO2
+        self.QaO2 = QO2
+        self.pVO2 = PvO2
+        self.DO2 = DO2

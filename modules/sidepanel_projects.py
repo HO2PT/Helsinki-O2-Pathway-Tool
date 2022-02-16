@@ -5,21 +5,21 @@ from objects.project import Project
 
 class ProjectList(object):
     def __init__(self, sidePanel):
-        container = LabelFrame(sidePanel, text="Projects")
-        container.pack(fill = BOTH, expand=TRUE)
+        self.container = LabelFrame(sidePanel, text="Projects")
+        self.container.pack(fill = BOTH, expand=TRUE)
 
-        self.projectList = Listbox(container, exportselection=FALSE)
+        self.projectList = Listbox(self.container, exportselection=FALSE)
         self.projectList.pack(fill = BOTH, expand=TRUE)
 
         self.projectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
 
-        buttonContainer = ttk.Frame(container)
+        buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add', command=lambda: self.createProject()).pack(side=LEFT)
         ttk.Button(buttonContainer, text='Edit').pack(side=LEFT)
         ttk.Button(buttonContainer, text='Del').pack(side=LEFT)
         
-        ttk.Button(container, text='Import...').pack()
+        ttk.Button(self.container, text='Import...').pack()
 
     def addToList(self, id):
         self.projectList.insert('end', id)

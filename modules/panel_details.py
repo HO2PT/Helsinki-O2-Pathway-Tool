@@ -10,19 +10,19 @@ class DetailsPanel(object):
         s = ttk.Style()
         s.configure('detailsPanel.TFrame')
 
-        detailsPanel = ttk.Frame(mainFrame, style='detailsPanel.TFrame')
-        detailsPanel.pack(side=TOP, fill=X)
+        self.detailsPanel = ttk.Frame(mainFrame, style='detailsPanel.TFrame')
+        self.detailsPanel.pack(side=TOP, fill=X)
 
-        projectDetails = ProjectDetailsModule(detailsPanel)
+        projectDetails = ProjectDetailsModule(self.detailsPanel)
         app.projectDetailModule = projectDetails
 
-        testDetails = TestDetailModule(detailsPanel)
+        testDetails = TestDetailModule(self.detailsPanel)
         app.testDetailModule = testDetails
         
-        envDetails = EnvDetailModule(detailsPanel)
+        envDetails = EnvDetailModule(self.detailsPanel)
         app.envDetailModule = envDetails
 
-        ttk.Button(detailsPanel, text='Plot', command=lambda: self.debugPrint()).pack(side=RIGHT)
+        ttk.Button(self.detailsPanel, text='Plot', command=lambda: self.debugPrint()).pack(side=RIGHT)
 
     def debugPrint(self):
         """ workLoads = app.activeTest.getWorkLoads()

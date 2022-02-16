@@ -3,7 +3,7 @@ from tkinter.messagebox import askokcancel
 from tkinter import ttk
 
 from objects.app import *
-#from objects.settings import *
+from objects.settings import Settings
 from modules.menubar import *
 from modules.notification import notification
 from modules.panel_side import SidePanel
@@ -15,6 +15,11 @@ root.title("O2 Pathway Tool")
 root.geometry("1000x750")
 
 app.strVars = []
+app.intVars = []
+
+# Load settings
+settings = Settings()
+app.settings = settings
 
 # Mainframe
 mainframe = ttk.Frame(root)
@@ -25,8 +30,13 @@ menu = createMenu(root)
 
 # Panels
 sidePanel = SidePanel(mainframe)
+app.sidePanel = sidePanel
+
 notification.setParent(mainframe)
+
 detailsPanel = DetailsPanel(mainframe)
+app.detailsPanel = detailsPanel
+
 plottingPanel = PlottingPanel(mainframe)
 app.plottingPanel = plottingPanel
 

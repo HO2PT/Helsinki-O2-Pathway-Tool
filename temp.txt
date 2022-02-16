@@ -1,0 +1,96 @@
+""" # Create tab for test
+        tab = ttk.Frame(self.plotNotebook, width=300, height=200)
+        tab.pack(expand=TRUE)
+
+        # Plot canvasframe
+        self.canvasFrame = ttk.Frame(tab)
+        self.canvasFrame.pack(side=LEFT, expand=TRUE, fill=BOTH)
+
+        # Plot data
+        if self.plotter() != False:
+            # Loads notebook frame
+            self.loadNotebookFrame = ttk.Frame(tab)
+            self.loadNotebookFrame.pack(side=RIGHT, expand=TRUE, fill=BOTH)
+            
+            # Load notebook
+            loadNotebook = ttk.Notebook(self.loadNotebookFrame)
+            loadNotebook.pack(expand=TRUE, fill=BOTH)
+
+            # Create tabs for loads
+            for i, w in enumerate(self.workLoads):
+                activeTestId = app.getActiveTest().id
+                details = w.getWorkLoadDetails()
+
+                #print(details)
+                self.loadtab = ttk.Frame(loadNotebook)
+                self.loadtab.grid()
+                loadNotebook.add(self.loadtab, text=f'Load{w.id+1}') """
+
+                #LoadTab(i, activeTestId, details, self.loadtab)
+                """ #print(details)
+                self.loadtab = ttk.Frame(loadNotebook)
+                #loadtab.pack(expand=TRUE, fill=BOTH)
+                self.loadtab.grid()
+                loadNotebook.add(self.loadtab, text=f'Load{w.id+1}')
+
+                #Content
+                #ttk.Label(loadtab, text=f'Load: {details["Load"]}').pack()
+                ttk.Label(self.loadtab, text=f'Load: {details["Load"]}').grid(column=0, row=0)
+
+                VO2 = f'VO2-{activeTestId}-{i}'
+                Q = f'Q-{activeTestId}-{i}'
+                Hb = f'Hb-{activeTestId}-{i}'
+                SaO2 = f'SaO2-{activeTestId}-{i}'
+
+                for var in app.strVars:
+                    if var._name == VO2:
+                        vo2Var = var
+                    elif var._name == Q:
+                        qVar = var
+                    elif var._name == Hb:
+                        hbVar = var
+                    elif var._name == SaO2:
+                        sao2Var = var
+
+                ttk.Label(self.loadtab, text='VO2').grid(column=0, row=1)
+                vo2Slider = ttk.Scale(self.loadtab, from_=0, to=5, orient=HORIZONTAL, value=vo2Var.get(), variable=vo2Var)
+                vo2Slider.grid(column=1, row=1)
+                vo2Entry = ttk.Entry(self.loadtab, textvariable=vo2Var, width=7)
+                vo2Entry.grid(column=2, row=1)
+                vo2Var.trace('w', self.updatePlot)
+
+                ttk.Label(self.loadtab, text='Q').grid(column=0, row=2)
+                qSlider = ttk.Scale(self.loadtab, from_=10, to=20, orient=HORIZONTAL, value=qVar.get(), variable=qVar)
+                qSlider.grid(column=1, row=2)
+                qEntry = ttk.Entry(self.loadtab, textvariable=qVar, width=7)
+                qEntry.grid(column=2, row=2)
+                qVar.trace('w', self.updatePlot)
+
+                ttk.Label(self.loadtab, text='Hb').grid(column=0, row=3)
+                hbSlider = ttk.Scale(self.loadtab, from_=10, to=20, orient=HORIZONTAL, value=hbVar.get(), variable=hbVar)
+                hbSlider.grid(column=1, row=3)
+                hbEntry = ttk.Entry(self.loadtab, textvariable=hbVar, width=7)
+                hbEntry.grid(column=2, row=3)
+                hbVar.trace('w', self.updatePlot)
+
+                ttk.Label(self.loadtab, text='SaO2').grid(column=0, row=4)
+                sao2Slider = ttk.Scale(self.loadtab, from_=80, to=100, orient=HORIZONTAL, value=sao2Var.get(), variable=sao2Var)
+                sao2Slider.grid(column=1, row=4)
+                sao2Entry = ttk.Entry(self.loadtab, textvariable=sao2Var, width=7)
+                sao2Entry.grid(column=2, row=4)
+                sao2Var.trace('w', self.updatePlot)
+
+                self.cao2 = ttk.Label(self.loadtab, text=f'CaO2: { details["CaO2"] }')
+                self.cao2.grid()
+                self.cvo2 = ttk.Label(self.loadtab, text=f'CvO2: { details["CvO2"] }')
+                self.cvo2.grid()
+                self.cavo2 = ttk.Label(self.loadtab, text=f'CavO2: { details["CavO2"] }')
+                self.cavo2.grid()
+                self.cvo2 = ttk.Label(self.loadtab, text=f'PvO2: { details["pVO2"] }')
+                self.cvo2.grid()
+                self.svo2 = ttk.Label(self.loadtab, text=f'SvO2: { details["SvO2"] }')
+                self.svo2.grid()
+                self.qao2 = ttk.Label(self.loadtab, text=f'QaO2: { details["QaO2"] }')
+                self.qao2.grid()
+                self.do2 = ttk.Label(self.loadtab, text=f'DO2: { details["DO2"] }')
+                self.do2.grid() """

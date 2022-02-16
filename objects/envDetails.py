@@ -1,9 +1,14 @@
+from objects.app import app
+
 class EnvDetails(object):
     def __init__(self):
-        self.elevation = 0
-        self.atm = 0
-        self.fio2 = 0
-        self.temp = 0
+
+        envDefaults = app.settings.getEnvDef()
+
+        self.elevation = envDefaults['elevation']
+        self.atm = envDefaults['atm']
+        self.fio2 = envDefaults['fio2']
+        self.temp = envDefaults['temp']
         # 0 = US SA
         # 1 = MAE
         self.pio2Method = 0
