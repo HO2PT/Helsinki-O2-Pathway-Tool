@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter.messagebox import askokcancel
 from tkinter import ttk
 
-from objects.app import *
+from objects.app import app
 from objects.settings import Settings
 from modules.menubar import *
 from modules.notification import notification
@@ -41,6 +41,37 @@ plottingPanel = PlottingPanel(mainframe)
 app.plottingPanel = plottingPanel
 
 root.config(menu=menu)
+
+def showAdvLayout():
+    testContainer = app.testDetailModule.container
+    envContainer = app.envDetailModule.frame
+    projectContainer = app.projectDetailModule.container
+
+    projectContainer.pack_forget()
+    testContainer.pack_forget()
+    envContainer.pack_forget()
+
+    projectContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+    testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+    envContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+
+def showBasicLayout():
+    testContainer = app.testDetailModule.container
+    envContainer = app.envDetailModule.frame
+    projectContainer = app.projectDetailModule.container
+
+    projectContainer.pack_forget()
+    testContainer.pack_forget()
+    envContainer.pack_forget()
+
+    testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+
+if app.getActiveMode() == 0:
+    print('BASIC')
+    showBasicLayout()
+else:
+    print('ADV')
+    showAdvLayout()
 
 def on_closing():
     if askokcancel("Quit", "Do you want to quit?"):

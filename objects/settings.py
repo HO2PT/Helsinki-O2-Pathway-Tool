@@ -15,6 +15,7 @@ class Settings(object):
         except:
             print('SETTINGS NOT FOUND')
             defData = {
+                "userMode": 0,
                 "envDefaults": {
                     "elevation": 1000,
                     "atm": 101,
@@ -73,9 +74,12 @@ class Settings(object):
             settingsFile.close()
             self.processData()
 
+        app.activeMode = self.data['userMode']
         print(f'SETTINGS LOADED')
 
     def processData(self):
+        self.userMode = self.data['userMode']
+
         self.envDefaults = {
             'elevation': self.data['envDefaults']['elevation'],
             'atm': self.data['envDefaults']['atm'],
@@ -152,6 +156,7 @@ class Settings(object):
         self.sideMenu.pack(side=LEFT, fill=BOTH, expand=TRUE)
         self.sideMenu.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
 
+        self.sideMenu.insert('end', 'General')
         self.sideMenu.insert('end', 'Environmental')
         self.sideMenu.insert('end', 'Test')
         
@@ -171,7 +176,16 @@ class Settings(object):
 
         app.intVars = []
 
-        if index == 0: # Environmental
+        if index == 0:
+            labelFrame = LabelFrame(self.settingsContainer, text='General defaults')
+            labelFrame.grid()
+            container = ttk.Frame(labelFrame)
+            container.grid()
+
+            UserMode(self, container)
+
+
+        elif index == 1: # Environmental
             labelFrame = LabelFrame(self.settingsContainer, text='Environmental defaults')
             labelFrame.grid()
             container = ttk.Frame(labelFrame)
@@ -266,7 +280,7 @@ class Settings(object):
 
                 self.createNotification('info', 'Settings saved', 5000)
                 print('SAVING SETTINGS')
-        elif index == 1: # Test
+        elif index == 2: # Test
             labelFrame = LabelFrame(self.settingsContainer, text='Test defaults')
             labelFrame.grid()
             container = ttk.Frame(labelFrame)
@@ -421,3 +435,29 @@ class SettingsRow(object):
         self.radio2 = ttk.Radiobutton(parent, value=1, variable=self.intVar)
         self.radio2.grid(column=4, row=row)
         settings.mcs[f'{label}_mc'] = self.intVar
+
+class UserMode(object):
+    def __init__(self, settings, parent):
+        # Measured/Calculated
+        ttk.Label(parent, text='User mode').grid(column=0, row=0)
+        self.intVar = IntVar(value=settings.userMode, name=f'userMode')
+        if self.intVar not in app.intVars:
+            app.intVars.append(self.intVar)
+
+        self.radio1 = ttk.Radiobutton(parent, value=0, variable=self.intVar, text='Basic mode')
+        self.radio1.grid(column=1, row=1, sticky='W')
+
+        self.radio2 = ttk.Radiobutton(parent, value=1, variable=self.intVar, text='Advanced mode')
+        self.radio2.grid(column=1, row=2, sticky='W')
+    
+        ttk.Button(parent, text='Save', command=lambda: self.saveSettings(settings)).grid(column=1, row=3, sticky='E')
+
+    def saveSettings(self, settings):
+        settings.userMode = self.intVar.get()
+        settings.data['userMode'] = self.intVar.get()
+
+        settingsFile = open('settings.pkl', 'wb')
+        pickle.dump(settings.data, settingsFile)
+        settingsFile.close()
+
+        settings.createNotification('info', f'Usermode set to {settings.data["userMode"]}', 5000)

@@ -1,4 +1,3 @@
-from tabnanny import process_tokens
 from tkinter import *
 from objects.app import app
 from modules.notification import notification
@@ -26,8 +25,13 @@ def createMenu(root):
     # Settings - mode
     modes = Menu(menuBar, tearoff = 0)
     settings.add_cascade(label ='Modes', menu = modes)
-    modes.add_command(label ='Basic Mode', command = lambda: None)
-    modes.add_command(label ='Advanced Mode', command = lambda: None)
+    # Get default usermode from settings
+    var = IntVar(value=app.getActiveMode(), name='userMode')
+    if var not in app.intVars:
+        app.intVars.append(var)
+    basic = modes.add_radiobutton(label ='Basic Mode', value=0, variable=var, command = lambda: setMode(var))
+    advanced = modes.add_radiobutton(label ='Advanced Mode', value=1, variable=var, command = lambda: setMode(var))
+    
 
     # Settings - default settings
     settings.add_command(label ='Settings...', command = lambda: app.settings.openSettings())
@@ -36,8 +40,8 @@ def createMenu(root):
     view = Menu(menuBar, tearoff = 0)
     menuBar.add_cascade(label ='View', menu = view)
     view.add_checkbutton(label ='Hide side menu', command = lambda: hideSidePanel())
-    view.add_checkbutton(label ='Hide project details', command = lambda: hideProject())
-    view.add_checkbutton(label ='Hide test details', command = lambda: hideTest())
+    view.add_checkbutton(label ='Hide project details', command = lambda: hideProjectDetails())
+    view.add_checkbutton(label ='Hide test details', command = lambda: hideTestDetails())
     view.add_checkbutton(label ='Hide environment details', command = lambda: hideEnvDetails())
 
     # Create demo graph
@@ -47,8 +51,16 @@ def createMenu(root):
     options = Menu(menuBar, tearoff = 0)
     menuBar.add_cascade(label ='About', menu = options)
     options.add_command(label ='About O2 Pathway Tool', command = None)
-
+    
     return menuBar
+
+def setMode(var):
+    print('MODE UPDATED')
+    app.setActiveMode(var.get())
+    if var.get() == 0:
+        showBasicLayout()
+    else:
+        showAdvLayout()
 
 def createDemoGraph():
     print('Creating demograph')
@@ -71,7 +83,7 @@ def hideSidePanel():
         detailsPanel.pack(side=TOP, fill=X)
         plottingPanel.pack(fill=BOTH, expand=TRUE)
 
-def hideProject():
+def hideProjectDetails():
     testContainer = app.testDetailModule.container
     envContainer = app.envDetailModule.frame
     projectContainer = app.projectDetailModule.container
@@ -85,7 +97,7 @@ def hideProject():
         testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
         envContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
 
-def hideTest():
+def hideTestDetails():
     testContainer = app.testDetailModule.container
     envContainer = app.envDetailModule.frame
     projectContainer = app.projectDetailModule.container
@@ -112,3 +124,27 @@ def hideEnvDetails():
         projectContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
         testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
         envContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+
+def showAdvLayout():
+    testContainer = app.testDetailModule.container
+    envContainer = app.envDetailModule.frame
+    projectContainer = app.projectDetailModule.container
+
+    projectContainer.pack_forget()
+    testContainer.pack_forget()
+    envContainer.pack_forget()
+
+    projectContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+    testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+    envContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+
+def showBasicLayout():
+    testContainer = app.testDetailModule.container
+    envContainer = app.envDetailModule.frame
+    projectContainer = app.projectDetailModule.container
+
+    projectContainer.pack_forget()
+    testContainer.pack_forget()
+    envContainer.pack_forget()
+
+    testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)

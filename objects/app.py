@@ -42,6 +42,12 @@ class App(object):
     def addProject(self, project):
         self.projects.append(project)
 
+    def getActiveMode(self):
+        return self.activeMode
+
+    def setActiveMode(self, mode):
+        self.activeMode = mode
+
     def getPlottingPanel(self):
         return self.plottingPanel
 
