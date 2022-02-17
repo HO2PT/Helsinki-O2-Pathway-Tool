@@ -54,7 +54,7 @@ class PlotTab(object):
         self.parentFrame = parentFrame
         self.activeTest = app.getActiveTest()
         self.activeTestId = self.activeTest.id
-        self.workLoads = self.activeTest.getWorkLoads()
+        self.workLoads = self.activeTest.getWorkLoads() # Workload objects
         
     def createPlotTab(self):
         # Create tab for test
@@ -76,10 +76,9 @@ class PlotTab(object):
 
         # Create tabs for loads
         for i, w in enumerate(self.workLoads):
-
-            loadTabObject = LoadTab(self, i, self.activeTestId, w, self.loadNotebook)
+            loadTabObject = PlotLoadTab(self, i, self.activeTestId, w, self.loadNotebook)
             loadTab = loadTabObject.createLoadTab()
-            self.loadNotebook.add(loadTab, text=f'Load{w.id+1}')
+            self.loadNotebook.add(loadTab, text=w.getName())
             self.loadTabs.append(loadTabObject)
 
         return self.tabFrame
@@ -92,7 +91,7 @@ class PlotTab(object):
         self.handles = []
 
         for i, w in enumerate(self.workLoads):
-            details = w.getWorkLoadDetails()
+            details = w.getDetails().getWorkLoadDetails()
             
             try:
                 y, y2, xi, yi, QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc = self.calc(float(details['Q']), float(details['VO2']), float(details['Hb']), float(details['SaO2']))
@@ -101,7 +100,7 @@ class PlotTab(object):
                 notification.create('error', 'Unable to compute with given values. Check values', 5000)
                 return False
 
-            w.setCalcResults(QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc)
+            w.getDetails().setCalcResults(QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc)
 
             line, = ax.plot(PvO2, y, lw=2, color=f'C{i}', label=f'Load{i+1}')
             curve, = ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=f'Load{i+1}')
@@ -257,13 +256,13 @@ class PlotTab(object):
         self.fig.canvas.draw()
 
 
-class LoadTab(object):
+class PlotLoadTab(object):
     def __init__(self, plotTab, index, testId, workLoad, parentNotebook):
         self.parentPlotTab = plotTab
         self.index = index
         self.testId = testId
-        self.workLoad = workLoad
-        self.details = workLoad.getWorkLoadDetails()
+        self.workLoad = workLoad # Load object
+        self.details = workLoad.getDetails().getWorkLoadDetails()
         self.parentNotebook = parentNotebook
 
     def createLoadTab(self):
@@ -273,10 +272,10 @@ class LoadTab(object):
         #Content
         ttk.Label(self.loadtab, text=f'Load: {self.details["Load"]}').grid(column=0, row=0)
 
-        VO2 = f'VO2-{self.testId}-{self.index}'
-        Q = f'Q-{self.testId}-{self.index}'
-        Hb = f'Hb-{self.testId}-{self.index}'
-        SaO2 = f'SaO2-{self.testId}-{self.index}'
+        VO2 = f'VO2-{self.testId}-{self.details["id"]}'
+        Q = f'Q-{self.testId}-{self.details["id"]}'
+        Hb = f'Hb-{self.testId}-{self.details["id"]}'
+        SaO2 = f'SaO2-{self.testId}-{self.details["id"]}'
 
         for var in app.strVars:
             if var._name == VO2:
@@ -361,14 +360,15 @@ class LoadTab(object):
             notification.create('error', 'Unable to compute with given values. Check values', 5000)
             return False
 
-        self.workLoad.setCalcResults(QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc)
+        self.workLoad.getDetails().setCalcResults(QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc)
         self.parentPlotTab.canvas.get_tk_widget().destroy()
         self.parentPlotTab.toolbar.destroy()
         self.parentPlotTab.createPlot()
         self.updateDetails()
 
     def updateDetails(self):
-        self.details = self.workLoad.getWorkLoadDetails()
+        #self.details = self.workLoad.getWorkLoadDetails()
+        self.details = self.workLoad.getDetails().getWorkLoadDetails()
         self.cao2_valUnit.config(text=f'{"{0:.2f}".format(self.details["CaO2"]) } {self.details["CaO2_unit"]}')
         self.cvo2_valUnit.config(text=f'{"{0:.2f}".format(self.details["CvO2"]) } {self.details["CvO2_unit"]}')
         self.cavo2_valUnit.config(text=f'{"{0:.2f}".format(self.details["CavO2"]) } {self.details["CavO2_unit"]}')

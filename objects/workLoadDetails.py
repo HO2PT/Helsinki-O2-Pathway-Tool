@@ -1,10 +1,11 @@
 from objects.app import app
+import uuid
 
 class WorkLoadDetails(object):
-    def __init__(self,test):
+    def __init__(self):
         testDefaults = app.settings.getTestDef()
 
-        self.id = test.nWorkLoads()
+        self.id = uuid.uuid1()
         self.Load = 0
         self.VO2 = 0
         self.HR = 0

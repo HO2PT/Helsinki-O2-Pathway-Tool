@@ -1,8 +1,6 @@
-from distutils import command
 from tkinter import *
 from tkinter import ttk
 
-from pyparsing import restOfLine
 from objects.app import app
 from objects.project import Project
 

@@ -15,11 +15,23 @@ class TestDetailModule(object):
         self.testId.pack()
 
         ttk.Button(details, text="Calculate").pack(side=BOTTOM)
-        #
 
-        ## Load notebook frame
+        ## Load notebook
         self.loadsContainer = ttk.Frame(self.container)
         self.loadsContainer.pack(side=RIGHT)
+        self.loadNotebook = LoadNotebook(self.loadsContainer)
+
+    def addLoad(self):
+        self.loadNotebook.addLoad()
+
+    def refreshTestDetails(self):
+        # Refresh details
+        self.testId.config(text=f'Id: {app.getActiveTest().id}')
+        self.loadNotebook.refresh()
+
+class LoadNotebook(object):
+    def __init__(self, parent):
+        self.loadTabs = []
 
         # Add 'x'-button to tabs
         style = ttk.Style()
@@ -69,120 +81,149 @@ class TestDetailModule(object):
                 ]
             })
         ])
-        #
-
-        ## Notebook
-        #self.loadNotebook = ttk.Notebook(loadsContainer, style='loadNotebook.TNotebook')
-        self.loadNotebook = ttk.Notebook(self.loadsContainer)
         
-        self.loadNotebook.pack(expand=TRUE)
+        ## Notebook
+        self.loadNotebook = ttk.Notebook(parent, style='loadNotebook.TNotebook')
         self.loadNotebook.bind('<Button-1>', lambda e: self.handleTabClick(e))
 
-        # Initial Tab
-        self.tab0 = ttk.Frame(self.loadNotebook, width=200, height=200)
-        self.tab0.pack(expand=TRUE)
-        
-        self.loadNotebook.add(self.tab0, text='+')
+        ##
+        #self.containerFrame = ttk.Frame(self.loadNotebook)
+        #self.containerFrame.grid()
+        #self.canvas = Canvas(self.containerFrame)
+        ##
 
-        # Add button
-        ttk.Button(self.loadsContainer, text='ADD', command=lambda: self.addLoad()).pack(side=BOTTOM)
+        # Add/edit button
+        self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())
+        self.editButton = ttk.Button(parent, text='Edit', command=lambda: self.editLoad())
+
+    def addLoad(self):
+        # Add load to active test
+        activeTest = app.getActiveTest()
+        workLoadObject = activeTest.createLoad()
+        i = len(self.loadTabs)
+        details = workLoadObject.getDetails()
+
+        newLoad = LoadTab(i, workLoadObject, details, self.loadNotebook)
+            
+        # Append tab
+        self.loadTabs.append(newLoad)
+        tabCount = self.loadNotebook.index('end')
+        self.loadNotebook.insert('end', newLoad.loadFrame, text=newLoad.getName())
+        self.loadNotebook.select(tabCount) 
+
+        self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
+        self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
+
+    def refresh(self):
+        self.loadTabs = []
+        # Hide previous tabs
+        for t in self.loadNotebook.tabs():
+            self.loadNotebook.forget(t)
+
+        activeTest = app.getActiveTest()
+
+        # Fetch list of load objects
+        loads = activeTest.getWorkLoads()
+        
+        for i, l in enumerate(loads):
+            # Get load details
+            details = l.getDetails()
+
+            newLoad = LoadTab(i, l, details, self.loadNotebook)
+            
+            # Append tab
+            self.loadTabs.append(newLoad)
+            tabCount = self.loadNotebook.index('end')
+            self.loadNotebook.insert('end', newLoad.loadFrame, text=l.getName())
+            self.loadNotebook.select(tabCount) 
+
+        self.loadNotebook.pack(expand=TRUE)
+        self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
+        self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
+        
 
     def handleTabClick(self, e):
         clickedTabIndex = self.loadNotebook.index(f'@{e.x},{e.y}')
-        tabCount = self.loadNotebook.index('end')  
-
-        if clickedTabIndex == tabCount-1:
-            self.addLoad()
-        """ if self.loadNotebook.identify(e.x, e.y) == 'close':
-            self.loadNotebook.forget(clickedTabIndex)
-        else:
-            self.addLoad() """
-
-    def addLoad(self):
-        loadFrame = ttk.Frame(self.loadNotebook)
-        loadFrame.grid()
-
-        # Add load to active test
         activeTest = app.getActiveTest()
-        workLoadObject = activeTest.initWorkLoad()
+        workLoads = activeTest.getWorkLoads()
 
-        ttk.Label(loadFrame, text='Value').grid(column=1, row=0)
-        ttk.Label(loadFrame, text='Unit').grid(column=2, row=0)
-        ttk.Label(loadFrame, text='Meas.').grid(column=3, row=0)
-        ttk.Label(loadFrame, text='Calc.').grid(column=4, row=0)
+        if self.loadNotebook.identify(e.x, e.y) == 'close':
+            self.loadNotebook.forget(clickedTabIndex)
+            del workLoads[clickedTabIndex]
+            
+    def editLoad(self):
+        index = self.loadNotebook.index('current')
+
+        # Create edit popup
+        editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*2.6, height=self.editButton.winfo_reqheight()*3)
+        editscreen.title('Edit')
+        editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth()*1.45
+        ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+        editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
+        editscreen.pack_propagate(False)
+        
+        ttk.Label(editscreen, text='Load name').pack()
+        nameEntry = ttk.Entry(editscreen)
+        nameEntry.pack(expand=TRUE)
+        ttk.Button(editscreen, text='Save', command=lambda: edit()).pack(side=BOTTOM,anchor='e')
+
+        def edit():
+            load = app.getActiveTest().getWorkLoads()[index]
+            load.setName( nameEntry.get() )
+            self.refresh()
+            editscreen.destroy()
+
+class LoadTab(object):
+    def __init__(self, index, load, details, notebook):
+        if load.getName() == None:
+            self.name = f'Load{index+1}'
+            load.setName(self.name)
+        else:
+            self.name = load.getName()
+        
+        self.details = details
+        self.notebook = notebook
+        
+        #self.containerFrame = ttk.Frame(self.loadNotebook)
+        #self.containerFrame.grid()
+        #self.canvas = Canvas(self.containerFrame)
+
+        self.loadFrame = ttk.Frame(self.notebook)
+        #loadFrame = ttk.Frame(self.nbObj.canvas)
+        self.loadFrame.grid()
+        """ sbar = ttk.Scrollbar(loadFrame, orient=VERTICAL, command=canvas.yview)
+        canvas.configure(yscrollcommand=sbar.set)
+        sbar.grid()
+        canvas.grid
+        canvas.create_window((0,0), window=loadFrame, anchor='nw') """
+
+        ttk.Label(self.loadFrame, text='Value').grid(column=1, row=0)
+        ttk.Label(self.loadFrame, text='Unit').grid(column=2, row=0)
+        ttk.Label(self.loadFrame, text='Meas.').grid(column=3, row=0)
+        ttk.Label(self.loadFrame, text='Calc.').grid(column=4, row=0)
 
         temp = []
         i = 0
         j = 1
 
         # Iterate through load details and print to Details module
-        for key, value in workLoadObject.getWorkLoadDetails().items():
+        for key, value in self.details.getWorkLoadDetails().items():
 
             if i == 3:
-                TestDetailRow(loadFrame, temp, workLoadObject, j)
-                    
+                TestDetailRow(self.loadFrame, temp, self.details, j)
                 temp=[]
                 i = 0
-                
+                    
             temp.append([key, value])
             i = i + 1
             j = j + 1
+    
+    def getName(self):
+        return self.name
 
-        # Append tab
-        tabCount = self.loadNotebook.index('end')
-        self.loadNotebook.insert(tabCount-1, loadFrame, text=f'Load{tabCount}')
-        self.loadNotebook.select(tabCount-1)
-
-    def getTestData(self):
-        pass
-
-    def refreshTestDetails(self):
-        # Hide previous tabs
-        for t in self.loadNotebook.tabs():
-            self.loadNotebook.forget(t)
-        
-        self.loadNotebook.add(self.tab0, text='+')
-
-        activeTest = app.getActiveTest()
-
-        # Refresh details
-        self.testId.config(text=f'Id: {activeTest.id}')
-
-        # Refresh load notebook
-        loads = activeTest.getWorkLoads()
-        
-        for l in loads:
-            loadFrame = ttk.Frame(self.loadNotebook)
-            loadFrame.grid()
-
-            ttk.Label(loadFrame, text='Value').grid(column=1, row=0)
-            ttk.Label(loadFrame, text='Unit').grid(column=2, row=0)
-            ttk.Label(loadFrame, text='Meas.').grid(column=3, row=0)
-            ttk.Label(loadFrame, text='Calc.').grid(column=4, row=0)
-
-            temp = []
-            i = 0
-            j = 1
-
-            # Iterate through load details and print to Details module
-            for key, value in l.getWorkLoadDetails().items():
-
-                if i == 3:
-                    TestDetailRow(loadFrame, temp, l, j)
-                        
-                    temp=[]
-                    i = 0
-                    
-                temp.append([key, value])
-                i = i + 1
-                j = j + 1
+    def setName(self, name):
+        self.name = name
             
-            # Append tab
-            tabCount = self.loadNotebook.index('end')
-            self.loadNotebook.insert(tabCount-1, loadFrame, text=f'Load{tabCount}')
-            self.loadNotebook.select(tabCount-1)
-            
-
 class TestDetailRow(object):
 
     def __init__(self, rowFrame, temp, workLoadObject, row):

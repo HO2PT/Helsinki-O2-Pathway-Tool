@@ -108,8 +108,6 @@ class TestList(object):
             app.setActiveTest(test)
 
         # Create load tab
-        #print(test.workLoads)
-        app.getActiveTest().initWorkLoad()
         app.projectDetailModule.refreshDetails()
         app.testDetailModule.refreshTestDetails()
         app.envDetailModule.refresh()

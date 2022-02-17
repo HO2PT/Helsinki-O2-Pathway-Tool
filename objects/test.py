@@ -11,7 +11,10 @@ class Test(object):
         self.envDetails = EnvDetails()
         self.workLoadCount = None
         self.endWorkLoad = None
-        self.workLoads = [] 
+        self.workLoads = []
+
+        # Initiate load object
+        self.workLoads.append( Load() )
 
     def getWorkLoads(self):
         return self.workLoads
@@ -19,16 +22,30 @@ class Test(object):
     def addWorkLoad(self, load):
         self.workLoads.append(load)
 
+    def createLoad(self):
+        newLoad = Load()
+        self.workLoads.append( newLoad )
+        return newLoad
+
     def nWorkLoads(self):
         return len(self.workLoads)
-
-    def initWorkLoad(self):
-        newWorkLoadDetail = WorkLoadDetails(self)
-        self.workLoads.append( newWorkLoadDetail )
-        return newWorkLoadDetail
 
     def getEnvDetails(self):
         return self.envDetails
 
     def setId(self, id):
         self.id = id
+
+class Load(object):
+    def __init__(self):
+        self.name = None
+        self.details = WorkLoadDetails()
+    
+    def getDetails(self):
+        return self.details
+
+    def getName(self):
+        return self.name
+
+    def setName(self, name):
+        self.name = name
