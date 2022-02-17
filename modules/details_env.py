@@ -59,8 +59,11 @@ class envDetailRow(object):
         self.label = label
         id = app.getActiveTest().id
         self.envDetails = app.getActiveTest().getEnvDetails()
+        self.unitDefs = app.settings.getUnitDef()
+        self.menuButtons = {}
         
         if label == 'elevation':
+            # Value
             self.elevVar = StringVar(value=self.envDetails.elevation, name=f'{self.label}-{id}')
             self.elevVar.trace('w', self.updateElev)
             if self.elevVar not in app.strVars:
@@ -68,7 +71,20 @@ class envDetailRow(object):
             self.elevEntry = ttk.Entry(self.container, width=7, textvariable=self.elevVar)
             self.elevEntry.grid(column=1, row=0)
 
+            # Unit
+            units = ('m', 'km', 'ft')
+            elevMenuButton = ttk.Menubutton(self.container)
+            self.menuButtons['Elevation'] = elevMenuButton
+            elevMenuButton.config(text=self.unitDefs['Elevation_unit'])
+
+            elevMenu = Menu(elevMenuButton, tearoff=False)
+            for i, u in enumerate(units):
+                EnvMenuElem(elevMenu, elevMenuButton, u, i, units, 'Elevation_unit')
+            elevMenuButton['menu']=elevMenu
+            elevMenuButton.grid(column=2, row=0)
+
         if label == 'atm':
+            # Value
             self.atmVar = StringVar(value=self.envDetails.atm, name=f'{self.label}-{app.getActiveTest().id}')
             self.atmVar.trace('w', self.updateAtm)
             if self.atmVar not in app.strVars:
@@ -76,7 +92,20 @@ class envDetailRow(object):
             self.atmEntry = ttk.Entry(self.container, width=7, textvariable=self.atmVar)
             self.atmEntry.grid(column=1, row=1)
 
+            # Unit
+            units = ('kPa', 'bar', 'psi')
+            atmMenuButton = ttk.Menubutton(container)
+            self.menuButtons['ATM'] = atmMenuButton
+            atmMenuButton.config(text=self.unitDefs['ATM_unit'])
+
+            atmMenu = Menu(atmMenuButton, tearoff=False)
+            for i, u in enumerate(units):
+                EnvMenuElem(atmMenu, atmMenuButton, u, i, units, 'ATM_unit')
+            atmMenuButton['menu']=atmMenu
+            atmMenuButton.grid(column=2, row=1)
+
         if label == 'fio2':
+            # Value
             self.fio2Var = StringVar(value=self.envDetails.fio2, name=f'{self.label}-{app.getActiveTest().id}')
             self.fio2Var.trace('w', self.updateFio2)
             if self.fio2Var not in app.strVars:
@@ -84,13 +113,29 @@ class envDetailRow(object):
             self.fio2Entry = ttk.Entry(self.container, width=7, textvariable=self.fio2Var)
             self.fio2Entry.grid(column=1, row=2)
 
+            # Unit
+            ttk.Label(self.container, text='%').grid(column=2, row=2)
+
         if label == 'temp':
+            # Value
             self.tempVar = StringVar(value=self.envDetails.temp, name=f'{self.label}-{app.getActiveTest().id}')
             self.tempVar.trace('w', self.updateTemp)
             if self.tempVar not in app.strVars:
                 app.strVars.append(self.tempVar)
             self.tempEntry = ttk.Entry(self.container, width=7, textvariable=self.tempVar)
             self.tempEntry.grid(column=1, row=3)
+
+            # Unit
+            units = ('\N{DEGREE SIGN}C', 'F', 'K')
+            tempMenuButton = ttk.Menubutton(container)
+            self.menuButtons['Temperature'] = tempMenuButton
+            tempMenuButton.config(text=self.unitDefs['Temperature_unit'])
+
+            tempMenu = Menu(tempMenuButton, tearoff=False)
+            for i, u in enumerate(units):
+                EnvMenuElem(tempMenu, tempMenuButton, u, i, units, 'Temperature_unit')
+            tempMenuButton['menu']=tempMenu
+            tempMenuButton.grid(column=2, row=3)
 
         if label == 'pio2Method':
             self.methodVar = IntVar(value=self.envDetails.pio2Method, name=f'{self.label}-{app.getActiveTest().id}') 
@@ -123,3 +168,19 @@ class envDetailRow(object):
     def updatePio2Method(self, name, index, mode):
         name = name.split('-')[0]
         setattr(self.envDetails, name, self.methodVar.get())
+
+
+class EnvMenuElem(object):
+    def __init__(self, menu, menuButton, label, index, elems, name):
+        self.menu = menu
+        self.menuButton = menuButton
+        self.label = label
+        self.index = index
+        self.elems = elems
+        self.name = name
+
+        self.menu.add_command(label=self.label, command=lambda: self.updateValue())
+
+    def updateValue(self):
+        self.menuButton.config(text=self.elems[self.index])
+        app.getActiveTest().getEnvDetails().setDetail(self.name, self.elems[self.index])

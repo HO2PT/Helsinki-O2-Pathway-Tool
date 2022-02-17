@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import ttk
+
+from matplotlib.pyplot import fill
 from objects.app import app
 
 class TestDetailModule(object):    
@@ -108,7 +110,7 @@ class LoadNotebook(object):
         # Append tab
         self.loadTabs.append(newLoad)
         tabCount = self.loadNotebook.index('end')
-        self.loadNotebook.insert('end', newLoad.loadFrame, text=newLoad.getName())
+        self.loadNotebook.insert('end', newLoad.containerFrame, text=newLoad.getName())
         self.loadNotebook.select(tabCount) 
 
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
@@ -134,7 +136,7 @@ class LoadNotebook(object):
             # Append tab
             self.loadTabs.append(newLoad)
             tabCount = self.loadNotebook.index('end')
-            self.loadNotebook.insert('end', newLoad.loadFrame, text=l.getName())
+            self.loadNotebook.insert('end', newLoad.containerFrame, text=l.getName())
             self.loadNotebook.select(tabCount) 
 
         self.loadNotebook.pack(expand=TRUE)
@@ -180,22 +182,21 @@ class LoadTab(object):
             load.setName(self.name)
         else:
             self.name = load.getName()
-        
         self.details = details
         self.notebook = notebook
         
-        #self.containerFrame = ttk.Frame(self.loadNotebook)
-        #self.containerFrame.grid()
-        #self.canvas = Canvas(self.containerFrame)
+        self.containerFrame = ttk.Frame(self.notebook)
+        self.containerFrame.pack()
+        
+        self.canvas = Canvas(self.containerFrame)
+        self.loadFrame = ttk.Frame(self.canvas)
 
-        self.loadFrame = ttk.Frame(self.notebook)
-        #loadFrame = ttk.Frame(self.nbObj.canvas)
-        self.loadFrame.grid()
-        """ sbar = ttk.Scrollbar(loadFrame, orient=VERTICAL, command=canvas.yview)
-        canvas.configure(yscrollcommand=sbar.set)
-        sbar.grid()
-        canvas.grid
-        canvas.create_window((0,0), window=loadFrame, anchor='nw') """
+        sbar = ttk.Scrollbar(self.containerFrame, orient=VERTICAL, command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=sbar.set)
+        sbar.pack(side=RIGHT, fill=Y)
+        self.canvas.pack(side=LEFT)
+        self.canvas.create_window((0,0), window=self.loadFrame, anchor='nw')
+        self.loadFrame.bind("<Configure>", self.callback)
 
         ttk.Label(self.loadFrame, text='Value').grid(column=1, row=0)
         ttk.Label(self.loadFrame, text='Unit').grid(column=2, row=0)
@@ -217,6 +218,9 @@ class LoadTab(object):
             temp.append([key, value])
             i = i + 1
             j = j + 1
+
+    def callback(self,e):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=200,height=250)
     
     def getName(self):
         return self.name

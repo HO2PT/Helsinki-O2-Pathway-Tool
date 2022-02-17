@@ -45,6 +45,7 @@ class Settings(object):
                     "DO2": "ml/min/mmHg",
                     "Elevation": "m",
                     "ATM": "kPa",
+                    "FiO2": "%",
                     "Temperature": "\N{DEGREE SIGN}C"
                 },
                 "mcDefaults":{
@@ -111,6 +112,7 @@ class Settings(object):
             "DO2_unit": self.data['unitDefaults']['DO2'],
             "Elevation_unit": self.data['unitDefaults']['Elevation'],
             "ATM_unit": self.data['unitDefaults']['ATM'],
+            "FiO2_unit": self.data['unitDefaults']['FiO2'],
             "Temperature_unit": self.data['unitDefaults']['Temperature']
         }
 
@@ -183,8 +185,6 @@ class Settings(object):
             container.grid()
 
             UserMode(self, container)
-
-
         elif index == 1: # Environmental
             labelFrame = LabelFrame(self.settingsContainer, text='Environmental defaults')
             labelFrame.grid()

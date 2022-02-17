@@ -13,6 +13,7 @@ from modules.panel_plotting import PlottingPanel
 root = Tk()
 root.title("O2 Pathway Tool")
 root.geometry("1000x750")
+root.pack_propagate(1)
 
 app.strVars = []
 app.intVars = []
