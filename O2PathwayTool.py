@@ -67,10 +67,8 @@ def showBasicLayout():
     testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
 
 if app.getActiveMode() == 0:
-    print('BASIC')
     showBasicLayout()
 else:
-    print('ADV')
     showAdvLayout()
 
 def on_closing():

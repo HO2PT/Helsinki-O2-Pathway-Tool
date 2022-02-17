@@ -460,4 +460,7 @@ class UserMode(object):
         pickle.dump(settings.data, settingsFile)
         settingsFile.close()
 
-        settings.createNotification('info', f'Usermode set to {settings.data["userMode"]}', 5000)
+        if self.intVar.get() == 0:
+            settings.createNotification('info', f'Usermode set to Basic', 5000)
+        else:
+            settings.createNotification('info', f'Usermode set to Advanced', 5000)

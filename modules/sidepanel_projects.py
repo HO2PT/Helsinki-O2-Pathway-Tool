@@ -1,5 +1,8 @@
+from distutils import command
 from tkinter import *
 from tkinter import ttk
+
+from pyparsing import restOfLine
 from objects.app import app
 from objects.project import Project
 
@@ -15,11 +18,48 @@ class ProjectList(object):
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
-        ttk.Button(buttonContainer, text='Add', command=lambda: self.createProject()).pack(side=LEFT)
-        ttk.Button(buttonContainer, text='Edit').pack(side=LEFT)
-        ttk.Button(buttonContainer, text='Del').pack(side=LEFT)
+        self.createButton = ttk.Button(buttonContainer, text='Add', command=lambda: self.createProject())
+        self.createButton.pack(side=LEFT)
+        self.editButton = ttk.Button(buttonContainer, text='Edit', command=lambda: self.editProject())
+        self.editButton.pack(side=LEFT)
+        self.deleteButton = ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteProject())
+        self.deleteButton.pack(side=LEFT)
         
         ttk.Button(self.container, text='Import...').pack()
+
+    def editProject(self):
+        index = self.projectList.curselection()[0]
+
+        # Create edit popup
+        editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*3)
+        editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
+        ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+        editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
+        editscreen.pack_propagate(False)
+        
+        ttk.Label(editscreen, text='Project name').pack()
+        nameEntry = ttk.Entry(editscreen)
+        nameEntry.pack(expand=TRUE)
+        ttk.Button(editscreen, text='Save', command=lambda: edit()).pack(side=BOTTOM,anchor='e')
+
+        def edit():
+            project = app.getProjects()[index]
+            project.setId(nameEntry.get())
+            self.refreshList()
+            editscreen.destroy()
+
+    def deleteProject(self):
+        index = self.projectList.curselection()[0]
+        p = app.getProjects()
+        del p[index]
+        self.refreshList()
+        app.setActiveProject(None)
+
+    def refreshList(self):
+        projects = app.getProjects()
+        self.projectList.delete(0, 'end')
+        for p in projects:
+            self.projectList.insert('end', p.id)
 
     def addToList(self, id):
         self.projectList.insert('end', id)

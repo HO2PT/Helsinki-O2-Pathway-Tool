@@ -8,3 +8,6 @@ class Subject(object):
 
     def getTests(self):
         return self.tests
+
+    def setId(self, id):
+        self.id = id

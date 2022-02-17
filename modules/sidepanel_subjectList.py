@@ -16,16 +16,48 @@ class SubjectList(object):
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add', command=lambda: self.createSubject()).pack(side=LEFT)
-        ttk.Button(buttonContainer, text='Edit').pack(side=LEFT)
-        ttk.Button(buttonContainer, text='Del').pack(side=LEFT)
+        self.editButton = ttk.Button(buttonContainer, text='Edit', command=lambda: self.editSubject())
+        self.editButton.pack(side=LEFT)
+        ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteSubject()).pack(side=LEFT)
         
         ttk.Button(self.container, text='Import...').pack()
+
+    def editSubject(self):
+        index = self.subjectList.curselection()[0]
+
+        # Create edit popup
+        editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*3)
+        editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
+        ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+        editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
+        editscreen.pack_propagate(False)
+        
+        ttk.Label(editscreen, text='Subject name').pack()
+        nameEntry = ttk.Entry(editscreen)
+        nameEntry.pack(expand=TRUE)
+        ttk.Button(editscreen, text='Save', command=lambda: edit()).pack(side=BOTTOM,anchor='e')
+
+        def edit():
+            subject = app.getActiveSubject()
+            subject.setId(nameEntry.get())
+            self.refreshList()
+            editscreen.destroy()
+
+    def deleteSubject(self):
+        index = self.subjectList.curselection()[0]
+        project = app.getActiveProject()
+        subjects = project.getSubjects()
+        del subjects[index]
+        app.setActiveSubject(None)
+        self.refreshList()
+        app.sidepanel_testList.refreshList()
 
     def createSubject(self):
         if app.getActiveProject() == None:
             # Create project and make it active
             project = Project()
             app.setActiveProject(project)
+            app.addProject(project)
 
             # Create subject with index based on the size of project subject list
             index = self.subjectList.size()

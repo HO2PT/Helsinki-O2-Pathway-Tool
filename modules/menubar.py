@@ -55,7 +55,6 @@ def createMenu(root):
     return menuBar
 
 def setMode(var):
-    print('MODE UPDATED')
     app.setActiveMode(var.get())
     if var.get() == 0:
         showBasicLayout()

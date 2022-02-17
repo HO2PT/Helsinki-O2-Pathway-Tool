@@ -51,4 +51,7 @@ class App(object):
     def getPlottingPanel(self):
         return self.plottingPanel
 
+    def getProjects(self):
+        return self.projects
+
 app = App()

@@ -11,3 +11,6 @@ class Project(object):
     
     def getSubjects(self):
         return self.subjects
+
+    def setId(self, id):
+        self.id = id

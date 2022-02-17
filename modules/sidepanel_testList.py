@@ -17,10 +17,40 @@ class TestList(object):
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add', command=lambda: self.createTest()).pack(side=LEFT)
-        ttk.Button(buttonContainer, text='Edit').pack(side=LEFT)
-        ttk.Button(buttonContainer, text='Del').pack(side=LEFT)
+        self.editButton = ttk.Button(buttonContainer, text='Edit', command=lambda: self.editTest())
+        self.editButton.pack(side=LEFT)
+        ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteTest()).pack(side=LEFT)
         
         ttk.Button(self.container, text='Import...').pack()
+
+    def editTest(self):
+        index = self.testList.curselection()[0]
+
+        # Create edit popup
+        editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*3)
+        editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
+        ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+        editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
+        editscreen.pack_propagate(False)
+        
+        ttk.Label(editscreen, text='Test name').pack()
+        nameEntry = ttk.Entry(editscreen)
+        nameEntry.pack(expand=TRUE)
+        ttk.Button(editscreen, text='Save', command=lambda: edit()).pack(side=BOTTOM,anchor='e')
+
+        def edit():
+            test = app.getActiveTest()
+            test.setId(nameEntry.get())
+            self.refreshList()
+            editscreen.destroy()
+
+    def deleteTest(self):
+        index = self.testList.curselection()[0]
+        subject = app.getActiveSubject()
+        tests = subject.getTests()
+        del tests[index]
+        app.setActiveTest(None)
+        self.refreshList()
 
     def createTest(self):
         # Check if there is an active subject or should subject be created
@@ -90,13 +120,14 @@ class TestList(object):
         self.testList.selection_set('end')
 
     def refreshList(self):
+        self.testList.delete(0, 'end')
         activeSubject = app.getActiveSubject()
         try:
             tests = activeSubject.getTests()
         except AttributeError:
             tests = []
         #print(tests)
-        self.testList.delete(0, 'end')
+        #self.testList.delete(0, 'end')
         for t in tests:
             self.testList.insert('end', t.id)
 

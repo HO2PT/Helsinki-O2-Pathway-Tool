@@ -29,3 +29,6 @@ class Test(object):
 
     def getEnvDetails(self):
         return self.envDetails
+
+    def setId(self, id):
+        self.id = id
