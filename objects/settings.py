@@ -41,7 +41,7 @@ class Settings(object):
                     "QaO2": "ml/min",
                     "T": "\N{DEGREE SIGN}C",
                     "pH": "",
-                    "pVO2": "mmHg",
+                    "PvO2": "mmHg",
                     "DO2": "ml/min/mmHg",
                     "Elevation": "m",
                     "ATM": "kPa",
@@ -62,7 +62,7 @@ class Settings(object):
                     "QaO2": 0,
                     "T": 0,
                     "pH": 0,
-                    "pVO2": 0,
+                    "PvO2": 0,
                     "DO2": 1
                 }
             }
@@ -108,7 +108,7 @@ class Settings(object):
             "QaO2_unit": self.data['unitDefaults']['QaO2'],
             "T_unit": self.data['unitDefaults']['T'],
             "pH_unit": self.data['unitDefaults']['pH'],
-            "pVO2_unit": self.data['unitDefaults']['pVO2'],
+            "PvO2_unit": self.data['unitDefaults']['PvO2'],
             "DO2_unit": self.data['unitDefaults']['DO2'],
             "Elevation_unit": self.data['unitDefaults']['Elevation'],
             "ATM_unit": self.data['unitDefaults']['ATM'],
@@ -130,7 +130,7 @@ class Settings(object):
             "QaO2_mc": self.data['mcDefaults']['QaO2'],
             "T_mc": self.data['mcDefaults']['T'],
             "pH_mc": self.data['mcDefaults']['pH'],
-            "pVO2_mc": self.data['mcDefaults']['pVO2'],
+            "PvO2_mc": self.data['mcDefaults']['PvO2'],
             "DO2_mc": self.data['mcDefaults']['DO2']
         }
 
@@ -353,7 +353,7 @@ class Settings(object):
             SettingsRow(self, container, 'pH', 1, None, 14)
 
             #### PvO2
-            SettingsRow(self, container, 'pVO2', 0, None, 15)
+            SettingsRow(self, container, 'PvO2', 0, None, 15)
 
             ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=4, row=16, sticky='E')
 

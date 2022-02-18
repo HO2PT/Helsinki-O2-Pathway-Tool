@@ -66,8 +66,8 @@ class envDetailRow(object):
             # Value
             self.elevVar = StringVar(value=self.envDetails.elevation, name=f'{self.label}-{id}')
             self.elevVar.trace('w', self.updateElev)
-            if self.elevVar not in app.strVars:
-                app.strVars.append(self.elevVar)
+            #if self.elevVar not in app.strVars:
+            #    app.strVars.append(self.elevVar)
             self.elevEntry = ttk.Entry(self.container, width=7, textvariable=self.elevVar)
             self.elevEntry.grid(column=1, row=0)
 
@@ -87,8 +87,8 @@ class envDetailRow(object):
             # Value
             self.atmVar = StringVar(value=self.envDetails.atm, name=f'{self.label}-{app.getActiveTest().id}')
             self.atmVar.trace('w', self.updateAtm)
-            if self.atmVar not in app.strVars:
-                app.strVars.append(self.atmVar)
+            #if self.atmVar not in app.strVars:
+            #    app.strVars.append(self.atmVar)
             self.atmEntry = ttk.Entry(self.container, width=7, textvariable=self.atmVar)
             self.atmEntry.grid(column=1, row=1)
 
@@ -108,8 +108,8 @@ class envDetailRow(object):
             # Value
             self.fio2Var = StringVar(value=self.envDetails.fio2, name=f'{self.label}-{app.getActiveTest().id}')
             self.fio2Var.trace('w', self.updateFio2)
-            if self.fio2Var not in app.strVars:
-                app.strVars.append(self.fio2Var)
+            #if self.fio2Var not in app.strVars:
+            #    app.strVars.append(self.fio2Var)
             self.fio2Entry = ttk.Entry(self.container, width=7, textvariable=self.fio2Var)
             self.fio2Entry.grid(column=1, row=2)
 
@@ -120,8 +120,8 @@ class envDetailRow(object):
             # Value
             self.tempVar = StringVar(value=self.envDetails.temp, name=f'{self.label}-{app.getActiveTest().id}')
             self.tempVar.trace('w', self.updateTemp)
-            if self.tempVar not in app.strVars:
-                app.strVars.append(self.tempVar)
+            #if self.tempVar not in app.strVars:
+            #    app.strVars.append(self.tempVar)
             self.tempEntry = ttk.Entry(self.container, width=7, textvariable=self.tempVar)
             self.tempEntry.grid(column=1, row=3)
 
@@ -139,8 +139,8 @@ class envDetailRow(object):
 
         if label == 'pio2Method':
             self.methodVar = IntVar(value=self.envDetails.pio2Method, name=f'{self.label}-{app.getActiveTest().id}') 
-            if self.methodVar not in app.strVars:
-                app.strVars.append(self.methodVar)
+            #if self.methodVar not in app.strVars:
+            #    app.strVars.append(self.methodVar)
                     
             self.radio1 = ttk.Radiobutton(self.container, text='U.S SA', value=0, variable=self.methodVar)
             self.radio1.pack(anchor='w')

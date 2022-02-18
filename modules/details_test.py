@@ -1,7 +1,5 @@
 from tkinter import *
 from tkinter import ttk
-
-from matplotlib.pyplot import fill
 from objects.app import app
 
 class TestDetailModule(object):    
@@ -88,12 +86,6 @@ class LoadNotebook(object):
         self.loadNotebook = ttk.Notebook(parent, style='loadNotebook.TNotebook')
         self.loadNotebook.bind('<Button-1>', lambda e: self.handleTabClick(e))
 
-        ##
-        #self.containerFrame = ttk.Frame(self.loadNotebook)
-        #self.containerFrame.grid()
-        #self.canvas = Canvas(self.containerFrame)
-        ##
-
         # Add/edit button
         self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())
         self.editButton = ttk.Button(parent, text='Edit', command=lambda: self.editLoad())
@@ -142,7 +134,6 @@ class LoadNotebook(object):
         self.loadNotebook.pack(expand=TRUE)
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
-        
 
     def handleTabClick(self, e):
         clickedTabIndex = self.loadNotebook.index(f'@{e.x},{e.y}')
@@ -254,8 +245,8 @@ class TestDetailRow(object):
         self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
         
         # Check if StringVar is already in memory -> prevent recreation
-        if self.valueVar not in app.strVars:
-            app.strVars.append(self.valueVar)
+        #if self.valueVar not in app.strVars:
+        #    app.strVars.append(self.valueVar)
         
         self.valueEntry = ttk.Entry(rowFrame, width=7, textvariable=self.valueVar)
         self.valueEntry.grid(column=1, row=row)
@@ -265,8 +256,8 @@ class TestDetailRow(object):
         if self.label != 'pH':
             self.unitVar = StringVar(value=self.unit, name=f'{self.unitLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
             
-            if self.unitVar not in app.strVars:
-                app.strVars.append(self.unitVar)
+            #if self.unitVar not in app.strVars:
+            #    app.strVars.append(self.unitVar)
 
             self.unitEntry = ttk.Entry(rowFrame, width=7, textvariable=self.unitVar)
             self.unitEntry.grid(column=2, row=row)
@@ -276,8 +267,8 @@ class TestDetailRow(object):
             # Measured/Calculated
             self.mcVar = IntVar(value=self.radio, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
             
-            if self.mcVar not in app.strVars:
-                app.strVars.append(self.mcVar)
+            #if self.mcVar not in app.strVars:
+            #    app.strVars.append(self.mcVar)
                 
             self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
             self.radio1.grid(column=3, row=row)

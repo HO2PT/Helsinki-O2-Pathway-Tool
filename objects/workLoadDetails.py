@@ -20,7 +20,7 @@ class WorkLoadDetails(object):
         self.QaO2 = 0
         self.T = testDefaults['T']
         self.pH = testDefaults['pH']
-        self.pVO2 = 0
+        self.PvO2 = 0
         self.DO2 = 0
 
         defUnits = app.settings.getUnitDef()
@@ -39,7 +39,7 @@ class WorkLoadDetails(object):
         self.QaO2_unit = defUnits['QaO2_unit']
         self.T_unit = defUnits['T_unit']
         self.pH_unit = 0
-        self.pVO2_unit = defUnits['pVO2_unit']
+        self.PvO2_unit = defUnits['PvO2_unit']
         self.DO2_unit = defUnits['DO2_unit']
 
         defMc = app.settings.getMcDef()
@@ -59,7 +59,7 @@ class WorkLoadDetails(object):
         self.QaO2_MC = defMc['QaO2_mc']
         self.T_MC = defMc['T_mc']
         self.pH_MC = defMc['pH_mc']
-        self.pVO2_MC = defMc['pVO2_mc']
+        self.PvO2_MC = defMc['PvO2_mc']
         self.DO2_MC = defMc['DO2_mc']
 
     def getWorkLoadDetails(self):
@@ -121,9 +121,9 @@ class WorkLoadDetails(object):
             'pH_unit': self.pH_unit,
             'pH_MC': self.pH_MC,
 
-            'pVO2': self.pVO2,
-            'pVO2_unit': self.pVO2_unit,
-            'pVO2_MC': self.pVO2_MC,
+            'PvO2': self.PvO2,
+            'PvO2_unit': self.PvO2_unit,
+            'PvO2_MC': self.PvO2_MC,
 
             'DO2': self.DO2,
             'DO2_unit': self.DO2_unit,
@@ -136,5 +136,5 @@ class WorkLoadDetails(object):
         self.CvO2 = CvO2
         self.CavO2 = Ca_vO2
         self.QaO2 = QO2
-        self.pVO2 = PvO2
+        self.PvO2 = PvO2
         self.DO2 = DO2

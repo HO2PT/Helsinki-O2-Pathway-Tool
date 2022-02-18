@@ -133,6 +133,8 @@ class TestList(object):
         # Set selected subject as active subject by index
         index = self.testList.curselection()[0]
         test = app.getActiveSubject().tests[index]
+
+        print(f'VARS: {len(app.strVars)} - {len(app.intVars)}')
         
         # Refresh app state
         app.setActiveTest(test)

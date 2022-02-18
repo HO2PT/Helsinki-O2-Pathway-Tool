@@ -1,16 +1,12 @@
-from itertools import tee
 from tkinter import *
 from tkinter import ttk
+from tkinter.messagebox import askokcancel
 from objects.app import app
 from modules.notification import notification
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
-
-#
-# BUG: Jostain syystä päivittää laskennan oudosti jos klikkaa oikealla painikkeella scale barista
-#
 
 class PlottingPanel(object):
     def __init__(self, mainFrame):
@@ -25,31 +21,138 @@ class PlottingPanel(object):
         self.container.pack(fill=BOTH, expand=TRUE)
 
         # Plots notebook
-        self.plotNotebook = ttk.Notebook(self.container)
+        self.plotNotebook = ttk.Notebook(self.container, style='loadNotebook.TNotebook')
+        self.plotNotebook.bind('<Button-1>', lambda e: self.closePlotTab(e))
         try:
             print(f'PACKINFO: {self.plotNotebook.pack_info()}')
         except TclError:
             return
 
+    def closePlotTab(self, e):
+        if self.plotNotebook.identify(e.x, e.y) == 'close':
+            if askokcancel("Confirm", "Do you want to remove the tab?"):
+                clickedTabIndex = self.plotNotebook.index(f'@{e.x},{e.y}')
+                self.plotNotebook.forget(clickedTabIndex)
+                del self.plots[clickedTabIndex]
+
     def plot(self):
         # Check if plotNotebook is visible and if not, make it visible
-        try:
-            self.plotNotebook.pack_info()
-        except TclError:
-            self.plotNotebook.pack(expand=TRUE, fill=BOTH)
-
         self.workLoads = app.getActiveTest().getWorkLoads()
-
-        # Create tab for the plot
-        plotTabObject = PlotTab(self.plotNotebook)
-        plotTab = plotTabObject.createPlotTab()
+        self.validValues = True
         
-        # Add plot to the notebook and objects list of plots
-        self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
-        self.plots.append(plotTabObject)
+        print('VALIDATING VALUES')
+        for i, w in enumerate(self.workLoads):
+            details = w.getDetails().getWorkLoadDetails()
+
+            if self.validate(float(details['Q']), float(details['VO2']), float(details['Hb']), float(details['SaO2'])) == False:
+                self.validValues = False
+                notification.create('error', f'Unable to compute with given values. Check {i+1}. load', 5000)
+
+        # Proceed if values are valid
+        if self.validValues:
+            print('VALUES OK')
+            # Check if plotNotebook is visible and if not, make it visible
+            try:
+                self.plotNotebook.pack_info()
+            except TclError:
+                self.plotNotebook.pack(expand=TRUE, fill=BOTH)
+
+            # Create tab for the plot
+            plotTabObject = PlotTab(self.plotNotebook)
+            plotTab = plotTabObject.createPlotTab()
+                    
+            # Add plot to the notebook and objects list of plots
+            self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
+            self.plots.append(plotTabObject)
+
+    def validate(self, Q, vo2, hb, SaO2):
+        try:
+            Ca_vO2 = vo2 / Q * 100
+        except:
+            return False
+
+        try:
+            CaO2 = 1.34 * hb * SaO2/100
+        except:
+            return False
+
+        try:
+            CvO2 = CaO2-Ca_vO2
+        except:
+            return False
+
+        try:
+            SvO2_calc = CvO2 / 1.34 / hb
+        except:
+            return False
+
+        try:
+            QO2 = Q * CaO2 * 10
+        except:
+            return False
+
+        try:
+            a = 11700 * np.float_power( ( np.float_power(SvO2_calc,-1) - 1 ), -1 )
+        except:
+            return False
+
+        try:
+            b = np.float_power( 50**3 + np.float_power(a,2) , 0.5 )
+        except:
+            return False
+        
+        try:
+            PvO2_calc = np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
+        except:
+            return False
+        
+        try:
+            DO2 = vo2 / 2 / PvO2_calc * 1000
+        except:
+            return False
+        
+        PvO2 = np.arange(0,100,1)
+        
+        try:
+            y = 2* DO2 * PvO2
+        except:
+            return False
+        
+        try:
+            SvO2 = np.float_power( ( 23400 * np.float_power( (PvO2)**3 + 150*PvO2, -1 ) ) + 1, -1 )
+        except:
+            return False
+        
+        try:
+            y2 = Q * ( 1.34 * hb * ( SaO2/100 - SvO2 ) ) * 10
+        except:
+            return False
+
+        # Correction and calculation of intersection point
+        try:
+            idx = np.argwhere(np.diff(np.sign(y - y2))).flatten()
+        except:
+            return False
+        
+        yDiff = []
+
+        for i in np.arange(0, 1, 0.1):
+            y_temp = 2* DO2 * (PvO2[idx]+i)
+            y2_temp = Q * ( 1.34 * hb * ( SaO2/100 - np.float_power( ( 23400 * np.float_power( (PvO2[idx]+i)**3 + 150*(PvO2[idx]+i), -1 ) ) + 1, -1 ) ) ) * 10
+            try:
+                yDiff.append( (float(y_temp)-float(y2_temp)) )
+            except:
+                return False
+
+        constant = np.where( np.abs(yDiff) == np.amin(np.abs(yDiff)) )[0] / 10
+        yi = float( Q * ( 1.34 * hb * ( SaO2/100 - np.float_power( ( 23400 * np.float_power( (PvO2[idx]+constant)**3 + 150*(PvO2[idx]+constant), -1 ) ) + 1, -1 ) ) ) * 10 )
+        xi = float(PvO2[idx]+constant)
+        
+        return True
 
 class PlotTab(object):
     def __init__(self, parentFrame):
+        self.plot = {}
         self.loadTabs = []
         self.parentFrame = parentFrame
         self.activeTest = app.getActiveTest()
@@ -67,7 +170,7 @@ class PlotTab(object):
 
         self.createPlot()
 
-        # Create loads notebook frame and notebook
+        # Create loads notebook frame and loadnotebook
         self.loadNotebookFrame = ttk.Frame(self.tabFrame)
         self.loadNotebookFrame.pack(side=RIGHT, expand=TRUE, fill=BOTH)
 
@@ -82,12 +185,14 @@ class PlotTab(object):
             self.loadTabs.append(loadTabObject)
 
         return self.tabFrame
-    
+
     def createPlot(self):
         PvO2 = np.arange(0,100,1)
-        self.fig, ax = plt.subplots()
-        ax.set_ylim(top=5000, bottom=0)
-        ax.set_xlim(left=0, right=100)
+
+        self.fig, self.ax = plt.subplots()
+
+        self.ax.set_ylim(top=5000, bottom=0)
+        self.ax.set_xlim(left=0, right=100)
         self.handles = []
 
         for i, w in enumerate(self.workLoads):
@@ -102,13 +207,13 @@ class PlotTab(object):
 
             w.getDetails().setCalcResults(QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc)
 
-            line, = ax.plot(PvO2, y, lw=2, color=f'C{i}', label=f'Load{i+1}')
-            curve, = ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=f'Load{i+1}')
-            dot, = ax.plot(xi, yi, 'o', color='red', label=f'Load{i+1}')
+            line, = self.ax.plot(PvO2, y, lw=2, color=f'C{i}', label=f'Load{i+1}')
+            curve, = self.ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=f'Load{i+1}')
+            dot, = self.ax.plot(xi, yi, 'o', color='red', label=f'Load{i+1}')
 
             self.handles.insert(i, line)
 
-        self.leg = ax.legend(handles=self.handles , loc='upper center', bbox_to_anchor=(0.5, 1.1),
+        self.leg = self.ax.legend(handles=self.handles , loc='upper center', bbox_to_anchor=(0.5, 1.1),
             fancybox=True, shadow=True, ncol=5)
 
         # we will set up a dict mapping legend line to orig line, and enable
@@ -137,7 +242,6 @@ class PlotTab(object):
         self.toolbar.update()
 
     def calc(self, Q, vo2, hb, SaO2):
-
         #Q = hr * sv / 1000
 
         # Computated variables
@@ -190,17 +294,12 @@ class PlotTab(object):
         y2 = Q * ( 1.34 * hb * ( SaO2/100 - SvO2 ) ) * 10
 
         # Correction and calculation of intersection point
-
         idx = np.argwhere(np.diff(np.sign(y - y2))).flatten()
         yDiff = []
 
         for i in np.arange(0, 1, 0.1):
-            #print( 2* DO2 * (PvO2[idx]+i) )
             y_temp = 2* DO2 * (PvO2[idx]+i)
-
-            #print( Q * ( 1.34 * hb * ( SaO2 - np.float_power( ( 23400 * np.float_power( (PvO2[idx]+i)**3 + 150*(PvO2[idx]+i), -1 ) ) + 1, -1 ) ) ) * 10 )
             y2_temp = Q * ( 1.34 * hb * ( SaO2/100 - np.float_power( ( 23400 * np.float_power( (PvO2[idx]+i)**3 + 150*(PvO2[idx]+i), -1 ) ) + 1, -1 ) ) ) * 10
-            #print(y_temp-y2_temp)
 
             try:
                 yDiff.append( (float(y_temp)-float(y2_temp)) )
@@ -255,7 +354,6 @@ class PlotTab(object):
 
         self.fig.canvas.draw()
 
-
 class PlotLoadTab(object):
     def __init__(self, plotTab, index, testId, workLoad, parentNotebook):
         self.parentPlotTab = plotTab
@@ -272,107 +370,110 @@ class PlotLoadTab(object):
         #Content
         ttk.Label(self.loadtab, text=f'Load: {self.details["Load"]}').grid(column=0, row=0)
 
-        VO2 = f'VO2-{self.testId}-{self.details["id"]}'
-        Q = f'Q-{self.testId}-{self.details["id"]}'
-        Hb = f'Hb-{self.testId}-{self.details["id"]}'
-        SaO2 = f'SaO2-{self.testId}-{self.details["id"]}'
+        vo2Value = self.details['VO2']
+        self.vo2Row = LoadTabRow(self.loadtab, 'VO2', vo2Value, self.index, self.testId, 1, (0,5))
+        self.vo2Row.var.trace('w', self.updatePlot)
 
-        for var in app.strVars:
-            if var._name == VO2:
-                self.vo2Var = var
-            elif var._name == Q:
-                self.qVar = var
-            elif var._name == Hb:
-                self.hbVar = var
-            elif var._name == SaO2:
-                self.sao2Var = var
+        qValue = self.details['Q']
+        self.qRow = LoadTabRow(self.loadtab, 'Q', qValue, self.index, self.testId, 2, (10,20))
+        self.qRow.var.trace('w', self.updatePlot)
 
-        ttk.Label(self.loadtab, text='VO2').grid(column=0, row=1)
-        vo2Slider = ttk.Scale(self.loadtab, from_=0, to=5, orient=HORIZONTAL, value=self.vo2Var.get(), variable=self.vo2Var)
-        vo2Slider.grid(column=1, row=1)
-        vo2Entry = ttk.Entry(self.loadtab, textvariable=self.vo2Var, width=7)
-        vo2Entry.grid(column=2, row=1)
-        self.vo2Var.trace('w', self.updatePlot)
+        hbValue = self.details['Hb']
+        self.hbRow = LoadTabRow(self.loadtab, 'Hb', hbValue, self.index, self.testId, 3, (10,20))
+        self.hbRow.var.trace('w', self.updatePlot)
 
-        ttk.Label(self.loadtab, text='Q').grid(column=0, row=2)
-        qSlider = ttk.Scale(self.loadtab, from_=10, to=20, orient=HORIZONTAL, value=self.qVar.get(), variable=self.qVar)
-        qSlider.grid(column=1, row=2)
-        qEntry = ttk.Entry(self.loadtab, textvariable=self.qVar, width=7)
-        qEntry.grid(column=2, row=2)
-        self.qVar.trace('w', self.updatePlot)
+        sao2Value = self.details['SaO2']
+        self.sao2Row = LoadTabRow(self.loadtab, 'SaO2', sao2Value, self.index, self.testId, 4, (80,100))
+        self.sao2Row.var.trace('w', self.updatePlot)
 
-        ttk.Label(self.loadtab, text='Hb').grid(column=0, row=3)
-        hbSlider = ttk.Scale(self.loadtab, from_=10, to=20, orient=HORIZONTAL, value=self.hbVar.get(), variable=self.hbVar)
-        hbSlider.grid(column=1, row=3)
-        hbEntry = ttk.Entry(self.loadtab, textvariable=self.hbVar, width=7)
-        hbEntry.grid(column=2, row=3)
-        self.hbVar.trace('w', self.updatePlot)
-
-        ttk.Label(self.loadtab, text='SaO2').grid(column=0, row=4)
-        sao2Slider = ttk.Scale(self.loadtab, from_=80, to=100, orient=HORIZONTAL, value=self.sao2Var.get(), variable=self.sao2Var)
-        sao2Slider.grid(column=1, row=4)
-        sao2Entry = ttk.Entry(self.loadtab, textvariable=self.sao2Var, width=7)
-        sao2Entry.grid(column=2, row=4)
-        self.sao2Var.trace('w', self.updatePlot)
-
-        self.cao2 = ttk.Label(self.loadtab, text=f'CaO2:')
-        self.cao2.grid(column=0, row=5)
-        self.cao2_valUnit = ttk.Label(self.loadtab, text=f'{"{0:.2f}".format(self.details["CaO2"]) } {self.details["CaO2_unit"]}')
-        self.cao2_valUnit.grid(column=1, row=5)
-
-        self.cvo2 = ttk.Label(self.loadtab, text=f'CvO2:')
-        self.cvo2.grid(column=0, row=6)
-        self.cvo2_valUnit = ttk.Label(self.loadtab, text=f'{"{0:.2f}".format(self.details["CvO2"]) } {self.details["CvO2_unit"]}')
-        self.cvo2_valUnit.grid(column=1, row=6)
-
-        self.cavo2 = ttk.Label(self.loadtab, text=f'CavO2:')
-        self.cavo2.grid(column=0, row=7)
-        self.cavo2_valUnit = ttk.Label(self.loadtab, text=f'{"{0:.2f}".format(self.details["CavO2"]) } {self.details["CavO2_unit"]}')
-        self.cavo2_valUnit.grid(column=1, row=7)
-
-        self.pvo2 = ttk.Label(self.loadtab, text=f'PvO2:')
-        self.pvo2.grid(column=0, row=8)
-        self.pvo2_valUnit = ttk.Label(self.loadtab, text=f'{"{0:.2f}".format(self.details["pVO2"]) } {self.details["pVO2_unit"]}')
-        self.pvo2_valUnit.grid(column=1, row=8)
-
-        self.svo2 = ttk.Label(self.loadtab, text=f'SvO2:')
-        self.svo2.grid(column=0, row=9)
-        self.svo2_valUnit = ttk.Label(self.loadtab, text=f'{"{0:.2f}".format(self.details["SvO2"]) } {self.details["SvO2_unit"]}')
-        self.svo2_valUnit.grid(column=1, row=9)
-
-        self.qao2 = ttk.Label(self.loadtab, text=f'QaO2:')
-        self.qao2.grid(column=0, row=10)
-        self.qao2_valUnit = ttk.Label(self.loadtab, text=f'{"{0:.2f}".format(self.details["QaO2"]) } {self.details["QaO2_unit"]}')
-        self.qao2_valUnit.grid(column=1, row=10)
-
-        self.do2 = ttk.Label(self.loadtab, text=f'DO2:')
-        self.do2.grid(column=0, row=11)
-        self.do2_valUnit = ttk.Label(self.loadtab, text=f'{"{0:.2f}".format(self.details["DO2"]) } {self.details["DO2_unit"]}')
-        self.do2_valUnit.grid(column=1, row=11)
+        self.cao2Row = LoadTabRow(self.loadtab, 'CaO2', None, None, None, 5, None, self.details)
+        self.cvo2Row = LoadTabRow(self.loadtab, 'CvO2', None, None, None, 6, None, self.details)
+        self.cavo2Row = LoadTabRow(self.loadtab, 'CavO2', None, None, None, 7, None, self.details)
+        self.pvo2Row = LoadTabRow(self.loadtab, 'PvO2', None, None, None, 8, None, self.details)
+        self.svo2Row = LoadTabRow(self.loadtab, 'SvO2', None, None, None, 9, None, self.details)
+        self.qao2Row = LoadTabRow(self.loadtab, 'QaO2', None, None, None, 10, None, self.details)
+        self.do2Row = LoadTabRow(self.loadtab, 'DO2', None, None, None, 11, None, self.details)
 
         return self.loadtab
 
     def updatePlot(self, val=None, name=None, index=None, mode=None, loadtab=None):
         try:
-            y, y2, xi, yi, QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc = self.parentPlotTab.calc(float(self.qVar.get()), float(self.vo2Var.get()), float(self.hbVar.get()), float(self.sao2Var.get()))
-        except (ValueError, TypeError):
-            print('Calculation error')
-            notification.create('error', 'Unable to compute with given values. Check values', 5000)
-            return False
+            y, y2, xi, yi, QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc = self.parentPlotTab.calc(
+                float(self.qRow.getValue()), 
+                float(self.vo2Row.getValue()), 
+                float(self.hbRow.getValue()), 
+                float(self.sao2Row.getValue())
+                )
 
-        self.workLoad.getDetails().setCalcResults(QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc)
-        self.parentPlotTab.canvas.get_tk_widget().destroy()
-        self.parentPlotTab.toolbar.destroy()
-        self.parentPlotTab.createPlot()
-        self.updateDetails()
+            self.workLoad.getDetails().setCalcResults(QO2, DO2, Ca_vO2, CaO2, CvO2, SvO2_calc, PvO2_calc)
+            
+            # Split figure lines to 3's
+            allLines = self.parentPlotTab.ax.get_lines()
+            temp = []
+            mappedLines = {}
+            i = 0
+            idx = 0
+
+            for line in allLines:
+                temp.append(line)
+                if i == 2:
+                    mappedLines[idx] = temp
+                    temp = []
+                    i = 0
+                    idx += 1
+                else:
+                    i += 1
+
+            # Update x and y values for plot
+            mappedLines[self.index][0].set_ydata(y)
+            mappedLines[self.index][1].set_ydata(y2)
+            mappedLines[self.index][2].set_ydata(yi)
+            mappedLines[self.index][2].set_xdata(xi)
+
+            self.parentPlotTab.fig.canvas.draw()
+            self.parentPlotTab.fig.canvas.flush_events()
+
+            self.updateDetails()
+        except (ValueError, TypeError):
+            notification.create('error', 'Unable to compute with given values. Check values', 5000)
 
     def updateDetails(self):
-        #self.details = self.workLoad.getWorkLoadDetails()
         self.details = self.workLoad.getDetails().getWorkLoadDetails()
-        self.cao2_valUnit.config(text=f'{"{0:.2f}".format(self.details["CaO2"]) } {self.details["CaO2_unit"]}')
-        self.cvo2_valUnit.config(text=f'{"{0:.2f}".format(self.details["CvO2"]) } {self.details["CvO2_unit"]}')
-        self.cavo2_valUnit.config(text=f'{"{0:.2f}".format(self.details["CavO2"]) } {self.details["CavO2_unit"]}')
-        self.pvo2_valUnit.config(text=f'{"{0:.2f}".format(self.details["pVO2"]) } {self.details["pVO2_unit"]}')
-        self.svo2_valUnit.config(text=f'{"{0:.2f}".format(self.details["SvO2"]) } {self.details["SvO2_unit"]}')
-        self.qao2_valUnit.config(text=f'{"{0:.2f}".format(self.details["QaO2"]) } {self.details["QaO2_unit"]}')  
-        self.do2_valUnit.config(text=f'{"{0:.2f}".format(self.details["DO2"]) } {self.details["DO2_unit"]}')
+        self.cao2Row.updateText(self.details)
+        self.cvo2Row.updateText(self.details)
+        self.cavo2Row.updateText(self.details)
+        self.pvo2Row.updateText(self.details)
+        self.svo2Row.updateText(self.details)
+        self.qao2Row.updateText(self.details)
+        self.do2Row.updateText(self.details)
+
+class LoadTabRow(object):
+    def __init__(self, parent, label, value, index, id, row, scale, details=None):
+        self.parent = parent
+        self.label = label
+        self.value = value
+        self.index = index
+        self.id = id
+        self.row = row
+        self.scale = scale
+        self.details = details
+        
+        if self.scale == None:
+            self.labelElem = ttk.Label(self.parent, text=f'{label}:')
+            self.labelElem.grid(column=0, row=row)
+            self.valUnit = ttk.Label(self.parent, text=f'{"{0:.2f}".format(self.details[label])} {self.details[f"{label}_unit"]}')
+            self.valUnit.grid(column=1, row=row, sticky='w')
+        else:
+            self.var = DoubleVar(self.parent, value=f'{"{0:.2f}".format(float(self.value))}', name=f'{self.label}-{self.id}-Plot-{self.index}')
+
+            ttk.Label(self.parent, text=self.label).grid(column=0, row=row)
+            slider = ttk.Scale(self.parent, from_=self.scale[0], to=self.scale[1], orient=HORIZONTAL, value=self.value, variable=self.var)
+            slider.grid(column=1, row=row)
+            entry = ttk.Entry(self.parent, textvariable=self.var, width=7)
+            entry.grid(column=2, row=row)
+
+    def getValue(self):
+        return self.var.get()
+    
+    def updateText(self, details):
+        self.valUnit.config(text=f'{"{0:.2f}".format(details[self.label]) } {details[f"{self.label}_unit"]}')
