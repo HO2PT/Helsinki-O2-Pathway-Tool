@@ -1,5 +1,8 @@
+import os
 from tkinter import *
 from objects.app import app
+from tkinter.filedialog import asksaveasfile
+import pandas as pd
 from modules.notification import notification
 
 def createMenu(root):
@@ -15,6 +18,7 @@ def createMenu(root):
     importFile.add_command(label ='Test...', command = lambda: None)
 
     file.add_cascade(label ='Import', menu = importFile)
+    file.add_command(label='Export...', command=lambda: exportData())
     file.add_separator()
     file.add_command(label ='Exit', command = root.destroy)
 
@@ -53,6 +57,61 @@ def createMenu(root):
     options.add_command(label ='About O2 Pathway Tool', command = None)
     
     return menuBar
+
+def exportData():
+    print('exporting')
+    data = []
+    temp=[]
+    imgs = []
+    
+    for i, p in enumerate(app.getPlottingPanel().plots):
+        #print(f'PLOT: {p.plot}')
+        #print(f'TEST: {p.activeTest}')
+        #print(f'LOADS: {p.workLoads}')
+        #print(f'DETAILS: {p.workLoads[0].getDetails().getWorkLoadDetails()}')
+        details = p.workLoads[0].getDetails().getWorkLoadDetails()
+        img = p.plot[0].savefig(f'plot{i}.png')
+        imgs.append( img )
+        
+        #data = [['tom', 10], ['nick', 15], ['juli', 14], ['testi', img]]
+        for d in p.workLoads:
+            det = d.getDetails().getWorkLoadDetails()
+            i = 0
+
+            # Iterate through load details and print to Details module
+            for key, value in det.items():
+                if i == 3:
+                    label = temp[0][0]
+                    val = temp[0][1]
+                    unit = temp[1][1]
+                    mc = temp[2][1]
+                    data.append( [label, val, unit, mc] )
+                    temp=[]
+                    i = 0
+                
+                temp.append([key,value])
+                i = i + 1
+    
+    # Create the pandas DataFrame
+    df = pd.DataFrame(data, columns = ['','Value', 'Unit', 'Meas(0)/Calc(1)'])
+    #print(data)
+    # Create excel
+    saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
+    fileName = saveFile.name.split('/')[-1]
+    print(f'FILENAME: {fileName}')
+    writer = pd.ExcelWriter(f'{fileName}.xlsx', engine='xlsxwriter')
+    df.to_excel(writer, sheet_name='Sheet1', index=False)
+    workbook  = writer.book
+    worksheet = writer.sheets['Sheet1']
+
+    asd = ['F1', 'K1', 'Q1']
+    # Add plot images
+    for i, im in enumerate(imgs):
+        imgDest = f'{os.getcwd()}/plot{i}.png'
+        worksheet.insert_image(asd[i], imgDest)
+    
+    writer.save()
+    notification.create('info', 'Data successfully exported', 5000)
 
 def setMode(var):
     app.setActiveMode(var.get())

@@ -107,6 +107,9 @@ class TestList(object):
             # Update app state
             app.setActiveTest(test)
 
+        # Add test to app
+        #app.plottedTests.append(test)
+
         # Create load tab
         app.projectDetailModule.refreshDetails()
         app.testDetailModule.refreshTestDetails()

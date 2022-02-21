@@ -15,6 +15,7 @@ root.title("O2 Pathway Tool")
 root.geometry("1000x750")
 root.pack_propagate(1)
 
+app.root = root
 app.strVars = []
 app.intVars = []
 

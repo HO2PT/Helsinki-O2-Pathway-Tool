@@ -62,6 +62,55 @@ class WorkLoadDetails(object):
         self.PvO2_MC = defMc['PvO2_mc']
         self.DO2_MC = defMc['DO2_mc']
 
+    def setUnit(self, label, unit):
+        print('UPDATING:')
+        if label == 'Load_unit':
+            self.Load_unit = unit
+
+        if label == 'VO2_unit':
+            self.VO2_unit = unit
+ 
+        if label == 'HR_unit': 
+            self.HR_unit = unit
+
+        if label == 'Sv_unit':
+            self.Sv_unit = unit
+        
+        if label == 'Q_unit': 
+            self.Q_unit = unit
+
+        if label == 'Hb_unit': 
+            self.Hb_unit = unit
+
+        if label == 'SaO2_unit': 
+            self.SaO2_unit = unit
+        
+        if label == 'CaO2_unit': 
+            self.CaO2_unit = unit
+
+        if label == 'SvO2_unit':
+            self.SvO2_unit = unit
+
+        if label == 'CvO2_unit': 
+            self.CvO2_unit = unit
+        
+        if label == 'CavO2_unit': 
+            self.CavO2_unit = unit
+
+        if label == 'QaO2_unit': 
+            self.QaO2_unit = unit
+
+        if label == 'T_unit': 
+            self.T_unit = unit
+
+        if label == 'PvO2_unit': 
+            self.PvO2_unit = unit
+
+        if label == 'DO2_unit': 
+            self.DO2_unit = unit
+
+        print(self.getWorkLoadDetails())
+
     def getWorkLoadDetails(self):
         return {
             'id': self.id,

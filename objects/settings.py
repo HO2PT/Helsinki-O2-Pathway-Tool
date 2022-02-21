@@ -27,26 +27,26 @@ class Settings(object):
                     "pH": 7.4
                 },
                 "unitDefaults":{
-                    "Load": "W",
-                    "VO2": "ml/min",
-                    "HR": "bpm",
-                    "Sv": "ml",
-                    "Q": "l/min",
-                    "Hb": "g/l",
-                    "SaO2": "%",
-                    "CaO2": "ml/l",
-                    "SvO2": "%",
-                    "CvO2": "ml/l",
-                    "CavO2": "ml/l",
-                    "QaO2": "ml/min",
-                    "T": "\N{DEGREE SIGN}C",
-                    "pH": "",
-                    "PvO2": "mmHg",
-                    "DO2": "ml/min/mmHg",
-                    "Elevation": "m",
-                    "ATM": "kPa",
-                    "FiO2": "%",
-                    "Temperature": "\N{DEGREE SIGN}C"
+                    "Load": ['W', 'kJ'],
+                    "VO2": ['ml/min', 'l/min'],
+                    "HR": ["bpm"],
+                    "Sv": ['ml', 'l'],
+                    "Q": ['l/min', 'ml/min'],
+                    "Hb": ["g/l"],
+                    "SaO2": ["%"],
+                    "CaO2": ["ml/l"],
+                    "SvO2": ["%"],
+                    "CvO2": ["ml/l"],
+                    "CavO2": ["ml/l"],
+                    "QaO2": ["ml/min"],
+                    "T": ['\N{DEGREE SIGN}C', 'F', 'K'],
+                    "pH": [""],
+                    "PvO2": ["mmHg"],
+                    "DO2": ["ml/min/mmHg"],
+                    "Elevation": ["m"],
+                    "ATM": ["kPa"],
+                    "FiO2": ["%"],
+                    "Temperature": ["\N{DEGREE SIGN}C"]
                 },
                 "mcDefaults":{
                     "VO2": 0,
@@ -94,26 +94,49 @@ class Settings(object):
         }
 
         self.unitDefaults = {
-            "Load_unit": self.data['unitDefaults']['Load'],
-            "VO2_unit": self.data['unitDefaults']['VO2'],
-            "HR_unit": self.data['unitDefaults']['HR'],
-            "Sv_unit": self.data['unitDefaults']['Sv'],
-            "Q_unit": self.data['unitDefaults']['Q'],
-            "Hb_unit": self.data['unitDefaults']['Hb'],
-            "SaO2_unit": self.data['unitDefaults']['SaO2'],
-            "CaO2_unit": self.data['unitDefaults']['CaO2'],
-            "SvO2_unit": self.data['unitDefaults']['SvO2'],
-            "CvO2_unit": self.data['unitDefaults']['CvO2'],
-            "CavO2_unit": self.data['unitDefaults']['CavO2'],
-            "QaO2_unit": self.data['unitDefaults']['QaO2'],
-            "T_unit": self.data['unitDefaults']['T'],
-            "pH_unit": self.data['unitDefaults']['pH'],
-            "PvO2_unit": self.data['unitDefaults']['PvO2'],
-            "DO2_unit": self.data['unitDefaults']['DO2'],
+            "Load_unit": self.data['unitDefaults']['Load'][0],
+            "VO2_unit": self.data['unitDefaults']['VO2'][0],
+            "HR_unit": self.data['unitDefaults']['HR'][0],
+            "Sv_unit": self.data['unitDefaults']['Sv'][0],
+            "Q_unit": self.data['unitDefaults']['Q'][0],
+            "Hb_unit": self.data['unitDefaults']['Hb'][0],
+            "SaO2_unit": self.data['unitDefaults']['SaO2'][0],
+            "CaO2_unit": self.data['unitDefaults']['CaO2'][0],
+            "SvO2_unit": self.data['unitDefaults']['SvO2'][0],
+            "CvO2_unit": self.data['unitDefaults']['CvO2'][0],
+            "CavO2_unit": self.data['unitDefaults']['CavO2'][0],
+            "QaO2_unit": self.data['unitDefaults']['QaO2'][0],
+            "T_unit": self.data['unitDefaults']['T'][0],
+            "pH_unit": self.data['unitDefaults']['pH'][0],
+            "PvO2_unit": self.data['unitDefaults']['PvO2'][0],
+            "DO2_unit": self.data['unitDefaults']['DO2'][0],
             "Elevation_unit": self.data['unitDefaults']['Elevation'],
             "ATM_unit": self.data['unitDefaults']['ATM'],
             "FiO2_unit": self.data['unitDefaults']['FiO2'],
             "Temperature_unit": self.data['unitDefaults']['Temperature']
+        }
+
+        self.units = {
+            "Load_units": self.data['unitDefaults']['Load'],
+            "VO2_units": self.data['unitDefaults']['VO2'],
+            "HR_units": self.data['unitDefaults']['HR'],
+            "Sv_units": self.data['unitDefaults']['Sv'],
+            "Q_units": self.data['unitDefaults']['Q'],
+            "Hb_units": self.data['unitDefaults']['Hb'],
+            "SaO2_units": self.data['unitDefaults']['SaO2'],
+            "CaO2_units": self.data['unitDefaults']['CaO2'],
+            "SvO2_units": self.data['unitDefaults']['SvO2'],
+            "CvO2_units": self.data['unitDefaults']['CvO2'],
+            "CavO2_units": self.data['unitDefaults']['CavO2'],
+            "QaO2_units": self.data['unitDefaults']['QaO2'],
+            "T_units": self.data['unitDefaults']['T'],
+            "pH_units": self.data['unitDefaults']['pH'],
+            "PvO2_units": self.data['unitDefaults']['PvO2'],
+            "DO2_units": self.data['unitDefaults']['DO2'],
+            "Elevation_units": self.data['unitDefaults']['Elevation'],
+            "ATM_units": self.data['unitDefaults']['ATM'],
+            "FiO2_units": self.data['unitDefaults']['FiO2'],
+            "Temperature_units": self.data['unitDefaults']['Temperature']
         }
 
         self.mcDefaults = {
@@ -137,6 +160,9 @@ class Settings(object):
     def getUnitDef(self):
         return self.unitDefaults
 
+    def getUnits(self):
+        return self.units
+
     def getEnvDef(self):
         return self.envDefaults
 
@@ -150,6 +176,10 @@ class Settings(object):
         settingsWindow = Toplevel()
         settingsWindow.title("Settings")
         settingsWindow.geometry("500x500")
+
+        settingsX = app.root.winfo_rootx() + (app.root.winfo_reqwidth()/1.5)
+        settingsY = app.root.winfo_rooty() + (app.root.winfo_reqheight()*0.1)
+        settingsWindow.geometry("+%d+%d" % ( settingsX, settingsY ))
 
         self.notification = ttk.Frame(settingsWindow, height=25)
         self.notification.pack(fill=X)
@@ -298,7 +328,7 @@ class Settings(object):
 
             #### Load
             ttk.Label(container, text='Load').grid(column=0, row=1)
-            units = ('W', 'kJ')
+            units = self.units['Load_units']
             loadMenuButton = ttk.Menubutton(container)
             self.menuButtons['Load'] = loadMenuButton
             loadMenuButton.config(text=self.unitDefaults['Load_unit'])
@@ -310,50 +340,46 @@ class Settings(object):
             loadMenuButton.grid(column=2, row=1)
 
             #### VO2
-            units = ('ml/min', 'l/min')
-            SettingsRow(self, container, 'VO2', 0, units, 2)
+            SettingsRow(self, container, 'VO2', 0, 2)
 
             #### HR
-            SettingsRow(self, container, 'HR', 0, None, 3)
+            SettingsRow(self, container, 'HR', 0, 3)
 
             #### SV
-            units = ('ml', 'l')
-            SettingsRow(self, container, 'Sv', 0, units, 4)
+            SettingsRow(self, container, 'Sv', 0, 4)
 
             #### Q
-            units = ('l/min', 'ml/min')
-            SettingsRow(self, container, 'Q', 0, units, 5)
+            SettingsRow(self, container, 'Q', 0, 5)
 
             #### Hb
-            SettingsRow(self, container, 'Hb', 0, None, 6)
+            SettingsRow(self, container, 'Hb', 0, 6)
 
             #### SaO2
-            SettingsRow(self, container, 'SaO2', 0, None, 7)
+            SettingsRow(self, container, 'SaO2', 0, 7)
 
             #### CaO2
-            SettingsRow(self, container, 'CaO2', 0, None, 8)
+            SettingsRow(self, container, 'CaO2', 0, 8)
 
             #### SvO2
-            SettingsRow(self, container, 'SvO2', 0, None, 9)
+            SettingsRow(self, container, 'SvO2', 0, 9)
 
             #### CvO2
-            SettingsRow(self, container, 'CvO2', 0, None, 10)
+            SettingsRow(self, container, 'CvO2', 0, 10)
 
             #### CavO2
-            SettingsRow(self, container, 'CavO2', 0, None, 11)
+            SettingsRow(self, container, 'CavO2', 0, 11)
 
             #### QaO2
-            SettingsRow(self, container, 'QaO2', 0, None, 12)
+            SettingsRow(self, container, 'QaO2', 0, 12)
 
             #### T
-            units = ('\N{DEGREE SIGN}C', 'F', 'K')
-            SettingsRow(self, container, 'T', 1, units, 13)
+            SettingsRow(self, container, 'T', 1, 13)
 
             # pH
-            SettingsRow(self, container, 'pH', 1, None, 14)
+            SettingsRow(self, container, 'pH', 1, 14)
 
             #### PvO2
-            SettingsRow(self, container, 'PvO2', 0, None, 15)
+            SettingsRow(self, container, 'PvO2', 0, 15)
 
             ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=4, row=16, sticky='E')
 
@@ -402,7 +428,7 @@ class MenuElem(object):
         self.menuButton.config(text=self.elems[self.index])
 
 class SettingsRow(object):
-    def __init__(self, settings, parent, label, entryFlag, units, row):
+    def __init__(self, settings, parent, label, entryFlag, row):
 
         # Menubutton
         ttk.Label(parent, text=label).grid(column=0, row=row)
@@ -419,6 +445,7 @@ class SettingsRow(object):
 
         # Unit
         menu = Menu(self.menuButton, tearoff=False)
+        units = settings.units[f"{label}_units"]
         if units != None:
             for i, u in enumerate(units):
                 MenuElem(menu, self.menuButton, u, i, units)

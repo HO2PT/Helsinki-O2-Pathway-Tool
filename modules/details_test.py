@@ -211,7 +211,7 @@ class LoadTab(object):
             j = j + 1
 
     def callback(self,e):
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=200,height=250)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=225,height=250)
     
     def getName(self):
         return self.name
@@ -244,32 +244,27 @@ class TestDetailRow(object):
         #Value
         self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
         
-        # Check if StringVar is already in memory -> prevent recreation
-        #if self.valueVar not in app.strVars:
-        #    app.strVars.append(self.valueVar)
-        
         self.valueEntry = ttk.Entry(rowFrame, width=7, textvariable=self.valueVar)
         self.valueEntry.grid(column=1, row=row)
         self.valueVar.trace('w', self.updateValue)
 
         # Unit
         if self.label != 'pH':
-            self.unitVar = StringVar(value=self.unit, name=f'{self.unitLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-            
-            #if self.unitVar not in app.strVars:
-            #    app.strVars.append(self.unitVar)
+            units = app.settings.getUnits()[f'{self.label}_units']
+            print(f'UNITS: {units}')
+            tempMenuButton = ttk.Menubutton(rowFrame)
+            tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
 
-            self.unitEntry = ttk.Entry(rowFrame, width=7, textvariable=self.unitVar)
-            self.unitEntry.grid(column=2, row=row)
-            self.unitVar.trace('w', self.updateUnit)
+            tempMenu = Menu(tempMenuButton, tearoff=False)
+            for i, u in enumerate(units):
+                TestDetailMenuElem(tempMenu, tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
+            tempMenuButton['menu']=tempMenu
+            tempMenuButton.grid(column=2, row=row)
 
         if self.flag != 1:
             # Measured/Calculated
             self.mcVar = IntVar(value=self.radio, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-            
-            #if self.mcVar not in app.strVars:
-            #    app.strVars.append(self.mcVar)
-                
+
             self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
             self.radio1.grid(column=3, row=row)
 
@@ -288,3 +283,19 @@ class TestDetailRow(object):
     def updateMC(self, name, index, mode):
         name = name.split('-')[0]
         setattr(self.workLoadObject, name, self.mcVar.get())
+
+class TestDetailMenuElem(object):
+    def __init__(self, menu, menuButton, label, index, elems, name, workload):
+        self.menu = menu
+        self.menuButton = menuButton
+        self.label = label
+        self.index = index
+        self.elems = elems
+        self.name = name
+        self.workLoad = workload
+
+        self.menu.add_command(label=self.label, command=lambda: self.updateValue())
+
+    def updateValue(self):
+        self.menuButton.config(text=self.elems[self.index])
+        self.workLoad.setUnit(self.name, self.elems[self.index])

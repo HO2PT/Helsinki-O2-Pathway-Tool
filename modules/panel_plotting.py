@@ -4,6 +4,7 @@ from tkinter.messagebox import askokcancel
 from objects.app import app
 from modules.notification import notification
 import numpy as np
+import copy
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -152,12 +153,13 @@ class PlottingPanel(object):
 
 class PlotTab(object):
     def __init__(self, parentFrame):
-        self.plot = {}
+        self.plot = None
         self.loadTabs = []
         self.parentFrame = parentFrame
         self.activeTest = app.getActiveTest()
         self.activeTestId = self.activeTest.id
-        self.workLoads = self.activeTest.getWorkLoads() # Workload objects
+        self.origWorkLoads = self.activeTest.getWorkLoads()
+        self.workLoads = copy.deepcopy(self.origWorkLoads) # Workload objects
         
     def createPlotTab(self):
         # Create tab for test
@@ -189,7 +191,8 @@ class PlotTab(object):
     def createPlot(self):
         PvO2 = np.arange(0,100,1)
 
-        self.fig, self.ax = plt.subplots()
+        self.plot = plt.subplots()
+        self.fig, self.ax = self.plot
 
         self.ax.set_ylim(top=5000, bottom=0)
         self.ax.set_xlim(left=0, right=100)
@@ -354,6 +357,9 @@ class PlotTab(object):
 
         self.fig.canvas.draw()
 
+    def getTestId(self):
+        return self.activeTestId
+
 class PlotLoadTab(object):
     def __init__(self, plotTab, index, testId, workLoad, parentNotebook):
         self.parentPlotTab = plotTab
@@ -434,6 +440,10 @@ class PlotLoadTab(object):
             self.parentPlotTab.fig.canvas.flush_events()
 
             self.updateDetails()
+
+            # Update objects plot for exporting
+            self.plot = (self.parentPlotTab.fig, self.parentPlotTab.ax)
+
         except (ValueError, TypeError):
             notification.create('error', 'Unable to compute with given values. Check values', 5000)
 

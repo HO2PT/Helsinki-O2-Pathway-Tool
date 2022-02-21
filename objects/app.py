@@ -9,7 +9,8 @@ class App(object):
     testDetailModule = None
     envDetailModule = None
     plottingPanel = None
-   
+
+    root = None
     strVars = None
     intVars = None
 
