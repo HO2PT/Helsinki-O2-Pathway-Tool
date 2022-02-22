@@ -109,7 +109,7 @@ class WorkLoadDetails(object):
         if label == 'DO2_unit': 
             self.DO2_unit = unit
 
-        print(self.getWorkLoadDetails())
+        #print(self.getWorkLoadDetails())
 
     def getWorkLoadDetails(self):
         return {

@@ -5,7 +5,9 @@ from objects.app import app
 from modules.notification import notification
 import numpy as np
 import copy
+import random
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 
@@ -181,7 +183,7 @@ class PlotTab(object):
 
         # Create tabs for loads
         for i, w in enumerate(self.workLoads):
-            loadTabObject = PlotLoadTab(self, i, self.activeTestId, w, self.loadNotebook)
+            loadTabObject = PlotLoadTab(self, i, self.activeTestId, w, self.loadNotebook, self.plot)
             loadTab = loadTabObject.createLoadTab()
             self.loadNotebook.add(loadTab, text=w.getName())
             self.loadTabs.append(loadTabObject)
@@ -361,44 +363,51 @@ class PlotTab(object):
         return self.activeTestId
 
 class PlotLoadTab(object):
-    def __init__(self, plotTab, index, testId, workLoad, parentNotebook):
+    def __init__(self, plotTab, index, testId, workLoad, parentNotebook, plot):
         self.parentPlotTab = plotTab
         self.index = index
         self.testId = testId
         self.workLoad = workLoad # Load object
         self.details = workLoad.getDetails().getWorkLoadDetails()
         self.parentNotebook = parentNotebook
+        self.plot = plot
 
     def createLoadTab(self):
         self.loadtab = ttk.Frame(self.parentNotebook)
-        self.loadtab.grid()
+        self.loadtab.pack()
+
+        # Details frame
+        self.loadDetails = ttk.Frame(self.loadtab)
+        self.loadDetails.grid()
         
-        #Content
-        ttk.Label(self.loadtab, text=f'Load: {self.details["Load"]}').grid(column=0, row=0)
+        ttk.Label(self.loadDetails, text=f'Load: {self.details["Load"]}').grid(column=0, row=0)
 
         vo2Value = self.details['VO2']
-        self.vo2Row = LoadTabRow(self.loadtab, 'VO2', vo2Value, self.index, self.testId, 1, (0,5))
+        self.vo2Row = LoadTabRow(self.loadDetails, 'VO2', vo2Value, self.index, self.testId, 1, (0,5))
         self.vo2Row.var.trace('w', self.updatePlot)
 
         qValue = self.details['Q']
-        self.qRow = LoadTabRow(self.loadtab, 'Q', qValue, self.index, self.testId, 2, (10,20))
+        self.qRow = LoadTabRow(self.loadDetails, 'Q', qValue, self.index, self.testId, 2, (10,20))
         self.qRow.var.trace('w', self.updatePlot)
 
         hbValue = self.details['Hb']
-        self.hbRow = LoadTabRow(self.loadtab, 'Hb', hbValue, self.index, self.testId, 3, (10,20))
+        self.hbRow = LoadTabRow(self.loadDetails, 'Hb', hbValue, self.index, self.testId, 3, (10,20))
         self.hbRow.var.trace('w', self.updatePlot)
 
         sao2Value = self.details['SaO2']
-        self.sao2Row = LoadTabRow(self.loadtab, 'SaO2', sao2Value, self.index, self.testId, 4, (80,100))
+        self.sao2Row = LoadTabRow(self.loadDetails, 'SaO2', sao2Value, self.index, self.testId, 4, (80,100))
         self.sao2Row.var.trace('w', self.updatePlot)
 
-        self.cao2Row = LoadTabRow(self.loadtab, 'CaO2', None, None, None, 5, None, self.details)
-        self.cvo2Row = LoadTabRow(self.loadtab, 'CvO2', None, None, None, 6, None, self.details)
-        self.cavo2Row = LoadTabRow(self.loadtab, 'CavO2', None, None, None, 7, None, self.details)
-        self.pvo2Row = LoadTabRow(self.loadtab, 'PvO2', None, None, None, 8, None, self.details)
-        self.svo2Row = LoadTabRow(self.loadtab, 'SvO2', None, None, None, 9, None, self.details)
-        self.qao2Row = LoadTabRow(self.loadtab, 'QaO2', None, None, None, 10, None, self.details)
-        self.do2Row = LoadTabRow(self.loadtab, 'DO2', None, None, None, 11, None, self.details)
+        self.cao2Row = LoadTabRow(self.loadDetails, 'CaO2', None, None, None, 5, None, self.details)
+        self.cvo2Row = LoadTabRow(self.loadDetails, 'CvO2', None, None, None, 6, None, self.details)
+        self.cavo2Row = LoadTabRow(self.loadDetails, 'CavO2', None, None, None, 7, None, self.details)
+        self.pvo2Row = LoadTabRow(self.loadDetails, 'PvO2', None, None, None, 8, None, self.details)
+        self.svo2Row = LoadTabRow(self.loadDetails, 'SvO2', None, None, None, 9, None, self.details)
+        self.qao2Row = LoadTabRow(self.loadDetails, 'QaO2', None, None, None, 10, None, self.details)
+        self.do2Row = LoadTabRow(self.loadDetails, 'DO2', None, None, None, 11, None, self.details)
+
+        # Plot options
+        PlotOptions(self.loadtab, self.plot, self.index)
 
         return self.loadtab
 
@@ -456,6 +465,206 @@ class PlotLoadTab(object):
         self.svo2Row.updateText(self.details)
         self.qao2Row.updateText(self.details)
         self.do2Row.updateText(self.details)
+
+class PlotOptions(object):
+    def __init__(self, parent, plotObject, loadIndex):
+        self.plotObject = plotObject
+        self.loadIndex = loadIndex
+
+        self.plotOptions = ttk.LabelFrame(parent, text='Plot options')
+        self.plotOptions.grid()
+
+        ttk.Label(self.plotOptions, text='Set Y-axis max. value').grid(column=0, row=0)
+
+        # Set y limit
+        self.yValue = StringVar(self.plotOptions, value=plotObject[1].get_ylim()[1])
+        self.yEntry = ttk.Entry(self.plotOptions, textvariable=self.yValue)
+        self.yEntry.grid(column=0, row=1)
+        self.yValue.trace('w', self.updateY)
+        ttk.Button(self.plotOptions, text='Set', command=lambda: self.updateFig()).grid(column=1, row=1)
+
+        # Set step size
+        ttk.Label(self.plotOptions, text='Tick count in y-axis:').grid(column=0, row=2)
+        ttk.Button(self.plotOptions, text='+', command=lambda: self.incTicks()).grid(column=2, row=2)
+        ttk.Button(self.plotOptions, text='-', command=lambda: self.decTicks()).grid(column=1, row=2)
+
+        # Set line shape
+        ttk.Label(self.plotOptions, text='Change line type').grid(column=0, row=3)
+        self.lineTypeMenuButton = ttk.Menubutton(self.plotOptions)
+        lineTypeMenu = Menu(self.lineTypeMenuButton, tearoff=False)
+        lineTypeMenu.add_command(label='Solid', command=lambda: self.changeLineType(0))
+        lineTypeMenu.add_command(label='Dotted', command=lambda: self.changeLineType(1))
+        lineTypeMenu.add_command(label='Dashed', command=lambda: self.changeLineType(2))
+        lineTypeMenu.add_command(label='Dashdot', command=lambda: self.changeLineType(3))
+        self.lineTypeMenuButton['menu']=lineTypeMenu
+        
+        if self.mapLines()[self.loadIndex][0].get_linestyle() == '-':
+            self.lineTypeMenuButton.config(text='Solid')
+        elif self.mapLines()[self.loadIndex][0].get_linestyle() == ':':
+            self.lineTypeMenuButton.config(text='Dotted')
+        elif self.mapLines()[self.loadIndex][0].get_linestyle() == '--':
+            self.lineTypeMenuButton.config(text='Dashed')
+        elif self.mapLines()[self.loadIndex][0].get_linestyle() == '-.':
+            self.lineTypeMenuButton.config(text='Dashdot')
+
+        self.lineTypeMenuButton.grid(column=1, row=3)
+
+        # Set line color
+        ttk.Label(self.plotOptions, text='Change line color').grid(column=0, row=4)
+        self.lineColorMenuButton = ttk.Menubutton(self.plotOptions)
+
+        lineColorMenu = Menu(self.lineColorMenuButton, tearoff=False)
+        lineColorMenu.add_command(label='Blue', command=lambda: self.changeColor(0))
+        lineColorMenu.add_command(label='Orange', command=lambda: self.changeColor(1))
+        lineColorMenu.add_command(label='Green', command=lambda: self.changeColor(2))
+        lineColorMenu.add_command(label='Red', command=lambda: self.changeColor(3))
+        lineColorMenu.add_command(label='Purple', command=lambda: self.changeColor(4))
+        lineColorMenu.add_command(label='Brown', command=lambda: self.changeColor(5))
+        lineColorMenu.add_command(label='Pink', command=lambda: self.changeColor(6))
+        lineColorMenu.add_command(label='Gray', command=lambda: self.changeColor(7))
+        lineColorMenu.add_command(label='Olive', command=lambda: self.changeColor(8))
+        lineColorMenu.add_command(label='Cyan', command=lambda: self.changeColor(9))
+
+        self.lineColorMenuButton['menu']=lineColorMenu
+        self.lineColorMenuButton.config(text= self.getInitialColor(self.mapLines()[self.loadIndex][0].get_color()) )
+        self.lineColorMenuButton.grid(column=1, row=4)
+
+        # Hide legend
+        ttk.Button(self.plotOptions, text='Hide legend', command=lambda: self.hideLegend()).grid(column=0, row=5)
+    
+        """ # Toolbar
+        self.toolbarContainer = ttk.Frame(self.plotOptions)
+        self.toolbarContainer.grid(columnspan=3)
+        self.toolbar = NavigationToolbar2Tk(self.plotObject[0].canvas, self.toolbarContainer)
+        self.toolbar.update()
+        self.plotObject[1].axes.format_coord = lambda x, y: '' """
+
+    def hideLegend(self):
+        legend = self.plotObject[1].get_legend()
+        vis = legend.get_visible()
+        if vis:
+            legend.set_visible(False)
+        else:
+            legend.set_visible(True)
+        self.plotObject[0].canvas.draw()
+
+    def getInitialColor(self, color):
+        if color == 'C0':
+            return 'Blue'
+        elif color == 'C1':
+            return 'Orange'
+        elif color == 'C2':
+            return 'Green'
+        elif color == 'C3':
+            return 'Red'
+        elif color == 'C4':
+            return 'Purple'
+        elif color == 'C5':
+            return 'Brown'
+        elif color == 'C6':
+            return 'Pink'
+        elif color == 'C7':
+            return 'Gray'
+        elif color == 'C8':
+            return 'Olive'
+        elif color == 'C9':
+            return'Cyan'
+
+    def changeColor(self, color):
+        mappedLines = self.mapLines()[self.loadIndex]
+        mappedLines[0].set_color(f'C{color}')
+        mappedLines[1].set_color(f'C{color}')
+
+        if color == 0:
+            self.lineColorMenuButton.config(text='Blue')
+        elif color == 1:
+            self.lineColorMenuButton.config(text='Orange')
+        elif color == 2:
+            self.lineColorMenuButton.config(text='Green')
+        elif color == 3:
+            self.lineColorMenuButton.config(text='Red')
+        elif color == 4:
+            self.lineColorMenuButton.config(text='Purple')
+        elif color == 5:
+            self.lineColorMenuButton.config(text='Brown')
+        elif color == 6:
+            self.lineColorMenuButton.config(text='Pink')
+        elif color == 7:
+            self.lineColorMenuButton.config(text='Gray')
+        elif color == 8:
+            self.lineColorMenuButton.config(text='Olive')
+        elif color == 9:
+            self.lineColorMenuButton.config(text='Cyan')
+
+        # Update legend
+        legend = self.plotObject[1].get_legend().get_lines()[self.loadIndex]
+        legend.set_color(f'C{color}')
+
+        self.plotObject[0].canvas.draw()
+
+    def changeLineType(self, type):
+        styles = ['solid', 'dotted', 'dashed', 'dashdot']
+        mappedLines = self.mapLines()[self.loadIndex]
+
+        for l in mappedLines:
+            l.set_linestyle(styles[type])
+        
+        self.lineTypeMenuButton.config(text=f"{styles[type]}".title())
+
+        # Update legend
+        legend = self.plotObject[1].get_legend().get_lines()[self.loadIndex]
+        legend.set_linestyle(styles[type])
+        self.plotObject[0].canvas.draw()
+
+    def mapLines(self):
+        allLines = self.plotObject[1].get_lines()
+        temp = []
+        mappedLines = {}
+        i = 0
+        idx = 0
+
+        for line in allLines:
+            temp.append(line)
+            if i == 2:
+                mappedLines[idx] = temp
+                temp = []
+                i = 0
+                idx += 1
+            else:
+                 i += 1
+
+        return mappedLines
+
+    def incTicks(self):
+        yticks = self.plotObject[1].get_yticks()
+        """ newTicks = []
+        print(yticks)
+        step = yticks[1]/2
+        for t in yticks:
+            if t != 0:
+                newTicks.append(t-step)
+                newTicks.append(t)
+            else:
+                newTicks.append(t)
+        print(f'NEWTICKS', newTicks)
+        self.plotObject[1].set_yticks(newTicks) """
+        n = len(yticks)+1
+        self.plotObject[1].yaxis.set_major_locator(plt.LinearLocator(numticks=n))
+        self.plotObject[0].canvas.draw()
+
+    def decTicks(self):
+        yticks = self.plotObject[1].get_yticks()
+        n = len(yticks)-1
+        self.plotObject[1].yaxis.set_major_locator(plt.LinearLocator(numticks=n))
+        self.plotObject[0].canvas.draw()
+
+    def updateY(self, name, index, mode):
+        pass
+    
+    def updateFig(self):
+        limit = self.yValue.get()
+        self.plotObject[1].set_ylim(top=float(limit))
+        self.plotObject[0].canvas.draw()
 
 class LoadTabRow(object):
     def __init__(self, parent, label, value, index, id, row, scale, details=None):

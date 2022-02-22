@@ -98,7 +98,7 @@ def exportData():
     # Create excel
     saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
     fileName = saveFile.name.split('/')[-1]
-    print(f'FILENAME: {fileName}')
+    #print(f'FILENAME: {fileName}')
     writer = pd.ExcelWriter(f'{fileName}.xlsx', engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Sheet1', index=False)
     workbook  = writer.book

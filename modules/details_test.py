@@ -9,7 +9,7 @@ class TestDetailModule(object):
 
         ## Details frame
         details = ttk.Frame(self.container)
-        details.pack(side=LEFT, fill = BOTH, expand=TRUE)
+        details.pack(side=LEFT, fill = Y)
 
         self.testId = ttk.Label(details, text=None)
         self.testId.pack()
@@ -18,7 +18,7 @@ class TestDetailModule(object):
 
         ## Load notebook
         self.loadsContainer = ttk.Frame(self.container)
-        self.loadsContainer.pack(side=RIGHT)
+        self.loadsContainer.pack(side=LEFT, fill=BOTH, expand=TRUE)
         self.loadNotebook = LoadNotebook(self.loadsContainer)
 
     def addLoad(self):
@@ -102,7 +102,7 @@ class LoadNotebook(object):
         # Append tab
         self.loadTabs.append(newLoad)
         tabCount = self.loadNotebook.index('end')
-        self.loadNotebook.insert('end', newLoad.containerFrame, text=newLoad.getName())
+        self.loadNotebook.insert('end', newLoad.loadFrame, text=newLoad.getName())
         self.loadNotebook.select(tabCount) 
 
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
@@ -128,10 +128,10 @@ class LoadNotebook(object):
             # Append tab
             self.loadTabs.append(newLoad)
             tabCount = self.loadNotebook.index('end')
-            self.loadNotebook.insert('end', newLoad.containerFrame, text=l.getName())
+            self.loadNotebook.insert('end', newLoad.loadFrame, text=l.getName())
             self.loadNotebook.select(tabCount) 
 
-        self.loadNotebook.pack(expand=TRUE)
+        self.loadNotebook.pack(fill=BOTH, expand=TRUE)
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
 
@@ -176,42 +176,56 @@ class LoadTab(object):
         self.details = details
         self.notebook = notebook
         
-        self.containerFrame = ttk.Frame(self.notebook)
-        self.containerFrame.pack()
-        
-        self.canvas = Canvas(self.containerFrame)
-        self.loadFrame = ttk.Frame(self.canvas)
+        self.loadFrame = ttk.Frame(self.notebook)
+        self.loadFrame.pack(fill=BOTH, expand=TRUE)
 
-        sbar = ttk.Scrollbar(self.containerFrame, orient=VERTICAL, command=self.canvas.yview)
-        self.canvas.configure(yscrollcommand=sbar.set)
-        sbar.pack(side=RIGHT, fill=Y)
-        self.canvas.pack(side=LEFT)
-        self.canvas.create_window((0,0), window=self.loadFrame, anchor='nw')
-        self.loadFrame.bind("<Configure>", self.callback)
+        self.container = ttk.Frame(self.loadFrame)
+        self.container.grid()
 
-        ttk.Label(self.loadFrame, text='Value').grid(column=1, row=0)
-        ttk.Label(self.loadFrame, text='Unit').grid(column=2, row=0)
-        ttk.Label(self.loadFrame, text='Meas.').grid(column=3, row=0)
-        ttk.Label(self.loadFrame, text='Calc.').grid(column=4, row=0)
+        # Left side
+        self.loadFrame1 = ttk.Frame(self.container)
+        self.loadFrame1.grid(column=0, row=0, sticky='nw')
+
+        # Separator line
+        ttk.Separator(self.container, orient='vertical').grid(column=1, row=0, sticky='ns')
+
+        # Right side
+        self.loadFrame2 = ttk.Frame(self.container)
+        self.loadFrame2.grid(column=2, row=0, sticky='nw')
+
+        ttk.Label(self.loadFrame1, text='Value').grid(column=1, row=0)
+        ttk.Label(self.loadFrame1, text='Unit').grid(column=2, row=0)
+        ttk.Label(self.loadFrame1, text='Meas.').grid(column=3, row=0)
+        ttk.Label(self.loadFrame1, text='Calc.').grid(column=4, row=0)
+
+        ttk.Label(self.loadFrame2, text='Value').grid(column=1, row=0)
+        ttk.Label(self.loadFrame2, text='Unit').grid(column=2, row=0)
+        ttk.Label(self.loadFrame2, text='Meas.').grid(column=3, row=0)
+        ttk.Label(self.loadFrame2, text='Calc.').grid(column=4, row=0)
 
         temp = []
         i = 0
-        j = 1
+        row = 1
+        n = 1
 
         # Iterate through load details and print to Details module
         for key, value in self.details.getWorkLoadDetails().items():
-
             if i == 3:
-                TestDetailRow(self.loadFrame, temp, self.details, j)
-                temp=[]
-                i = 0
-                    
+                if n == 1:
+                    TestDetailRow(self.loadFrame1, temp, self.details, row)
+                    temp=[]
+                    i = 0
+                else:
+                    TestDetailRow(self.loadFrame2, temp, self.details, row)
+                    temp=[]
+                    i = 0
+                        
             temp.append([key, value])
-            i = i + 1
-            j = j + 1
+            i += 1
+            row += 1
 
-    def callback(self,e):
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"),width=225,height=250)
+            if row == 24:
+                n = 2
     
     def getName(self):
         return self.name
@@ -225,6 +239,7 @@ class TestDetailRow(object):
         self.workLoadObject = workLoadObject
         self.flag = 0
 
+        
         if temp[0][0] == 'id':
             self.label = temp[1][0]
             self.value = temp[1][1]
@@ -240,18 +255,18 @@ class TestDetailRow(object):
             self.radio = temp[2][1]
 
         ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row)
-  
+
         #Value
         self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-        
-        self.valueEntry = ttk.Entry(rowFrame, width=7, textvariable=self.valueVar)
+            
+        self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
         self.valueEntry.grid(column=1, row=row)
         self.valueVar.trace('w', self.updateValue)
 
         # Unit
         if self.label != 'pH':
             units = app.settings.getUnits()[f'{self.label}_units']
-            print(f'UNITS: {units}')
+            #print(f'UNITS: {units}')
             tempMenuButton = ttk.Menubutton(rowFrame)
             tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
 

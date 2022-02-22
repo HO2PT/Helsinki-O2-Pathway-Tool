@@ -1,18 +1,22 @@
 from tkinter import *
 from tkinter import ttk
+from turtle import width
 from modules.notification import notification
 from objects.app import app
 
 class EnvDetailModule(object):
     def __init__(self, detailsPanel):
         self.frame = ttk.Labelframe(detailsPanel, text="Environment details")
-        self.frame.pack(side = LEFT, fill = BOTH, expand=TRUE)
+        self.frame.pack(side = LEFT, fill = Y)
+        
+        #print(self.frame.pack_info())
 
         self.create()
 
     def create(self):
         self.container = ttk.Frame(self.frame)
         self.container.grid()
+        #print(self.container.grid_info())
 
         self.elevLabel = ttk.Label(self.container, text='')
         self.elevLabel.grid(column=0, row=0)
