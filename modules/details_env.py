@@ -1,7 +1,5 @@
 from tkinter import *
 from tkinter import ttk
-from turtle import width
-from modules.notification import notification
 from objects.app import app
 
 class EnvDetailModule(object):
@@ -64,6 +62,7 @@ class envDetailRow(object):
         id = app.getActiveTest().id
         self.envDetails = app.getActiveTest().getEnvDetails()
         self.unitDefs = app.settings.getUnitDef()
+        self.envUnits = app.settings.getUnits()
         self.menuButtons = {}
         
         if label == 'elevation':
@@ -74,12 +73,12 @@ class envDetailRow(object):
             self.elevEntry.grid(column=1, row=0)
 
             # Unit
-            units = ('m', 'km', 'ft')
             elevMenuButton = ttk.Menubutton(self.container)
             self.menuButtons['Elevation'] = elevMenuButton
             elevMenuButton.config(text=self.unitDefs['Elevation_unit'])
 
             elevMenu = Menu(elevMenuButton, tearoff=False)
+            units = self.envUnits['Elevation_units']
             for i, u in enumerate(units):
                 EnvMenuElem(elevMenu, elevMenuButton, u, i, units, 'Elevation_unit')
             elevMenuButton['menu']=elevMenu
@@ -93,12 +92,12 @@ class envDetailRow(object):
             self.atmEntry.grid(column=1, row=1)
 
             # Unit
-            units = ('kPa', 'bar', 'psi')
             atmMenuButton = ttk.Menubutton(container)
             self.menuButtons['ATM'] = atmMenuButton
             atmMenuButton.config(text=self.unitDefs['ATM_unit'])
 
             atmMenu = Menu(atmMenuButton, tearoff=False)
+            units = self.envUnits['ATM_units']
             for i, u in enumerate(units):
                 EnvMenuElem(atmMenu, atmMenuButton, u, i, units, 'ATM_unit')
             atmMenuButton['menu']=atmMenu
@@ -121,13 +120,13 @@ class envDetailRow(object):
             self.tempEntry = ttk.Entry(self.container, width=7, textvariable=self.tempVar)
             self.tempEntry.grid(column=1, row=3)
 
-            # Unit
-            units = ('\N{DEGREE SIGN}C', 'F', 'K')
+            # Unit            
             tempMenuButton = ttk.Menubutton(container)
             self.menuButtons['Temperature'] = tempMenuButton
             tempMenuButton.config(text=self.unitDefs['Temperature_unit'])
 
             tempMenu = Menu(tempMenuButton, tearoff=False)
+            units = self.envUnits['Temperature_units']
             for i, u in enumerate(units):
                 EnvMenuElem(tempMenu, tempMenuButton, u, i, units, 'Temperature_unit')
             tempMenuButton['menu']=tempMenu
@@ -165,16 +164,15 @@ class envDetailRow(object):
 
 
 class EnvMenuElem(object):
-    def __init__(self, menu, menuButton, label, index, elems, name):
+    def __init__(self, menu, menuButton, unit, index, units, name=None):
         self.menu = menu
         self.menuButton = menuButton
-        self.label = label
-        self.index = index
-        self.elems = elems
         self.name = name
+        self.index = index
+        self.units = units
 
-        self.menu.add_command(label=self.label, command=lambda: self.updateValue())
+        self.menu.add_command(label=unit, command=lambda: self.updateValue())
 
     def updateValue(self):
-        self.menuButton.config(text=self.elems[self.index])
-        app.getActiveTest().getEnvDetails().setDetail(self.name, self.elems[self.index])
+        self.menuButton.config(text=self.units[self.index])
+        app.getActiveTest().getEnvDetails().setDetail(self.name, self.units[self.index])

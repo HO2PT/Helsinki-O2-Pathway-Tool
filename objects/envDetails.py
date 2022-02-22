@@ -35,3 +35,7 @@ class EnvDetails(object):
     def setDetail(self, detail, value):
         if detail == 'Elevation_unit':
             self.elevationUnit = value
+        elif detail == 'ATM_unit':
+            self.atmUnit = value
+        elif detail == 'Temperature_unit':
+            self.tempUnit = value
