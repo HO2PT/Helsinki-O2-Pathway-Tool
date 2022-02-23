@@ -23,7 +23,9 @@ class Settings(object):
                     "temp": 20
                 },
                 "testDefaults":{
+                    "T0": 37,
                     "T": 37,
+                    "pH0": 7.4,
                     "pH": 7.4
                 },
                 "unitDefaults":{
@@ -39,7 +41,9 @@ class Settings(object):
                     "CvO2": 'ml/l',
                     "CavO2": 'ml/l',
                     "QaO2": 'ml/min',
+                    "T0": '\N{DEGREE SIGN}C',
                     "T": '\N{DEGREE SIGN}C',
+                    "pH0": '',
                     "pH": '',
                     "PvO2": 'mmHg',
                     "DO2": 'ml/min/mmHg',
@@ -58,10 +62,12 @@ class Settings(object):
                     "SaO2": ["%"],
                     "CaO2": ["ml/l", "ml/dl"],
                     "SvO2": ["%"],
-                    "CvO2": ["ml/l"],
-                    "CavO2": ["ml/l"],
+                    "CvO2": ["ml/l", "ml/dl"],
+                    "CavO2": ["ml/l", "ml/dl"],
                     "QaO2": ["ml/min", "l/min"],
+                    "T0": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "T": ['\N{DEGREE SIGN}C', 'F', 'K'],
+                    "pH0": [""],
                     "pH": [""],
                     "PvO2": ["mmHg"],
                     "DO2": ["ml/min/mmHg"],
@@ -82,7 +88,9 @@ class Settings(object):
                     "CvO2": 0,
                     "CavO2": 0,
                     "QaO2": 0,
+                    "T0": 0,
                     "T": 0,
+                    "pH0": 0,
                     "pH": 0,
                     "PvO2": 0,
                     "DO2": 1
@@ -112,7 +120,9 @@ class Settings(object):
         }
 
         self.testDefaults = {
+            "T0": self.data['testDefaults']['T0'],
             "T": self.data['testDefaults']['T'],
+            "pH0": self.data['testDefaults']['pH0'],
             "pH": self.data['testDefaults']['pH']
         }
 
@@ -129,7 +139,9 @@ class Settings(object):
             "CvO2_unit": self.data['unitDefaults']['CvO2'],
             "CavO2_unit": self.data['unitDefaults']['CavO2'],
             "QaO2_unit": self.data['unitDefaults']['QaO2'],
+            "T0_unit": self.data['unitDefaults']['T'],
             "T_unit": self.data['unitDefaults']['T'],
+            "pH0_unit": self.data['unitDefaults']['pH'],
             "pH_unit": self.data['unitDefaults']['pH'],
             "PvO2_unit": self.data['unitDefaults']['PvO2'],
             "DO2_unit": self.data['unitDefaults']['DO2'],
@@ -152,7 +164,9 @@ class Settings(object):
             "CvO2_units": self.data['units']['CvO2'],
             "CavO2_units": self.data['units']['CavO2'],
             "QaO2_units": self.data['units']['QaO2'],
+            "T0_units": self.data['units']['T'],
             "T_units": self.data['units']['T'],
+            "pH0_units": self.data['units']['pH'],
             "pH_units": self.data['units']['pH'],
             "PvO2_units": self.data['units']['PvO2'],
             "DO2_units": self.data['units']['DO2'],
@@ -174,7 +188,9 @@ class Settings(object):
             "CvO2_mc": self.data['mcDefaults']['CvO2'],
             "CavO2_mc": self.data['mcDefaults']['CavO2'],
             "QaO2_mc": self.data['mcDefaults']['QaO2'],
+            "T0_mc": self.data['mcDefaults']['T'],
             "T_mc": self.data['mcDefaults']['T'],
+            "pH0_mc": self.data['mcDefaults']['pH'],
             "pH_mc": self.data['mcDefaults']['pH'],
             "PvO2_mc": self.data['mcDefaults']['PvO2'],
             "DO2_mc": self.data['mcDefaults']['DO2']
@@ -396,14 +412,20 @@ class Settings(object):
             #### QaO2
             SettingsRow(self, container, 'QaO2', 0, 12)
 
+            #### T0
+            SettingsRow(self, container, 'T0', 1, 13)
+
             #### T
-            SettingsRow(self, container, 'T', 1, 13)
+            SettingsRow(self, container, 'T', 1, 14)
+
+            # pH0
+            SettingsRow(self, container, 'pH0', 1, 15)
 
             # pH
-            SettingsRow(self, container, 'pH', 1, 14)
+            SettingsRow(self, container, 'pH', 1, 16)
 
             #### PvO2
-            SettingsRow(self, container, 'PvO2', 0, 15)
+            SettingsRow(self, container, 'PvO2', 0, 17)
 
             ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=4, row=16, sticky='E')
 

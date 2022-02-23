@@ -47,6 +47,7 @@ def createMenu(root):
     view.add_checkbutton(label ='Hide project details', command = lambda: hideProjectDetails())
     view.add_checkbutton(label ='Hide test details', command = lambda: hideTestDetails())
     view.add_checkbutton(label ='Hide environment details', command = lambda: hideEnvDetails())
+    view.add_checkbutton(label ='Hide all details', command = lambda: hideAllDetails())
 
     # Create demo graph
     menuBar.add_command(label ='Create demo graph', command=lambda: createDemoGraph())
@@ -123,6 +124,20 @@ def setMode(var):
 def createDemoGraph():
     print('Creating demograph')
     #app.plottingPanel.plot()
+
+def hideAllDetails():
+    detailsPanel = app.detailsPanel.detailsPanel
+    notifPanel = notification.notifPanel
+    plottingPanel = app.plottingPanel.container
+
+    if detailsPanel.winfo_manager():
+        detailsPanel.pack_forget()
+    else:
+        notifPanel.pack_forget()
+        plottingPanel.pack_forget()
+        notifPanel.pack(fill=X)
+        detailsPanel.pack(side=TOP, fill=X)
+        plottingPanel.pack(fill=BOTH, expand=TRUE)
 
 def hideSidePanel():
     sidePanel = app.sidePanel.sidePanel

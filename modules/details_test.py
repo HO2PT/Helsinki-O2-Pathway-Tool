@@ -182,16 +182,23 @@ class LoadTab(object):
         self.container = ttk.Frame(self.loadFrame)
         self.container.grid()
 
-        # Left side
+        # Left part
         self.loadFrame1 = ttk.Frame(self.container)
         self.loadFrame1.grid(column=0, row=0, sticky='nw')
 
         # Separator line
         ttk.Separator(self.container, orient='vertical').grid(column=1, row=0, sticky='ns')
 
-        # Right side
+        # Center part
         self.loadFrame2 = ttk.Frame(self.container)
         self.loadFrame2.grid(column=2, row=0, sticky='nw')
+
+        # Separator line
+        ttk.Separator(self.container, orient='vertical').grid(column=3, row=0, sticky='ns')
+
+        # Right part
+        self.loadFrame3 = ttk.Frame(self.container)
+        self.loadFrame3.grid(column=4, row=0, sticky='nw')
 
         ttk.Label(self.loadFrame1, text='Value').grid(column=1, row=0)
         ttk.Label(self.loadFrame1, text='Unit').grid(column=2, row=0)
@@ -202,6 +209,11 @@ class LoadTab(object):
         ttk.Label(self.loadFrame2, text='Unit').grid(column=2, row=0)
         ttk.Label(self.loadFrame2, text='Meas.').grid(column=3, row=0)
         ttk.Label(self.loadFrame2, text='Calc.').grid(column=4, row=0)
+
+        ttk.Label(self.loadFrame3, text='Value').grid(column=1, row=0)
+        ttk.Label(self.loadFrame3, text='Unit').grid(column=2, row=0)
+        ttk.Label(self.loadFrame3, text='Meas.').grid(column=3, row=0)
+        ttk.Label(self.loadFrame3, text='Calc.').grid(column=4, row=0)
 
         temp = []
         i = 0
@@ -215,8 +227,12 @@ class LoadTab(object):
                     TestDetailRow(self.loadFrame1, temp, self.details, row)
                     temp=[]
                     i = 0
-                else:
+                elif n == 2:
                     TestDetailRow(self.loadFrame2, temp, self.details, row)
+                    temp=[]
+                    i = 0
+                else:
+                    TestDetailRow(self.loadFrame3, temp, self.details, row)
                     temp=[]
                     i = 0
                         
@@ -226,6 +242,9 @@ class LoadTab(object):
 
             if row == 24:
                 n = 2
+
+            if row == 42:
+                n = 3
     
     def getName(self):
         return self.name
@@ -264,7 +283,7 @@ class TestDetailRow(object):
         self.valueVar.trace('w', self.updateValue)
 
         # Unit
-        if self.label != 'pH':
+        if self.label != 'pH' or self.label != 'pH0':
             units = app.settings.getUnits()[f'{self.label}_units']
             #print(f'UNITS: {units}')
             tempMenuButton = ttk.Menubutton(rowFrame)
