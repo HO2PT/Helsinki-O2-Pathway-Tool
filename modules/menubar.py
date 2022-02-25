@@ -4,6 +4,7 @@ from objects.app import app
 from tkinter.filedialog import asksaveasfile
 import pandas as pd
 from modules.notification import notification
+from objects.test import Test
 
 def createMenu(root):
     menuBar = Menu(root)
@@ -123,7 +124,11 @@ def setMode(var):
 
 def createDemoGraph():
     print('Creating demograph')
-    #app.plottingPanel.plot()
+    demoTest = Test()
+    demoTest.workLoads[0].setDemoDetails()
+    app.setActiveTest(demoTest)
+    print( app.getActiveTest().getWorkLoads()[0].getDetails().getWorkLoadDetails() )
+    app.plottingPanel.plot()
 
 def hideAllDetails():
     detailsPanel = app.detailsPanel.detailsPanel

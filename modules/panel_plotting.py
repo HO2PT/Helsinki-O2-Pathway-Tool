@@ -65,7 +65,7 @@ class PlottingPanel(object):
             # Create tab for the plot
             plotTabObject = PlotTab(self.plotNotebook, self.workLoads)
             plotTab = plotTabObject.createPlotTab()
-                    
+
             # Add plot to the notebook and objects list of plots
             self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
             self.plots.append(plotTabObject)
@@ -250,6 +250,7 @@ class PlottingPanel(object):
             return T
 
     def calc(self, w, details):
+        print(f'DETAILS: {details}')
         Q = self.formatQ(w,details) # l/min
         VO2 = self.formatVO2(w, details, Q) # l/min
         Hb = self.formatHb(details) # g/dl
@@ -416,27 +417,27 @@ class PlotTab(object):
 
         # Plot canvasframe
         self.canvasFrame = ttk.Frame(self.tabFrame)
-        self.canvasFrame.pack(side=LEFT)#, expand=TRUE, fill=BOTH)
-        #self.canvasFrame.pack_propagate(False)
+        self.canvasFrame.pack(side=LEFT, expand=TRUE, fill=BOTH)
 
         # Figure instructions
-        ttk.Label(self.canvasFrame, text='Right click - hide all | Middle click - show all').pack(fill=X)
+        ttk.Label(self.canvasFrame, text='Right click - hide all | Middle click - show all', anchor='n').pack(fill=X)
 
         self.canvas = self.createPlot() # FigureCanvasTkAgg
         self.canvasTk = self.canvas.get_tk_widget() # Tkinter canvas
-        self.canvasTk.pack() # fill=BOTH, expand=1
+        self.canvasTk.pack(fill=BOTH, expand=1)
         self.canvas.draw()
 
-        # Figure toolbar
-        self.toolbar = NavigationToolbar2Tk(self.canvas, self.canvasFrame)
-        self.toolbar.update()
-
-        # Custom figure tools
+        # Custom figure tools container
         self.toolbarContainer = ttk.Frame(self.canvasFrame)
-        self.toolbarContainer.pack()
+        self.toolbarContainer.pack(fill=BOTH, expand=1)
+
+        # Figure toolbar
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self.toolbarContainer, pack_toolbar=False)
+        self.toolbar.pack(fill=X)
         
+        # Custom toolbar
         self.toolbarWrapper = ttk.Frame(self.toolbarContainer)
-        self.toolbarWrapper.grid()
+        self.toolbarWrapper.pack(side=LEFT, anchor='nw')
         ttk.Label(self.toolbarWrapper, text='Set Y-axis max. value').grid(column=0, row=0)
 
         # Set y limit
@@ -447,9 +448,11 @@ class PlotTab(object):
         ttk.Button(self.toolbarWrapper, text='Set', command=lambda: self.updateFig()).grid(column=1, row=1)
 
         # Set step size
-        ttk.Label(self.toolbarWrapper, text='Tick count in y-axis:').grid(column=0, row=2)
-        ttk.Button(self.toolbarWrapper, text='+', command=lambda: self.incTicks()).grid(column=2, row=2)
-        ttk.Button(self.toolbarWrapper, text='-', command=lambda: self.decTicks()).grid(column=1, row=2)
+        ttk.Label(self.toolbarWrapper, text='Tick count in y-axis:').grid(column=3, row=0, columnspan=2)
+        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks()).grid(column=3, row=1)
+        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks()).grid(column=4, row=1)
+        self.toolbarWrapper.grid_columnconfigure(2, minsize=25)
+
 
         # Create loads notebook frame and loadnotebook
         self.loadNotebookFrame = ttk.Frame(self.tabFrame)
@@ -493,8 +496,10 @@ class PlotTab(object):
         self.plot = plt.subplots()
         self.fig, self.ax = self.plot
         
-        self.fig.set_figheight(3)
-        self.fig.set_figwidth(5)
+        #print()
+
+        #self.fig.set_figheight(1)
+        #self.fig.set_figwidth(1)
 
         self.ax.set_ylim(top=5000, bottom=0)
         self.ax.set_xlim(left=0, right=100)
@@ -534,8 +539,32 @@ class PlotTab(object):
         
         self.fig.canvas.mpl_connect('pick_event', self.onpick)
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
-        canvas = FigureCanvasTkAgg(self.fig, self.canvasFrame)
-        return canvas
+        
+        def rescale(e):
+            print(f'JEEP, {e}, {e.width}')
+            #print(f'CANVAS: {self.canvasFrame.winfo_reqwidth()},{self.canvasFrame.winfo_reqheight()}')
+            #print(f'FIG: {self.fig.get_figwidth()},{self.fig.get_figheight()}')
+            #print(f'NOTEBOOK: {self.parentFrame.winfo_reqwidth()}, {self.parentFrame.winfo_reqheight()}')
+            #print(f'TOOLBAR: {self.toolbarContainer.winfo_reqwidth()},{self.toolbarContainer.winfo_reqheight()}')
+            canvasHeight = e.height
+            toolbarHeight = self.toolbarContainer.winfo_reqheight()
+            newHeight = canvasHeight-toolbarHeight-10
+            #self.canvas.get_tk_widget().configure(width=100)
+            evt = Event()
+            evt.width=e.width
+            evt.height=newHeight
+            evt.state = 'rescaled'
+            evt.char = None
+            evt.delta = None
+            evt.type = 22
+            self.canvas.resize(evt)
+
+        self.canvas = FigureCanvasTkAgg(self.fig, self.canvasFrame)
+        self.canvas.get_tk_widget().bind('<Configure>', rescale)
+        #print(dir(self.canvas))
+        #print(self.canvas.get_width_height())
+
+        return self.canvas
 
     def onpick(self, event):
 

@@ -14,7 +14,7 @@ class Test(object):
         self.workLoads = []
 
         # Initiate load object
-        self.workLoads.append( Load() )
+        self.workLoads.append( Load(self) )
 
     def getWorkLoads(self):
         return self.workLoads
@@ -37,8 +37,9 @@ class Test(object):
         self.id = id
 
 class Load(object):
-    def __init__(self):
+    def __init__(self, parentTest):
         self.name = None
+        self.parentTest = parentTest
         self.details = WorkLoadDetails()
     
     def getDetails(self):
@@ -49,3 +50,18 @@ class Load(object):
 
     def setName(self, name):
         self.name = name
+    
+    def setDemoDetails(self):
+        print('Setting demo details')
+        self.details.setValue('VO2', 2)
+        self.details.setUnit('VO2_unit', 'l/min')
+
+        self.details.setValue('Q', 13)
+        self.details.setUnit('Q_unit', 'l/min')
+
+        self.details.setValue('Hb', 13)
+        self.details.setUnit('Hb_unit', 'g/dl')
+
+        self.details.setValue('SaO2', 99)
+        self.name = 'Demo'
+        self.parentTest.setId('Demo')

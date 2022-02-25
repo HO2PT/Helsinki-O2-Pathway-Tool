@@ -179,46 +179,46 @@ class WorkLoadDetails(object):
             self.VO2 = value
  
         if label == 'HR': 
-            self.HR_unit = value
+            self.HR = value
 
         if label == 'Sv':
-            self.Sv_unit = value
+            self.Sv = value
         
         if label == 'Q': 
-            self.Q_unit = value
+            self.Q = value
 
         if label == 'Hb': 
-            self.Hb_unit = value
+            self.Hb = value
 
         if label == 'SaO2': 
-            self.SaO2_unit = value
+            self.SaO2= value
         
         if label == 'CaO2': 
-            self.CaO2_unit = value
+            self.CaO2 = value
 
         if label == 'SvO2':
-            self.SvO2_unit = value
+            self.SvO2 = value
 
         if label == 'CvO2': 
-            self.CvO2_unit = value
+            self.CvO2 = value
         
         if label == 'CavO2': 
-            self.CavO2_unit = value
+            self.CavO2 = value
 
         if label == 'QaO2': 
-            self.QaO2_unit = value
+            self.QaO2 = value
 
         if label == 'T0': 
-            self.T_unit = value
+            self.T = value
 
         if label == 'T': 
-            self.T_unit = value
+            self.T = value
 
         if label == 'PvO2': 
-            self.PvO2_unit = value
+            self.PvO2 = value
 
         if label == 'DO2': 
-            self.DO2_unit = value
+            self.DO2 = value
 
     def getWorkLoadDetails(self):
         return {
