@@ -4,6 +4,7 @@ from objects.project import Project
 from objects.subject import Subject
 from objects.test import Test
 from objects.app import app
+from modules.DataImporter import DataImporter
 
 class TestList(object):
     def __init__(self, sidePanel):
@@ -21,7 +22,7 @@ class TestList(object):
         self.editButton.pack(side=LEFT)
         ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteTest()).pack(side=LEFT)
         
-        ttk.Button(self.container, text='Import...').pack()
+        ttk.Button(self.container, text='Import...', command=lambda: DataImporter()).pack()
 
     def editTest(self):
         index = self.testList.curselection()[0]
