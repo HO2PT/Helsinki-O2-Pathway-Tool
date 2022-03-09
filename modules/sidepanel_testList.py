@@ -14,15 +14,44 @@ class TestList(object):
         self.testList = Listbox(self.container, exportselection=FALSE)
         self.testList.pack(fill = BOTH, expand=TRUE)
         self.testList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
+        self.testList.bind('<Control-Button-1>', lambda e: self.handleMultiSelect(e))
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
-        ttk.Button(buttonContainer, text='Add', command=lambda: self.createTest()).pack(side=LEFT)
+        ttk.Button(buttonContainer, text='Add', command=lambda: self.createTest()).grid(column=0, row=0)
         self.editButton = ttk.Button(buttonContainer, text='Edit', command=lambda: self.editTest())
-        self.editButton.pack(side=LEFT)
-        ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteTest()).pack(side=LEFT)
+        self.editButton.grid(column=1, row=0) #.pack(side=LEFT)
+        ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteTest()).grid(column=3, row=0)
         
-        ttk.Button(self.container, text='Import...', command=lambda: DataImporter()).pack()
+        ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
+        ttk.Button(buttonContainer, text='Compare', command=lambda: self.compareTests()).grid(column=1, row=1)
+
+    def handleMultiSelect(self, e):
+        index = f'@{e.x},{e.y}'
+            
+        if self.testList.selection_includes(index):
+            self.testList.selection_clear(index)
+        else:
+            self.testList.selection_set(index)
+
+    def compareTests(self):
+        comparisonTest = Test()
+        comparisonTest.setId('Comparison')
+        comparisonTest.workLoads = []
+
+        for j,i in enumerate(self.testList.curselection()):
+            test = app.getActiveSubject().getTests()[i]
+            # print( f'index: {i} - {test.id}' )
+            lastWorkLoad = test.getWorkLoads()[-1]
+            lastWorkLoad.name = f'Test{j+1}'
+            comparisonTest.addWorkLoad(lastWorkLoad)
+
+        # print(comparisonTest.getWorkLoads())
+        # print(self.testList.curselection())
+        app.setActiveTest(comparisonTest)
+        # Refresh views
+        app.testDetailModule.refreshTestDetails()
+        app.envDetailModule.refresh()
 
     def editTest(self):
         index = self.testList.curselection()[0]
@@ -138,11 +167,11 @@ class TestList(object):
         index = self.testList.curselection()[0]
         test = app.getActiveSubject().tests[index]
 
-        #print(f'VARS: {len(app.strVars)} - {len(app.intVars)}')
-        
-        # Refresh app state
-        app.setActiveTest(test)
+        # Prevent updating test details when multiple tests selected
+        if len(self.testList.curselection()) < 2:
+            # Refresh app state
+            app.setActiveTest(test)
 
-        # Refresh views
-        app.testDetailModule.refreshTestDetails()
-        app.envDetailModule.refresh()
+            # Refresh views
+            app.testDetailModule.refreshTestDetails()
+            app.envDetailModule.refresh()

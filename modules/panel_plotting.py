@@ -782,9 +782,9 @@ class PlotTab(object):
             xi = coords['xi']
             yi = coords['yi']
 
-            line, = self.ax.plot(PvO2, y, lw=2, color=f'C{i}', label=f'Load{i+1}')
-            curve, = self.ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=f'Load{i+1}')
-            dot, = self.ax.plot(xi, yi, 'o', color='red', label=f'Load{i+1}')
+            line, = self.ax.plot(PvO2, y, lw=2, color=f'C{i}', label=w.name)
+            curve, = self.ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=w.name)
+            dot, = self.ax.plot(xi, yi, 'o', color='red', label=w.name)
 
             self.handles.insert(i, line)
 

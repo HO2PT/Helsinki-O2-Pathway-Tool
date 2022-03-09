@@ -1,3 +1,4 @@
+from copy import deepcopy
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
@@ -37,8 +38,8 @@ class ProjectDetailsModule(object):
         self.DO2avg = ttk.Label(self.container, text=None)
         self.DO2avg.pack(expand=False)
 
-        self.calculateButton = ttk.Button(self.container, text="Calculate", command=lambda: print(app.getActiveProject()) ) #self.getMaxMinAvg()
-        self.plotButton = ttk.Button(self.container, text="Plot VO\u2082", command=lambda: self.plotMaxMinAvg())
+        self.calculateButton = ttk.Button(self.container, text="Calculate", command=lambda: self.getMaxMinAvg())
+        self.plotButton = ttk.Button(self.container, text="Plot project", command=lambda: self.plotMaxMinAvg())
 
     def refreshDetails(self):
         # Show buttons
@@ -87,7 +88,8 @@ class ProjectDetailsModule(object):
 
             for t in tests:
                 # details = t.getMaxLoad()
-                w = t.getWorkLoads()[-1] # Last workload object
+                wOrig = t.getWorkLoads()[-1] # Last workload object
+                w = deepcopy(wOrig)
                 details = w.getDetails().getWorkLoadDetails()
 
                 validValues = app.getPlottingPanel().calc(w, details)
