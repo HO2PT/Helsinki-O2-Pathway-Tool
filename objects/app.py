@@ -9,6 +9,7 @@ class App(object):
     testDetailModule = None
     envDetailModule = None
     plottingPanel = None
+    menu = None
 
     root = None
     strVars = None

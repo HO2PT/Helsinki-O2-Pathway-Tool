@@ -526,6 +526,12 @@ class UserMode(object):
         ttk.Button(parent, text='Save', command=lambda: self.saveSettings(settings)).grid(column=1, row=3, sticky='E')
 
     def saveSettings(self, settings):
+        # Apply change to layout
+        if self.intVar.get() == 0: # Basic
+            app.menu.showBasicLayout()
+        else: # Advanced
+            app.menu.showAdvLayout()
+
         settings.userMode = self.intVar.get()
         settings.data['userMode'] = self.intVar.get()
 

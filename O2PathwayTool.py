@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from objects.app import app
 from objects.settings import Settings
-from modules.menubar import *
+from modules.menubar import MenuBar
 from modules.notification import notification
 from modules.panel_side import SidePanel
 from modules.panel_details import DetailsPanel
@@ -27,9 +27,6 @@ app.settings = settings
 mainframe = ttk.Frame(root)
 mainframe.pack(expand=TRUE, fill=BOTH)
 
-# Menubar
-menu = createMenu(root)
-
 # Panels
 sidePanel = SidePanel(mainframe)
 app.sidePanel = sidePanel
@@ -41,8 +38,6 @@ app.detailsPanel = detailsPanel
 
 plottingPanel = PlottingPanel(mainframe)
 app.plottingPanel = plottingPanel
-
-root.config(menu=menu)
 
 def showAdvLayout():
     testContainer = app.testDetailModule.container
@@ -72,6 +67,13 @@ if app.getActiveMode() == 0:
     showBasicLayout()
 else:
     showAdvLayout()
+
+# Menubar
+menuObj = MenuBar(root)
+menu = menuObj.getMenubar()
+app.menu = menuObj
+
+root.config(menu=menu)
 
 def on_closing():
     if askokcancel("Quit", "Do you want to quit?"):
