@@ -121,7 +121,7 @@ class DataImporter(object):
         startcol = self.dataTable.getSelectedColumn()
         startrow = self.dataTable.getSelectedRows().index[0]
 
-        print(f'STARTCOL {startcol}, COLOVER {colover}, STARTROW {startrow}, ROWOVER {rowover}')
+        # print(f'STARTCOL {startcol}, COLOVER {colover}, STARTROW {startrow}, ROWOVER {rowover}')
 
         if colover == None or rowover == None:
             return
@@ -293,19 +293,19 @@ class DataImporter(object):
             self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]+1}')
 
     def updateSelectionText(self, e=None):
-        print('UPDATED CALLED')
+        # print('UPDATED CALLED')
         cols = self.multiplecollist
         rows = self.multiplerowlist
         cellX = self.dataTable.get_col_clicked(e)
         cellY = self.dataTable.get_row_clicked(e)
-        print(f'COLS: {cols}, ROWS: {rows}')
+        # print(f'COLS: {cols}, ROWS: {rows}')
 
         if len(rows) > 0 and len(cols) == 0: # only rows selected
-            print('ONLY ROWS SELECTED')
+            # print('ONLY ROWS SELECTED')
             if len(rows) > 1:
                 temp = rows[0]
                 for i, r in enumerate(rows):
-                    print(r)
+                    # print(r)
                     if i != 0:
                         if r == temp+1:
                             self.selectionText.configure(text=f'Selected cells {rows[0]+1}-{rows[-1]+1}')
@@ -323,7 +323,7 @@ class DataImporter(object):
                 self.selectionText.configure(text=f'Selected row {rows[0]+1}')
 
         elif len(cols) >= 1 and len(rows) == 0: # only cols selected
-            print('ONLY COLS SELECTED')
+            # print('ONLY COLS SELECTED')
             if len(cols) > 1:
                 temp = cols[0]
                 for i, c in enumerate(cols):
@@ -343,10 +343,10 @@ class DataImporter(object):
             else:
                 self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]+1}')
         elif len(cols) >= 1 and len(rows) >= 1: # multiple cells selected
-            print('MULTIPLE CELLS SELECTED')
+            # print('MULTIPLE CELLS SELECTED')
             self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]+1}-{cols[-1]+1}')
         else:
-            print('SINGEL CELL SELECTED')
+            # print('SINGEL CELL SELECTED')
             self.selectionText.configure(text=f'Selected cell row {cellY+1} - col {cellX+1}')
 
     def selectRow(self, e):
@@ -383,7 +383,7 @@ class DataImporter(object):
                     temp = r
 
     def getInput(self):
-        print('GETTING INPUT')
+        # print('GETTING INPUT')
         rowValues = self.dataTable.getSelectionValues()
         col = self.dataTable.getSelectedColumn()
         row = self.dataTable.getSelectedRow()
@@ -397,16 +397,16 @@ class DataImporter(object):
             colValues.append(self.dataTable.getSelectionValues()[0])
             columnNames.append(self.dataTable.model.getColumnName(c))
 
-        print(columnNames)
-        print(colValues)
-        print(rowValues)
-        print(self.multiplerowlist)
+        # print(columnNames)
+        # print(colValues)
+        # print(rowValues)
+        # print(self.multiplerowlist)
         for i, c in enumerate(self.multiplecollist):
             for r in self.multiplerowlist:
                 print(f'VALITUT: {colValues[i][r]}')
         
-        print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
-        print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
+        # print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
+        # print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
 
         if col == -1 and row == -1: # nothing selected
             print('NOTHING SELECTED')
@@ -414,15 +414,15 @@ class DataImporter(object):
             if col == -1: # rows selected
                 if len(rows) > 1 and col == -1:
                     print('USEAMPI RIVI')
-                    print(rows)
+                    # print(rows)
                 else:
                     print('YKSI RIVI')
-                    print(rows)
+                    # print(rows)
 
             if row == -1: # cols selected
                 if len(self.multiplecollist) > 1: # multiple columns
-                    print('USEAMPI SARAKE')
-                    print(colValues)
+                    # print('USEAMPI SARAKE')
+                    # print(colValues)
                     
                     if self.stage == 0: # ids
                         pass
@@ -490,8 +490,8 @@ class DataImporter(object):
                                 details.setValue('SaO2', colValues[j][i])
 
                 else: # one column
-                    print('YKSI SARAKE')
-                    print( colValues )
+                    # print('YKSI SARAKE')
+                    # print( colValues )
 
                     if self.stage == 0: # ids
                         for id in colValues[0]:
@@ -568,7 +568,7 @@ class DataImporter(object):
 
             if row >= 0 and col >= 0: # cells selected
                 if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1:
-                    print('MULTIPLE CELLS SELECTED')
+                    # print('MULTIPLE CELLS SELECTED')
                     #print(values[0])
                     colList = self.multiplecollist
                     rowList = self.multiplerowlist
@@ -662,10 +662,10 @@ class DataImporter(object):
 
                                     
                 else:
-                    print('SINGLE CELL SELECTED')
+                    # print('SINGLE CELL SELECTED')
                     value = self.dataTable.model.getValueAt(row, col)
                     columnName = self.dataTable.model.getColumnName(col)
-                    print(f'SINGLE CELL VALUE: {value}')
+                    # print(f'SINGLE CELL VALUE: {value}')
 
                     if self.stage == 0: # ids
                         # Create subject, set its id, add a test, reset workloads
@@ -679,7 +679,7 @@ class DataImporter(object):
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.createLoad()
-                        print(f'SINGLE CELL - COLUMNNAMES: {columnName}')
+                        # print(f'SINGLE CELL - COLUMNNAMES: {columnName}')
                         load.setName(columnName) # column name
                         load.getDetails().setValue('Load', value) # set value
 
@@ -687,42 +687,42 @@ class DataImporter(object):
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.getWorkLoads()[0]
-                        print(value)
+                        # print(value)
                         load.getDetails().setValue('VO2', value) # set value
 
                     elif self.stage == 3: # HR
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.getWorkLoads()[0]
-                        print(value)
+                        # print(value)
                         load.getDetails().setValue('HR', value) # set value
 
                     elif self.stage == 4: # SV
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.getWorkLoads()[0]
-                        print(value)
+                        # print(value)
                         load.getDetails().setValue('Sv', value) # set value
 
                     elif self.stage == 5: # Q
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.getWorkLoads()[0]
-                        print(value)
+                        # print(value)
                         load.getDetails().setValue('Q', value) # set value
 
                     elif self.stage == 6: # Hb
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.getWorkLoads()[0]
-                        print(value)
+                        # print(value)
                         load.getDetails().setValue('Hb', value) # set value
 
                     elif self.stage == 7: # SaO2
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.getWorkLoads()[0]
-                        print(value)
+                        # print(value)
                         load.getDetails().setValue('SaO2', value) # set value
 
                 self.nextStage()
@@ -755,9 +755,9 @@ class DataImporter(object):
                 ttk.Button(self.footer, text='Pass', command=lambda: print('PASS')).grid(column=2, row=0)
                 self.cancelButton.grid(column=3, row=0)
 
-        print(f'Backing up to stage: {self.stage}')
-        for t in self.tests:
-            print(t.getTestDetails())
+        # print(f'Backing up to stage: {self.stage}')
+        # for t in self.tests:
+            # print(t.getTestDetails())
         self.deselectAll()
 
         if self.stage == 0:
@@ -771,15 +771,17 @@ class DataImporter(object):
             print(self.tests[0].getWorkLoads()[1].getName())
             print(self.tests[0].getWorkLoads()[1].getDetails().Load) """
         elif self.stage == 3: # -> HR
-            print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
+            # print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
             #print(self.tests[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
             self.instructionText.configure(text='Define HR row/column/cell')
         elif self.stage == 4: # -> SV
-            print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
+            pass
+            # print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
             #print(self.tests[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
 
         elif self.stage == 5: # -> Q
-            print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
+            pass
+            # print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
             #print(self.tests[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
 
     def nextStage(self):
@@ -790,12 +792,12 @@ class DataImporter(object):
                 ttk.Button(self.footer, text='Pass', command=lambda: self.nextStage()).grid(column=2, row=0)
                 self.cancelButton.grid(column=3, row=0)
 
-        print(f'Advancing to stage: {self.stage}')
+        # print(f'Advancing to stage: {self.stage}')
         
         for s in self.subjects:
-            print(f'SUBJECT {s.id}')
+            # print(f'SUBJECT {s.id}')
             t = s.getTests()[0]
-            print(t.getTestDetails())
+            # print(t.getTestDetails())
         self.deselectAll()
 
         if self.stage == 1:
@@ -858,6 +860,9 @@ class DataImporter(object):
         app.sidepanel_projectList.refreshList()
         app.sidepanel_subjectList.refreshList()
         app.sidepanel_testList.refreshList()
+
+        app.projectDetailModule.refreshDetails()
+        app.testDetailModule
 
         # Update app state
         app.sidepanel_projectList.addToList(project.id)

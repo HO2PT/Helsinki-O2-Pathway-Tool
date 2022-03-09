@@ -44,7 +44,7 @@ class EnvDetailModule(object):
         envDetailRow(self.container, 'atm')
 
         # Fraction of inspired oxygen
-        self.fio2Label.configure(text='FiO2')
+        self.fio2Label.configure(text='FiO\u2082')
         envDetailRow(self.container, 'fio2')
 
         # Temperature
@@ -52,7 +52,7 @@ class EnvDetailModule(object):
         envDetailRow(self.container, 'temp')
 
         # PiO2 calculation method
-        self.calcMethod.config(text='PiO2 calculation method')
+        self.calcMethod.config(text='PiO\u2082 calculation method')
         envDetailRow(self.calcMethod, 'pio2Method')
 
 class envDetailRow(object):

@@ -74,7 +74,7 @@ class WorkLoadDetails(object):
         self.DO2_MC = defMc['DO2_mc']
 
     def setUnit(self, label, unit):
-        print(f'UPDATING UNIT {label}, to {unit}')
+        # print(f'UPDATING UNIT {label}, to {unit}')
         if label == 'Load_unit':
             self.Load_unit = unit
 
@@ -124,7 +124,7 @@ class WorkLoadDetails(object):
             self.DO2_unit = unit
 
     def setMC(self, label, value):
-        print('UPDATING MC')
+        # print('UPDATING MC')
         if label == 'VO2_MC':
             self.VO2_MC = value
  
@@ -171,7 +171,7 @@ class WorkLoadDetails(object):
             self.DO2_MC = value
 
     def setValue(self, label, value):
-        print('UPDATING VALUE')
+        # print('UPDATING VALUE')
         if label == 'Load':
             self.Load = value
 
@@ -331,3 +331,13 @@ class WorkLoadDetails(object):
         self.pH = pH
         self.PvO2 = PvO2
         self.DO2 = DO2
+
+    def resetValues(self):
+        self.Q = 0
+        self.CaO2 = 0
+        self.SvO2 = 0
+        self.CvO2 = 0
+        self.CavO2 = 0
+        self.QaO2 = 0
+        self.PvO2 = 0
+        self.DO2 = 0

@@ -14,7 +14,7 @@ class TestDetailModule(object):
         self.testId = ttk.Label(details, text=None)
         self.testId.pack()
 
-        ttk.Button(details, text="Calculate").pack(side=BOTTOM)
+        ttk.Button(details, text="Calculate", command=lambda: app.getActiveTest().getMaxLoad()).pack(side=BOTTOM)
 
         ## Load notebook
         self.loadsContainer = ttk.Frame(self.container)
@@ -273,7 +273,12 @@ class TestDetailRow(object):
             self.radioLabel = temp[2][0]
             self.radio = temp[2][1]
 
-        ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row)
+        if '2' in self.label:
+            self.label_subscripted = self.label.replace('2', '\u2082')
+            ttk.Label(rowFrame, text=self.label_subscripted, anchor='w').grid(column=0, row=row)
+        else:
+            ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row)
+        
 
         #Value
         self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')

@@ -1,4 +1,3 @@
-import re
 import uuid
 from objects.envDetails import EnvDetails
 from objects.workLoadDetails import WorkLoadDetails
@@ -47,6 +46,17 @@ class Test(object):
             'envDetails': self.envDetails,
             'workLoads': self.workLoads
         }
+
+    """ def getMaxLoad(self):
+        if len(self.workLoads) > 0:
+            return{
+                "VO2": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['VO2']),
+                "HR": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['HR']),
+                "Sv": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['Sv']),
+                "Q": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['Q']),
+                "Hb": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['Hb']),
+                "SaO2": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['SaO2'])
+            } """
 
 class Load(object):
     def __init__(self, parentTest=None):
