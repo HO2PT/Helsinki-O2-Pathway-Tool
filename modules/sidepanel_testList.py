@@ -4,6 +4,7 @@ from objects.project import Project
 from objects.subject import Subject
 from objects.test import Test
 from objects.app import app
+from modules.notification import notification
 from modules.DataImporter import DataImporter
 
 class TestList(object):
@@ -20,7 +21,7 @@ class TestList(object):
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add', command=lambda: self.createTest()).grid(column=0, row=0)
         self.editButton = ttk.Button(buttonContainer, text='Edit', command=lambda: self.editTest())
-        self.editButton.grid(column=1, row=0) #.pack(side=LEFT)
+        self.editButton.grid(column=1, row=0)
         ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteTest()).grid(column=3, row=0)
         
         ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
@@ -35,23 +36,26 @@ class TestList(object):
             self.testList.selection_set(index)
 
     def compareTests(self):
-        comparisonTest = Test()
-        comparisonTest.setId('Comparison')
-        comparisonTest.workLoads = []
+        if len(self.testList.curselection()) > 1:
+            comparisonTest = Test()
+            comparisonTest.setId('Test comparison')
+            comparisonTest.workLoads = []
 
-        for j,i in enumerate(self.testList.curselection()):
-            test = app.getActiveSubject().getTests()[i]
-            # print( f'index: {i} - {test.id}' )
-            lastWorkLoad = test.getWorkLoads()[-1]
-            lastWorkLoad.name = f'Test{j+1}'
-            comparisonTest.addWorkLoad(lastWorkLoad)
+            for j,i in enumerate(self.testList.curselection()):
+                test = app.getActiveSubject().getTests()[i]
+                # print( f'index: {i} - {test.id}' )
+                lastWorkLoad = test.getWorkLoads()[-1]
+                lastWorkLoad.name = f'Test{j+1}'
+                comparisonTest.addWorkLoad(lastWorkLoad)
 
-        # print(comparisonTest.getWorkLoads())
-        # print(self.testList.curselection())
-        app.setActiveTest(comparisonTest)
-        # Refresh views
-        app.testDetailModule.refreshTestDetails()
-        app.envDetailModule.refresh()
+            # print(comparisonTest.getWorkLoads())
+            # print(self.testList.curselection())
+            app.setActiveTest(comparisonTest)
+            # Refresh views
+            app.testDetailModule.refreshTestDetails()
+            app.envDetailModule.refresh()
+        else:
+            notification.create('error', 'At least 2 tests have to be selected', '5000')
 
     def editTest(self):
         index = self.testList.curselection()[0]
@@ -75,11 +79,19 @@ class TestList(object):
             editscreen.destroy()
 
     def deleteTest(self):
-        index = self.testList.curselection()[0]
         subject = app.getActiveSubject()
         tests = subject.getTests()
-        del tests[index]
+        toBeDeleted = []
+
+        for i in self.testList.curselection():
+            toBeDeleted.append(i)
+            
+        sortedToBeDeleted = sorted(toBeDeleted, reverse=True)
+        for i in sortedToBeDeleted:
+            del tests[i]
+        
         app.setActiveTest(None)
+        # app.testDetailModule.refreshTestDetails()
         self.refreshList()
 
     def createTest(self):
@@ -115,7 +127,7 @@ class TestList(object):
 
             #Refresh view
             subjectList = app.sidepanel_subjectList
-            subjectList.addToList(subject.id)
+            subjectList.addToList(subject)
             subjectList.updateSelection()
             self.addToList(test.id)
 

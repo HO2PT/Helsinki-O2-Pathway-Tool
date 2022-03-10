@@ -3,9 +3,13 @@ from tkinter import ttk
 
 from objects.app import app
 from objects.project import Project
+from objects.test import Test
+from modules.notification import notification
 
 class ProjectList(object):
     def __init__(self, sidePanel):
+        self.startSel = None
+
         self.container = LabelFrame(sidePanel, text="Projects")
         self.container.pack(fill = BOTH, expand=TRUE)
 
@@ -13,17 +17,71 @@ class ProjectList(object):
         self.projectList.pack(fill = BOTH, expand=TRUE)
 
         self.projectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
+        self.projectList.bind('<Control-Button-1>', lambda e: self.handleCtrlSelect(e))
+        self.projectList.bind('<Shift-Button-1>', lambda e: self.handleShiftSelect(e))
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         self.createButton = ttk.Button(buttonContainer, text='Add', command=lambda: self.createProject())
-        self.createButton.pack(side=LEFT)
+        self.createButton.grid(column=0, row=0)
         self.editButton = ttk.Button(buttonContainer, text='Edit', command=lambda: self.editProject())
-        self.editButton.pack(side=LEFT)
+        self.editButton.grid(column=1, row=0)
         self.deleteButton = ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteProject())
-        self.deleteButton.pack(side=LEFT)
+        self.deleteButton.grid(column=2, row=0)
         
-        ttk.Button(self.container, text='Import...').pack()
+        ttk.Button(buttonContainer, text='Import...').grid(column=0, row=1)
+        # Mitä halutaan verrata???
+        ttk.Button(buttonContainer, text='Compare', command=lambda: self.showComparisonOptions(), state=DISABLED).grid(column=1, row=1)
+        ttk.Button(buttonContainer, text='Plot mean', command=lambda: self.printSelectedMean()).grid(column=2, row=1)
+
+    def printSelectedMean(self):
+        if len(self.projectList.curselection()) < 2:
+            emptyTest = Test()
+            app.plotMaxMinAvg(emptyTest, plotProject=True)
+        else:
+            notification.create('error', 'Select single project for plotting mean figures', '5000')
+
+    def showComparisonOptions(self):
+        if len(self.projectList.curselection()) > 1:
+            # Create edit popup
+            editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*4)
+            editscreen.title('Compare')
+            editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
+            ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+            editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
+            editscreen.grid_propagate(False)
+            
+            self.var = IntVar(value=0)
+            opt1 = ttk.Radiobutton(editscreen, text='First tests', variable=self.var, value=0)
+            opt1.grid(column=1, row=0, sticky='w')
+            opt2 = ttk.Radiobutton(editscreen, text='Last tests', variable=self.var, value=-1)
+            opt2.grid(column=1, row=1, sticky='w')
+            opt32 = ttk.Entry(editscreen, width=3)
+            opt3 = ttk.Radiobutton(editscreen, text='Test number', variable=self.var, value=-999)
+            opt3.grid(column=1, row=2, sticky='w')
+            opt32.grid(column=2, row=2, sticky='w')
+            ttk.Button(editscreen, text='Save', command=lambda: close()).grid(column=3, row=3, sticky='se')
+
+            def close():
+                if self.var.get() == -999:
+                    self.compareSubjects(int(opt32.get())-1)
+                else:
+                    self.compareSubjects(self.var.get())
+                editscreen.destroy()
+        else:
+            notification.create('error', 'Select at least 2 projects for comparison', '5000')
+
+    def handleCtrlSelect(self, e):
+        index = f'@{e.x},{e.y}'
+            
+        if self.projectList.selection_includes(index):
+            self.projectList.selection_clear(index)
+        else:
+            self.projectList.selection_set(index)
+    
+    def handleShiftSelect(self,e):
+        endSel = f'@{e.x},{e.y}'
+        self.projectList.selection_set(self.startSel, endSel)
 
     def editProject(self):
         index = self.projectList.curselection()[0]
@@ -86,6 +144,7 @@ class ProjectList(object):
     def handleListboxSelect(self):
         # Set selected project as active project by clicked index
         index = self.projectList.curselection()[0]
+        self.startSel = index
         project = app.projects[index]
         app.setActiveProject(project)
 

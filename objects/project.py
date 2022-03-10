@@ -8,26 +8,6 @@ class Project(object):
         self.VO2min = 0
         self.VO2avg = 0
 
-        """ self.HRmax = 0
-        self.HRmin = 0
-        self.HRavg = 0
-
-        self.SVmax = 0
-        self.SVmin = 0
-        self.SVavg = 0
-
-        self.Qmax = 0
-        self.Qmin = 0
-        self.Qavg = 0
-
-        self.Hbmax = 0
-        self.Hbmin = 0
-        self.Hbavg = 0
-
-        self.SaO2max = 0
-        self.SaO2min = 0
-        self.SaO2avg = 0 """
-
         self.QaO2max = 0
         self.QaO2min = 0
         self.QaO2avg = 0
@@ -35,13 +15,6 @@ class Project(object):
         self.DO2max = 0
         self.DO2min = 0
         self.DO2avg = 0
-
-        """ self.vo2maxList = []
-        self.hrmaxList = []
-        self.svmaxList = []
-        self.qmaxList = []
-        self.hbmaxList = []
-        self.sao2maxList = [] """
         
         self.metricsTestObject = Test()
         self.metricsTestObject.setId(self.id)

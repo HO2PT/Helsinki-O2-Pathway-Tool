@@ -20,6 +20,9 @@ from objects.test import Test
 # Stage 6: hb
 # Stage 7: sao2
 
+# Luo vaihtoehdot tuo projekti, tuo käyttäjä, tuo testi
+# tuodessa testiä lisätään aktiivisen käyttäjän alle jnejne.
+
 class DataImporter(object):
     def __init__(self):
         print('IMPORTING YOU SAY')
