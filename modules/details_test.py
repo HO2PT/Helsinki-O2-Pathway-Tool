@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
+from modules.ScrollableNotebook import ScrollableNotebook
 
 class TestDetailModule(object):    
     def __init__(self, detailsPanel):
@@ -14,7 +15,7 @@ class TestDetailModule(object):
         self.testId = ttk.Label(details, text=None)
         self.testId.pack()
 
-        ttk.Button(details, text="Calculate", command=lambda: app.getActiveTest().getMaxLoad()).pack(side=BOTTOM)
+        #ttk.Button(details, text="Calculate", command=lambda: app.getActiveTest().getMaxLoad()).pack(side=BOTTOM)
 
         ## Load notebook
         self.loadsContainer = ttk.Frame(self.container)
@@ -83,8 +84,7 @@ class LoadNotebook(object):
         ])
         
         ## Notebook
-        self.loadNotebook = ttk.Notebook(parent, style='loadNotebook.TNotebook')
-        self.loadNotebook.bind('<Button-1>', lambda e: self.handleTabClick(e))
+        self.loadbook = ScrollableNotebook(parent,style="loadNotebook.TNotebook", wheelscroll=True)
 
         # Add/edit button
         self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())
@@ -97,13 +97,13 @@ class LoadNotebook(object):
         i = len(self.loadTabs)
         details = workLoadObject.getDetails()
 
-        newLoad = LoadTab(i, workLoadObject, details, self.loadNotebook)
+        newLoad = LoadTab(i, workLoadObject, details, self.loadbook)
             
         # Append tab
         self.loadTabs.append(newLoad)
-        tabCount = self.loadNotebook.index('end')
-        self.loadNotebook.insert('end', newLoad.loadFrame, text=newLoad.getName())
-        self.loadNotebook.select(tabCount) 
+        tabCount = self.loadbook.index('end')
+        self.loadbook.add(newLoad.loadFrame, text=newLoad.getName())
+        self.loadbook.select(tabCount) 
 
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
@@ -111,8 +111,8 @@ class LoadNotebook(object):
     def refresh(self):
         self.loadTabs = []
         # Hide previous tabs
-        for t in self.loadNotebook.tabs():
-            self.loadNotebook.forget(t)
+        for t in self.loadbook.tabs():
+            self.loadbook.forget(t)
 
         activeTest = app.getActiveTest()
 
@@ -123,29 +123,20 @@ class LoadNotebook(object):
             # Get load details
             details = l.getDetails()
 
-            newLoad = LoadTab(i, l, details, self.loadNotebook)
+            newLoad = LoadTab(i, l, details, self.loadbook)
             
             # Append tab
             self.loadTabs.append(newLoad)
-            tabCount = self.loadNotebook.index('end')
-            self.loadNotebook.insert('end', newLoad.loadFrame, text=l.getName())
-            self.loadNotebook.select(tabCount) 
+            tabCount = self.loadbook.index('end')
+            self.loadbook.add(newLoad.loadFrame, text=l.getName())
+            self.loadbook.select(tabCount)
 
-        self.loadNotebook.pack(fill=BOTH, expand=TRUE)
+        self.loadbook.pack(fill="both",expand=True)
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
-
-    def handleTabClick(self, e):
-        clickedTabIndex = self.loadNotebook.index(f'@{e.x},{e.y}')
-        activeTest = app.getActiveTest()
-        workLoads = activeTest.getWorkLoads()
-
-        if self.loadNotebook.identify(e.x, e.y) == 'close':
-            self.loadNotebook.forget(clickedTabIndex)
-            del workLoads[clickedTabIndex]
             
     def editLoad(self):
-        index = self.loadNotebook.index('current')
+        index = self.loadbook.index('current')
 
         # Create edit popup
         editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*2.6, height=self.editButton.winfo_reqheight()*3)
@@ -290,7 +281,6 @@ class TestDetailRow(object):
         # Unit
         if self.label != 'pH' or self.label != 'pH0':
             units = app.settings.getUnits()[f'{self.label}_units']
-            #print(f'UNITS: {units}')
             tempMenuButton = ttk.Menubutton(rowFrame)
             tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
 
