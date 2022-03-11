@@ -1,15 +1,13 @@
-from re import I
+from dataclasses import dataclass
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
-from numpy import empty
 import pandas as pd
 from pandastable import Table, TableModel
 from modules.notification import notification
 from objects.app import app
 from objects.project import Project
 from objects.subject import Subject
-from objects.test import Test
 
 # Stage 0: id
 # Stage 1: loads
@@ -19,6 +17,17 @@ from objects.test import Test
 # Stage 5: q
 # Stage 6: hb
 # Stage 7: sao2
+
+# Stage 8: CaO2
+# Stage 9: CvO2
+# Stage 10: CavO2
+# Stage 11: QaO2
+# Stage 12: SvO2
+# Stage 13: PvO2
+# Stage 14: T0
+# Stage 15: T
+# Stage 16: pH0
+# Stage 17: pH
 
 # Luo vaihtoehdot tuo projekti, tuo käyttäjä, tuo testi
 # tuodessa testiä lisätään aktiivisen käyttäjän alle jnejne.
@@ -30,6 +39,7 @@ class DataImporter(object):
         self.multiplerowlist = []
         self.multiplecells = []
         self.stage = 0
+        self.atdivider = None
         self.tests = []
         self.subjects = []
         self.currentDf = None
@@ -40,7 +50,7 @@ class DataImporter(object):
             self.dfList= {}
 
             for sheet in data.sheet_names:
-                self.dfList[sheet] = pd.read_excel(data, sheet)
+                self.dfList[sheet] = pd.read_excel(data, sheet, header=None)
 
             self.window = Toplevel()
             self.window.title('Import')
@@ -172,7 +182,7 @@ class DataImporter(object):
         cols = self.multiplecollist
         #print(f'ROWS: {rows}')
         #print(f'COLS: {cols}')
-        self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]+1}-{cols[-1]+1}')
+        self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]}-{cols[-1]}')
         pass
 
     def drawMultipleCells(self):
@@ -281,19 +291,19 @@ class DataImporter(object):
             for i, c in enumerate(cols):
                 if i != 0:
                     if c == temp+1:
-                        self.selectionText.configure(text=f'Selected columns {cols[0]+1}-{cols[-1]+1}')
+                        self.selectionText.configure(text=f'Selected columns {cols[0]}-{cols[-1]}')
                     else:
                         text = 'Selected cols '
                         for i, c in enumerate(cols):
                             if i != len(cols)-1:
-                                text += f'{c+1}, '
+                                text += f'{c}, '
                             else:
-                                text += f'{c+1}'
+                                text += f'{c}'
 
                         self.selectionText.configure(text=text)
                     temp = c
         else:
-            self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]+1}')
+            self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]}')
 
     def updateSelectionText(self, e=None):
         # print('UPDATED CALLED')
@@ -332,25 +342,25 @@ class DataImporter(object):
                 for i, c in enumerate(cols):
                     if i != 0:
                         if c == temp+1:
-                            self.selectionText.configure(text=f'Selected columns {cols[0]+1}-{cols[-1]+1}')
+                            self.selectionText.configure(text=f'Selected columns {cols[0]}-{cols[-1]}')
                         else:
                             text = 'Selected cols '
                             for i, c in enumerate(cols):
                                 if i != len(cols)-1:
-                                    text += f'{c+1}, '
+                                    text += f'{c}, '
                                 else:
-                                    text += f'{c+1}'
+                                    text += f'{c}'
 
                             self.selectionText.configure(text=text)
                         temp = c
             else:
-                self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]+1}')
+                self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]}')
         elif len(cols) >= 1 and len(rows) >= 1: # multiple cells selected
             # print('MULTIPLE CELLS SELECTED')
-            self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]+1}-{cols[-1]+1}')
+            self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]}-{cols[-1]}')
         else:
             # print('SINGEL CELL SELECTED')
-            self.selectionText.configure(text=f'Selected cell row {cellY+1} - col {cellX+1}')
+            self.selectionText.configure(text=f'Selected cell row {cellY+1} - col {cellX}')
 
     def selectRow(self, e):
         row = self.dataTable.get_row_clicked(e)
@@ -385,119 +395,289 @@ class DataImporter(object):
                         self.selectionText.configure(text=text)
                     temp = r
 
+    def chechDataForm(self):
+        # print(f'len collist: {len(self.multiplecollist)}')
+        # print(f'len rowlist: {len(self.multiplerowlist)}')
+        # print(f'selected rows: {len(self.dataTable.getSelectedRows())}')
+        if len(self.multiplecollist) > 1 or (len(self.multiplecollist) == 0 and len(self.dataTable.getSelectedRows()) > 0):
+            print('LEVEÄ MUOTO')
+            self.dataMode = 'wide'
+        else:
+            print('PITKÄ MUOTO')
+            self.dataMode = 'long'
+
     def getInput(self):
         # print('GETTING INPUT')
-        rowValues = self.dataTable.getSelectionValues()
         col = self.dataTable.getSelectedColumn()
         row = self.dataTable.getSelectedRow()
         rows = self.dataTable.getSelectedRows()
         nRows = self.dataTable.rows
-        colValues = []
-        columnNames = []
+        self.colValues = []
+        self.columnNames = []
+        self.rowValues = []
+        self.rowNames= []
 
-        for c in self.multiplecollist:
-            self.dataTable.setSelectedCol(c)
-            colValues.append(self.dataTable.getSelectionValues()[0])
-            columnNames.append(self.dataTable.model.getColumnName(c))
+        if len(self.multiplecollist) > 0 and len(self.multiplerowlist) > 0: # set up values lists if multicell
+            for c in self.multiplecollist:
+                self.dataTable.setSelectedCol(c)
+                self.colValues.append(self.dataTable.getSelectionValues()[0][1:])
+                self.columnNames.append(self.dataTable.getSelectionValues()[0][0])
 
-        # print(columnNames)
-        # print(colValues)
-        # print(rowValues)
-        # print(self.multiplerowlist)
-        for i, c in enumerate(self.multiplecollist):
             for r in self.multiplerowlist:
-                print(f'VALITUT: {colValues[i][r]}')
+                self.dataTable.setSelectedRow(r)
+                self.rowValues.append(self.dataTable.getSelectedRows())
+                self.rowNames.append(self.dataTable.getSelectedRows().iloc[0,0])
+        else: # set up values lists if whole rows/cols selected
+            for ri in range(len(rows)):
+                temp = []
+                for i in range(self.dataTable.cols):
+                    if i != 0:
+                        temp.append(rows.iloc[ri,i])
+                self.rowValues.append(temp)        
+                self.rowNames.append(rows.iloc[ri,0])
+
+            for c in self.multiplecollist:
+                self.dataTable.setSelectedCol(c)
+                self.colValues.append(self.dataTable.getSelectionValues()[0][1:])
+                self.columnNames.append(self.dataTable.getSelectionValues()[0][0])
+
+        # print(f'col names: {self.columnNames}')
+        # print(f'col values: {self.colValues}')
+        # print(f'row names: {self.rowNames}')
+        # print(f'row values: {self.rowValues}')
+        # print(rows)
+        # print(nRows)
         
         # print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
-        # print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
+        print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
 
         if col == -1 and row == -1: # nothing selected
             print('NOTHING SELECTED')
         else: # something selected
-            if col == -1: # rows selected
-                if len(rows) > 1 and col == -1:
+            if col == -1: # TESTED rows selected
+                if len(rows) > 1 and col == -1: # multiple row
                     print('USEAMPI RIVI')
-                    # print(rows)
-                else:
-                    print('YKSI RIVI')
-                    # print(rows)
 
-            if row == -1: # cols selected
+                    if self.stage == 0: # ids
+                        self.chechDataForm()
+
+                    elif self.stage == 1: # Loads
+                        print('**LOADS**')
+                        self.getLoadsFromRows()
+
+                    elif self.stage == 2: #VO2
+                        print('**VO2**')
+                        self.getRowValues('VO2')
+
+                    elif self.stage == 3: #HR
+                        print('**HR**')
+                        self.getRowValues('HR')
+
+                    elif self.stage == 4: #Sv
+                        print('**Sv**')
+                        self.getRowValues('Sv')
+
+                    elif self.stage == 5: #Q
+                        print('**Q**')
+                        self.getRowValues('Q')
+
+                    elif self.stage == 6: #Hb
+                        print('**Hb**')
+                        self.getRowValues('Hb')
+
+                    elif self.stage == 7: #SaO2
+                        print('**SaO2**')
+                        self.getRowValues('SaO2')
+
+                    elif self.stage == 8: #CaO2
+                        print('**CaO2**')
+                        self.getRowValues('CaO2')
+
+                    elif self.stage == 9: #CvO2
+                        print('**CvO2**')
+                        self.getRowValues('CvO2')
+
+                    elif self.stage == 10: #CavO2
+                        print('**CavO2**')
+                        self.getRowValues('CavO2')
+
+                    elif self.stage == 11: #QaO2
+                        print('**QaO2**')
+                        self.getRowValues('QaO2')
+
+                    elif self.stage == 12: #SvO2
+                        print('**SvO2**')
+                        self.getRowValues('SvO2')
+
+                    elif self.stage == 13: #PvO2
+                        print('**PvO2**')
+                        self.getRowValues('PvO2')
+
+                    elif self.stage == 14: #T0
+                        print('**T0**')
+                        self.getRowValues('T0')
+
+                    elif self.stage == 15: #T
+                        print('**T**')
+                        self.getRowValues('T')
+
+                    elif self.stage == 16: #pH0
+                        print('**pH0**')
+                        self.getRowValues('pH0')
+
+                    elif self.stage == 17: #pH
+                        print('**pH**')
+                        self.getRowValues('pH')
+
+                else: # single rows
+                    print('YKSI RIVI')
+                    if self.stage == 0: #ids
+                        self.chechDataForm()
+                        for id in self.rowValues[0]:
+                            # Create subject, set its id, add a test, reset workloads
+                            subject = Subject()
+                            subject.setId(id)
+                            subject.addTest()
+                            subject.getTests()[0].workLoads = []
+                            self.subjects.append(subject)
+
+                    elif self.stage == 1: # load
+                        print('**LOADS**')
+                        self.getLoadsFromRows()
+
+                    elif self.stage == 2: # VO2
+                        print('**VO2**')
+                        self.getRowValues('VO2')
+
+                    elif self.stage == 3: #HR
+                        print('**HR**')
+                        self.getRowValues('HR')
+
+                    elif self.stage == 4: #Sv
+                        print('**Sv**')
+                        self.getRowValues('Sv')
+
+                    elif self.stage == 5: #Q
+                        print('**Q**')
+                        self.getRowValues('Q')
+
+                    elif self.stage == 6: #Hb
+                        print('**Hb**')
+                        self.getRowValues('Hb')
+
+                    elif self.stage == 7: #SaO2
+                        print('**SaO2**')
+                        self.getRowValues('SaO2')
+
+                    elif self.stage == 8: #CaO2
+                        print('**CaO2**')
+                        self.getRowValues('CaO2')
+
+                    elif self.stage == 9: #CvO2
+                        print('**CvO2**')
+                        self.getRowValues('CvO2')
+
+                    elif self.stage == 10: #CavO2
+                        print('**CavO2**')
+                        self.getRowValues('CavO2')
+
+                    elif self.stage == 11: #QaO2
+                        print('**QaO2**')
+                        self.getRowValues('QaO2')
+
+                    elif self.stage == 12: #SvO2
+                        print('**SvO2**')
+                        self.getRowValues('SvO2')
+
+                    elif self.stage == 13: #PvO2
+                        print('**PvO2**')
+                        self.getRowValues('PvO2')
+
+                    elif self.stage == 14: #T0
+                        print('**T0**')
+                        self.getRowValues('T0')
+
+                    elif self.stage == 15: #T
+                        print('**T**')
+                        self.getRowValues('T')
+
+                    elif self.stage == 16: #pH0
+                        print('**pH0**')
+                        self.getRowValues('pH0')
+
+                    elif self.stage == 17: #pH
+                        print('**pH**')
+                        self.getRowValues('pH')
+
+                self.nextStage()
+
+            if row == -1: # TESTED cols selected
                 if len(self.multiplecollist) > 1: # multiple columns
-                    # print('USEAMPI SARAKE')
+                    print('USEAMPI SARAKE')
                     # print(colValues)
                     
                     if self.stage == 0: # ids
-                        pass
+                        self.chechDataForm()
 
                     elif self.stage == 1: # Loads
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            for j, l in enumerate(colValues):
-                                load = test.createLoad()
-                                load.setName(list(columnNames)[j]) # column name
-                                load.getDetails().setValue('Load', l[i]) # set value
+                        self.getLoadsFromCols()
                     
                     elif self.stage == 2: # VO2
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('VO2', colValues[j][i])
+                        self.getColumnValues('VO2')
 
                     elif self.stage == 3: # HR
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('HR', colValues[j][i])
+                        self.getColumnValues('HR')
 
                     elif self.stage == 4: # SV
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('Sv', colValues[j][i])
+                        self.getColumnValues('Sv')
 
                     elif self.stage == 5: # Q
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('Q', colValues[j][i])
+                        self.getColumnValues('Q')
 
                     elif self.stage == 6: # Hb
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('Hb', colValues[j][i])
+                        self.getColumnValues('Hb')
 
                     elif self.stage == 7: # SaO2
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
+                        self.getColumnValues('SaO2')
+                    
+                    elif self.stage == 8: # CaO2
+                        self.getColumnValues('CaO2')
 
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('SaO2', colValues[j][i])
+                    elif self.stage == 9: # CvO2
+                        self.getColumnValues('CvO2')
+
+                    elif self.stage == 10: # CavO2
+                        self.getColumnValues('CavO2')
+
+                    elif self.stage == 11: # QaO2
+                        self.getColumnValues('QaO2')
+
+                    elif self.stage == 12: # SvO2
+                        self.getColumnValues('SvO2')
+
+                    elif self.stage == 13: # PvO2
+                        self.getColumnValues('PvO2')
+
+                    elif self.stage == 14: # T0
+                        self.getColumnValues('T0')
+
+                    elif self.stage == 15: # T
+                        self.getColumnValues('T')
+
+                    elif self.stage == 16: # pH0
+                        self.getColumnValues('pH0')
+
+                    elif self.stage == 17: # pH
+                        self.getColumnValues('pH')
 
                 else: # one column
-                    # print('YKSI SARAKE')
+                    print('YKSI SARAKE')
                     # print( colValues )
 
                     if self.stage == 0: # ids
-                        for id in colValues[0]:
+                        self.chechDataForm()
+
+                        for id in self.colValues[0]:
                             # Create subject, set its id, add a test, reset workloads
                             subject = Subject()
                             subject.setId(id)
@@ -506,169 +686,164 @@ class DataImporter(object):
                             self.subjects.append(subject)
                     
                     elif self.stage == 1: # loads
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            for j, l in enumerate(colValues):
-                                load = test.createLoad()
-                                load.setName(list(columnNames)[j]) # column name
-                                load.getDetails().setValue('Load', l[i]) # set value
+                        self.getLoadsFromCols()
                     
                     elif self.stage == 2: # VO2
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
+                        self.getColumnValues('VO2')
 
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('VO2', colValues[0][i])
-                    
                     elif self.stage == 3: # HR
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
+                        self.getColumnValues('HR')
 
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('HR', colValues[0][i])
-                    
                     elif self.stage == 4: # SV
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
+                        self.getColumnValues('Sv')
 
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('Sv', colValues[0][i])
-                    
                     elif self.stage == 5: # Q
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('Q', colValues[0][i])
+                        self.getColumnValues('Q')
 
                     elif self.stage == 6: # Hb
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('Hb', colValues[0][i])
+                        self.getColumnValues('Hb')
 
                     elif self.stage == 7: # SaO2
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
+                        self.getColumnValues('SaO2')
+                    
+                    elif self.stage == 8: # CaO2
+                        self.getColumnValues('CaO2')
 
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                details.setValue('SaO2', colValues[0][i])
+                    elif self.stage == 9: # CvO2
+                        self.getColumnValues('CvO2')
+
+                    elif self.stage == 10: # CavO2
+                        self.getColumnValues('CavO2')
+
+                    elif self.stage == 11: # QaO2
+                        self.getColumnValues('QaO2')
+
+                    elif self.stage == 12: # SvO2
+                        self.getColumnValues('SvO2')
+
+                    elif self.stage == 13: # PvO2
+                        self.getColumnValues('PvO2')
+
+                    elif self.stage == 14: # T0
+                        self.getColumnValues('T0')
+
+                    elif self.stage == 15: # T
+                        self.getColumnValues('T')
+
+                    elif self.stage == 16: # pH0
+                        self.getColumnValues('pH0')
+
+                    elif self.stage == 17: # pH
+                        self.getColumnValues('pH')
 
                 self.nextStage()
 
             if row >= 0 and col >= 0: # cells selected
-                if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1:
-                    # print('MULTIPLE CELLS SELECTED')
-                    #print(values[0])
-                    colList = self.multiplecollist
-                    rowList = self.multiplerowlist
+                if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1: # TESTED multiple cells
+                    print('MULTIPLE CELLS SELECTED')
 
                     if self.stage == 0: # ids
+                        self.chechDataForm()
+
                         for i, c in enumerate(self.multiplecollist):
                             for r in self.multiplerowlist:
                                 # Create subject, set its id, add a test, reset workloads
                                 subject = Subject()
-                                subject.setId(colValues[i][r])
+                                subject.setId(self.colValues[i][r-1])
                                 subject.addTest()
                                 subject.getTests()[0].workLoads = []
                                 self.subjects.append(subject)
                     
                     elif self.stage == 1: # loads
+                        print('**LOADS**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellLoads()
 
-                        for s in self.subjects:
-                            test = s.getTests()[0]
-
-                            for i, r in enumerate(rowList):
-                                columnName = self.dataTable.model.getColumnName(colList[i])
-                                load = test.createLoad()
-                                load.setName(columnName) # column name
-                                load.getDetails().setValue('Load', colValues[i][r]) # set value
-                    
                     elif self.stage == 2: # VO2
-
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                value = self.dataTable.model.getValueAt(rowList[i], colList[j])
-                                details.setValue('VO2', value)
+                        print('**VO2**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('VO2')
 
                     elif self.stage == 3: # HR
-
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                value = self.dataTable.model.getValueAt(rowList[i], colList[j])
-                                details.setValue('HR', value)
+                        print('**HR**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('HR')
                     
-                    elif self.stage == 4: # SV
-
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                value = self.dataTable.model.getValueAt(rowList[i], colList[j])
-                                details.setValue('Sv', value)
+                    elif self.stage == 4: # Sv
+                        print('**Sv**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('Sv')
 
                     elif self.stage == 5: # Q
-
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                value = self.dataTable.model.getValueAt(rowList[i], colList[j])
-                                details.setValue('Q', value)
+                        print('**Q**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('Q')
 
                     elif self.stage == 6: # Hb
-
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
-
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                value = self.dataTable.model.getValueAt(rowList[i], colList[0])
-                                details.setValue('Hb', value)
+                        print('**Hb**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('Hb')
 
                     elif self.stage == 7: # SaO2
+                        print('**SaO2**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('SaO2')
 
-                        for i, s in enumerate(self.subjects):
-                            test = s.getTests()[0]
-                            loads = test.getWorkLoads()
+                    elif self.stage == 8: # CaO2
+                        print('**CaO2**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('CaO2')
 
-                            for j, l in enumerate(loads):
-                                details = l.getDetails()
-                                value = self.dataTable.model.getValueAt(rowList[i], colList[j])
-                                details.setValue('SaO2', value)
+                    elif self.stage == 9: # CvO2
+                        print('**CvO2**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('CvO2')
 
-                                    
-                else:
-                    # print('SINGLE CELL SELECTED')
+                    elif self.stage == 10: # CavO2
+                        print('**CavO2**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('CavO2')
+
+                    elif self.stage == 11: # QaO2
+                        print('**QaO2**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('QaO2')
+
+                    elif self.stage == 12: # SvO2
+                        print('**SvO2**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('SvO2')
+
+                    elif self.stage == 13: # PvO2
+                        print('**PvO2**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('PVO2')
+                    
+                    elif self.stage == 14: # T0
+                        print('**T0**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('T0')
+
+                    elif self.stage == 15: # T
+                        print('**T**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('T')
+
+                    elif self.stage == 16: # pH0
+                        print('**pH0**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('pH0')
+
+                    elif self.stage == 17: # pH
+                        print('**pH**')
+                        print(f'**DATA FORM** {self.dataMode}')
+                        self.getMultiCellValues('pH')
+
+                else: # single cell
+                    print('SINGLE CELL SELECTED')
                     value = self.dataTable.model.getValueAt(row, col)
-                    columnName = self.dataTable.model.getColumnName(col)
-                    # print(f'SINGLE CELL VALUE: {value}')
+                    columnName = self.dataTable.getSelectionValues()[0][0]
+                    rowName = self.dataTable.getSelectedRows().iloc[0,0]
 
                     if self.stage == 0: # ids
                         # Create subject, set its id, add a test, reset workloads
@@ -682,51 +857,60 @@ class DataImporter(object):
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.createLoad()
-                        # print(f'SINGLE CELL - COLUMNNAMES: {columnName}')
+                        """ if self.dataMode == 'long':
+                            load.setName(rowName) # row name
+                        elif self.dataMode == 'wide':
+                            load.setName(columnName) # column name """
                         load.setName(columnName) # column name
                         load.getDetails().setValue('Load', value) # set value
 
                     elif self.stage == 2: # VO2
-                        s = self.subjects[0]
-                        test = s.getTests()[0]
-                        load = test.getWorkLoads()[0]
-                        # print(value)
-                        load.getDetails().setValue('VO2', value) # set value
+                        self.setSingleCellValue('VO2', value)
 
                     elif self.stage == 3: # HR
-                        s = self.subjects[0]
-                        test = s.getTests()[0]
-                        load = test.getWorkLoads()[0]
-                        # print(value)
-                        load.getDetails().setValue('HR', value) # set value
+                        self.setSingleCellValue('HR', value)
 
                     elif self.stage == 4: # SV
-                        s = self.subjects[0]
-                        test = s.getTests()[0]
-                        load = test.getWorkLoads()[0]
-                        # print(value)
-                        load.getDetails().setValue('Sv', value) # set value
+                        self.setSingleCellValue('Sv', value)
 
                     elif self.stage == 5: # Q
-                        s = self.subjects[0]
-                        test = s.getTests()[0]
-                        load = test.getWorkLoads()[0]
-                        # print(value)
-                        load.getDetails().setValue('Q', value) # set value
+                        self.setSingleCellValue('Q', value)
 
                     elif self.stage == 6: # Hb
-                        s = self.subjects[0]
-                        test = s.getTests()[0]
-                        load = test.getWorkLoads()[0]
-                        # print(value)
-                        load.getDetails().setValue('Hb', value) # set value
+                        self.setSingleCellValue('Hb', value)
 
                     elif self.stage == 7: # SaO2
-                        s = self.subjects[0]
-                        test = s.getTests()[0]
-                        load = test.getWorkLoads()[0]
-                        # print(value)
-                        load.getDetails().setValue('SaO2', value) # set value
+                        self.setSingleCellValue('SaO2', value)
+
+                    elif self.stage == 8: # CaO2
+                        self.setSingleCellValue('CaO2', value)
+
+                    elif self.stage == 9: # CvO2
+                        self.setSingleCellValue('CvO2', value)
+
+                    elif self.stage == 10: # CavO2
+                        self.setSingleCellValue('CavO2', value)
+
+                    elif self.stage == 11: # QaO2
+                        self.setSingleCellValue('QaO2', value)
+
+                    elif self.stage == 12: # SvO2
+                        self.setSingleCellValue('SvO2', value)
+
+                    elif self.stage == 13: # PvO2
+                        self.setSingleCellValue('PvO2', value)
+                    
+                    elif self.stage == 14: # T0
+                        self.setSingleCellValue('T0', value)
+
+                    elif self.stage == 15: # T
+                        self.setSingleCellValue('T', value)
+
+                    elif self.stage == 16: # pH0
+                        self.setSingleCellValue('pH0', value)
+
+                    elif self.stage == 17: # pH
+                        self.setSingleCellValue('pH', value)
 
                 self.nextStage()
 
@@ -749,6 +933,93 @@ class DataImporter(object):
         self.dataTable.setSelectedRow( -1 )
         self.dataTable.drawSelectedRow()
         self.dataTable.rowheader.clearSelected()
+
+    def getColumnValues(self, label):
+        for i, s in enumerate(self.subjects):
+            test = s.getTests()[0]
+            loads = test.getWorkLoads()
+
+            for j, l in enumerate(loads):
+                details = l.getDetails()
+                details.setValue(label, self.colValues[j][i])
+    
+    def getLoadsFromCols(self):
+        for i, s in enumerate(self.subjects):
+            test = s.getTests()[0]
+            for j, l in enumerate(self.colValues):
+                load = test.createLoad()
+                load.setName(self.columnNames[j]) # column name
+                load.getDetails().setValue('Load', l[i]) # set value
+
+    def getLoadsFromRows(self):
+        for i, s in enumerate(self.subjects):
+            test = s.getTests()[0]
+            for j, l in enumerate(self.rowValues):
+                load = test.createLoad()
+                load.setName(self.rowNames[j]) # row name
+                load.getDetails().setValue('Load', l[i]) # set value
+
+    def getRowValues(self, label):
+        for i, s in enumerate(self.subjects):
+            test = s.getTests()[0]
+            loads = test.getWorkLoads()
+
+            for j, l in enumerate(loads):
+                details = l.getDetails()
+                details.setValue(label, self.rowValues[j][i])
+
+    def getMultiCellLoads(self):
+        colList = self.multiplecollist
+        rowList = self.multiplerowlist
+
+        if self.dataMode == 'long':
+            for ri, r in enumerate(rowList):
+                test = self.subjects[ri].getTests()[0]
+
+                for ci, c in enumerate(colList):
+                    columnName = self.columnNames[ci]
+                    load = test.createLoad()
+                    load.setName(columnName) # column name
+                    load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+
+        elif self.dataMode == 'wide':
+            for ci, c in enumerate(colList):
+                test = self.subjects[ci].getTests()[0]
+
+                for ri, r in enumerate(rowList):
+                    rowName = self.rowNames[ri]
+                    load = test.createLoad()
+                    load.setName(rowName) # column name
+                    load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+
+    def getMultiCellValues(self, label):
+        colList = self.multiplecollist
+        rowList = self.multiplerowlist
+
+        if self.dataMode == 'long':
+            for si, s in enumerate(self.subjects):
+                test = s.getTests()[0]
+                loads = test.getWorkLoads()
+
+                for li, l in enumerate(loads):
+                    details = l.getDetails()
+                    value = self.dataTable.model.getValueAt(rowList[si], colList[li])
+                    details.setValue(label, value)
+        elif self.dataMode == 'wide':
+            for si, s in enumerate(self.subjects):
+                test = s.getTests()[0]
+                loads = test.getWorkLoads()
+
+                for li, l in enumerate(loads):
+                    details = l.getDetails()
+                    value = self.dataTable.model.getValueAt(rowList[li], colList[si])
+                    details.setValue(label, value)
+
+    def setSingleCellValue(self, label, value):
+        s = self.subjects[0]
+        test = s.getTests()[0]
+        load = test.getWorkLoads()[0]
+        load.getDetails().setValue(label, value) # set value
 
     def prevStage(self):
         self.stage -= 1
@@ -793,58 +1064,46 @@ class DataImporter(object):
         if self.stage > 0:
                 ttk.Button(self.footer, text='Prev', command=lambda: self.prevStage()).grid(column=0, row=0)
                 ttk.Button(self.footer, text='Pass', command=lambda: self.nextStage()).grid(column=2, row=0)
-                self.cancelButton.grid(column=3, row=0)
-
-        # print(f'Advancing to stage: {self.stage}')
+                ttk.Button(self.footer, text='Done', command=lambda: self.importData()).grid(column=3, row=0)
+                self.cancelButton.grid(column=4, row=0)
         
-        for s in self.subjects:
-            # print(f'SUBJECT {s.id}')
-            t = s.getTests()[0]
-            # print(t.getTestDetails())
         self.deselectAll()
 
         if self.stage == 1:
             self.instructionText.configure(text='Define loads row/column/cell')
         elif self.stage == 2: # -> VO2
             self.instructionText.configure(text='Define VO2 row/column/cell')
-            #print(self.subjects[0].getTests()[0].getWorkLoads()[0].getName())
-            #print(self.subjects[0].getTests()[0].getWorkLoads()[0].getDetails().Load)
-            # print(self.subjects[0].getTests()[0].getWorkLoads()[1].getName())
-            # print(self.subjects[0].getTests()[0].getWorkLoads()[1].getDetails().Load)
-
-            #print(self.subjects[1].getTests()[0].getWorkLoads()[0].getName())
-            #print(self.subjects[1].getTests()[0].getWorkLoads()[0].getDetails().Load)
-            # print(self.subjects[1].getTests()[0].getWorkLoads()[1].getName())
-            # print(self.subjects[1].getTests()[0].getWorkLoads()[1].getDetails().Load)
         elif self.stage == 3: # -> HR
-            #print(self.subjects.getTests()[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
-            # print(self.subjects.getTests()[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
             self.instructionText.configure(text='Define HR row/column/cell')
-
         elif self.stage == 4: # -> SV
-            # print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
-            # print(self.tests[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
             self.instructionText.configure(text='Define SV row/column/cell')
-
         elif self.stage == 5: # -> Q
-            # print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
-            # print(self.tests[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
             self.instructionText.configure(text='Define Q row/column/cell')
-
         elif self.stage == 6: # -> Hb
-            # print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
-            # print(self.tests[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
             self.instructionText.configure(text='Define Hb row/column/cell')
-
         elif self.stage == 7: # -> SaO2
-            # print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
-            # print(self.tests[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
             self.instructionText.configure(text='Define SaO2 row/column/cell')
-
-        elif self.stage == 8: # Finish
-            print('FINALLY')
-            # print(self.tests[0].getWorkLoads()[0].getDetails().getWorkLoadDetails())
-            # print(self.tests[0].getWorkLoads()[1].getDetails().getWorkLoadDetails())
+        elif self.stage == 8: # -> CaO2
+            self.instructionText.configure(text='Define CaO2 row/column/cell')
+        elif self.stage == 9: # -> CvO2
+            self.instructionText.configure(text='Define CvO2 row/column/cell')
+        elif self.stage == 10: # -> CavO2
+            self.instructionText.configure(text='Define CavO2 row/column/cell')
+        elif self.stage == 11: # -> QaO2
+            self.instructionText.configure(text='Define QaO2 row/column/cell')
+        elif self.stage == 12: # -> SvO2
+            self.instructionText.configure(text='Define SvO2 row/column/cell')
+        elif self.stage == 13: # -> PvO2
+            self.instructionText.configure(text='Define PvO2 row/column/cell')
+        elif self.stage == 14: # -> T0
+            self.instructionText.configure(text='Define T0 row/column/cell')
+        elif self.stage == 15: # -> T
+            self.instructionText.configure(text='Define T row/column/cell')
+        elif self.stage == 16: # -> pH0
+            self.instructionText.configure(text='Define pH0 row/column/cell')
+        elif self.stage == 17: # -> pH
+            self.instructionText.configure(text='Define pH row/column/cell')
+        elif self.stage == 18: # Finish
             self.importData()
 
     def importData(self):
