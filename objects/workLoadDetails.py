@@ -18,10 +18,10 @@ class WorkLoadDetails(object):
         self.CvO2 = 0
         self.CavO2 = 0
         self.QaO2 = 0
-        self.T0 = testDefaults['T0']
-        self.pH0 = testDefaults['pH0']
-        self.T = testDefaults['T']
-        self.pH = testDefaults['pH']
+        self.T0 = testDefaults['Tc @ rest']
+        self.pHrest = testDefaults['pH @ rest']
+        self.T = testDefaults['Tc\u209A\u2091\u2090\u2096']
+        self.pH = testDefaults['pH\u209A\u2091\u2090\u2096']
         self.PvO2 = 0
         self.DO2 = 0
 
@@ -44,9 +44,9 @@ class WorkLoadDetails(object):
         self.CvO2_unit = defUnits['CvO2_unit']
         self.CavO2_unit = defUnits['CavO2_unit']
         self.QaO2_unit = defUnits['QaO2_unit']
-        self.T0_unit = defUnits['T_unit']
-        self.T_unit = defUnits['T_unit']
-        self.pH0_unit = 0
+        self.T0_unit = defUnits['Tc @ rest_unit']
+        self.T_unit = defUnits['Tc\u209A\u2091\u2090\u2096_unit']
+        self.pHrest_unit = 0
         self.pH_unit = 0
         self.PvO2_unit = defUnits['PvO2_unit']
         self.DO2_unit = defUnits['DO2_unit']
@@ -66,10 +66,10 @@ class WorkLoadDetails(object):
         self.CvO2_MC = defMc['CvO2_mc']
         self.CavO2_MC = defMc['CavO2_mc']
         self.QaO2_MC = defMc['QaO2_mc']
-        self.T0_MC = defMc['T_mc']
-        self.T_MC = defMc['T_mc']
-        self.pH0_MC = defMc['pH_mc']
-        self.pH_MC = defMc['pH_mc']
+        self.T0_MC = defMc['Tc @ rest_mc']
+        self.T_MC = defMc['Tc\u209A\u2091\u2090\u2096_mc']
+        self.pHrest_MC = defMc['pH @ rest_mc']
+        self.pH_MC = defMc['pH\u209A\u2091\u2090\u2096_mc']
         self.PvO2_MC = defMc['PvO2_mc']
         self.DO2_MC = defMc['DO2_mc']
 
@@ -208,16 +208,16 @@ class WorkLoadDetails(object):
         if label == 'QaO2': 
             self.QaO2 = value
 
-        if label == 'T0': 
+        if label == 'Tc @ rest': 
             self.T0 = value
 
-        if label == 'T': 
+        if label == 'Tc\u209A\u2091\u2090\u2096': 
             self.T = value
 
-        if label == 'pH0': 
-            self.pH0 = value
+        if label == 'pH @ rest': 
+            self.pHrest = value
 
-        if label == 'pH': 
+        if label == 'pH\u209A\u2091\u2090\u2096': 
             self.pH = value
 
         if label == 'PvO2': 
@@ -281,21 +281,21 @@ class WorkLoadDetails(object):
             'PvO2_unit': self.PvO2_unit,
             'PvO2_MC': self.PvO2_MC,
 
-            'T0': self.T0,
+            'Tc @ rest': self.T0,
             'T0_unit': self.T0_unit,
             'T0_MC': self.T0_MC,
 
-            'T': self.T,
+            'Tc\u209A\u2091\u2090\u2096': self.T,
             'T_unit': self.T_unit,
             'T_MC': self.T_MC,
 
-            'pH0': self.pH0,
-            'pH0_unit': self.pH0_unit,
-            'pH0_MC': self.pH0_MC,
+            'pH @ rest': self.pHrest,
+            'pH @ rest_unit': self.pHrest_unit,
+            'pH @ rest_MC': self.pHrest_MC,
 
-            'pH': self.pH,
-            'pH_unit': self.pH_unit,
-            'pH_MC': self.pH_MC,
+            'pH\u209A\u2091\u2090\u2096': self.pH,
+            'pH\u209A\u2091\u2090\u2096_unit': self.pH_unit,
+            'pH\u209A\u2091\u2090\u2096_MC': self.pH_MC,
 
             'DO2': self.DO2,
             'DO2_unit': self.DO2_unit,
@@ -310,7 +310,7 @@ class WorkLoadDetails(object):
             'yi': self.yi
         }
 
-    def setCalcResults(self, y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2, DO2):
+    def setCalcResults(self, y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pHrest, pH, PvO2, DO2):
         self.y = y
         self.y2 = y2
         self.xi = xi
@@ -327,7 +327,7 @@ class WorkLoadDetails(object):
         self.QaO2 = QaO2
         self.T0 = T0
         self.T = T
-        self.pH0 = pH0
+        self.pHrest = pHrest
         self.pH = pH
         self.PvO2 = PvO2
         self.DO2 = DO2

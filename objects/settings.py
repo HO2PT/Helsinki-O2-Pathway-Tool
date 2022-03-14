@@ -20,13 +20,14 @@ class Settings(object):
                     "elevation": 1000,
                     "atm": 101,
                     "fio2": 21,
-                    "temp": 20
+                    "temp": 20,
+                    "rh": 40
                 },
                 "testDefaults":{
-                    "T0": 37,
-                    "T": 37,
-                    "pH0": 7.4,
-                    "pH": 7.4
+                    "Tc @ rest": 37,
+                    "Tc\u209A\u2091\u2090\u2096": 37,
+                    "pH @ rest": 7.4,
+                    "pH\u209A\u2091\u2090\u2096": 7.4
                 },
                 "unitDefaults":{
                     "Load": 'W',
@@ -41,16 +42,17 @@ class Settings(object):
                     "CvO2": 'ml/l',
                     "CavO2": 'ml/l',
                     "QaO2": 'ml/min',
-                    "T0": '\N{DEGREE SIGN}C',
-                    "T": '\N{DEGREE SIGN}C',
-                    "pH0": '',
-                    "pH": '',
+                    "Tc @ rest": '\N{DEGREE SIGN}C',
+                    "Tc\u209A\u2091\u2090\u2096": '\N{DEGREE SIGN}C',
+                    "pH @ rest": '',
+                    "pH\u209A\u2091\u2090\u2096": '',
                     "PvO2": 'mmHg',
                     "DO2": 'ml/min/mmHg',
                     "Elevation": 'm',
                     "ATM": 'kPa',
                     "FiO2": '%',
-                    "Temperature": '\N{DEGREE SIGN}C'
+                    "Temperature": '\N{DEGREE SIGN}C',
+                    "Rh": "%"
                 },
                 "units": {
                     "Load": ['W', 'kJ'],
@@ -65,16 +67,17 @@ class Settings(object):
                     "CvO2": ["ml/l", "ml/dl"],
                     "CavO2": ["ml/l", "ml/dl"],
                     "QaO2": ["ml/min", "l/min"],
-                    "T0": ['\N{DEGREE SIGN}C', 'F', 'K'],
-                    "T": ['\N{DEGREE SIGN}C', 'F', 'K'],
-                    "pH0": [""],
-                    "pH": [""],
+                    "Tc @ rest": ['\N{DEGREE SIGN}C', 'F', 'K'],
+                    "Tc\u209A\u2091\u2090\u2096": ['\N{DEGREE SIGN}C', 'F', 'K'],
+                    "pH @ rest": [""],
+                    "pH\u209A\u2091\u2090\u2096": [""],
                     "PvO2": ["mmHg"],
                     "DO2": ["ml/min/mmHg"],
                     "Elevation": ['m', 'km', 'ft'],
                     "ATM": ['kPa', 'bar', 'psi', 'mmHg'],
                     "FiO2": ["%"],
-                    "Temperature": ['\N{DEGREE SIGN}C', 'F', 'K']
+                    "Temperature": ['\N{DEGREE SIGN}C', 'F', 'K'],
+                    "Rh": ["%"]
                 },
                 "mcDefaults":{
                     "VO2": 0,
@@ -88,10 +91,10 @@ class Settings(object):
                     "CvO2": 0,
                     "CavO2": 0,
                     "QaO2": 0,
-                    "T0": 0,
-                    "T": 0,
-                    "pH0": 0,
-                    "pH": 0,
+                    "Tc @ rest": 0,
+                    "Tc\u209A\u2091\u2090\u2096": 0,
+                    "pH @ rest": 0,
+                    "pH\u209A\u2091\u2090\u2096": 0,
                     "PvO2": 0,
                     "DO2": 1
                 }
@@ -116,14 +119,15 @@ class Settings(object):
             'elevation': self.data['envDefaults']['elevation'],
             'atm': self.data['envDefaults']['atm'],
             'fio2': self.data['envDefaults']['fio2'],
-            'temp': self.data['envDefaults']['temp']
+            'temp': self.data['envDefaults']['temp'],
+            'rh': self.data['envDefaults']['rh']
         }
 
         self.testDefaults = {
-            "T0": self.data['testDefaults']['T0'],
-            "T": self.data['testDefaults']['T'],
-            "pH0": self.data['testDefaults']['pH0'],
-            "pH": self.data['testDefaults']['pH']
+            "Tc @ rest": self.data['testDefaults']['Tc @ rest'],
+            "Tc\u209A\u2091\u2090\u2096": self.data['testDefaults']['Tc\u209A\u2091\u2090\u2096'],
+            "pH @ rest": self.data['testDefaults']['pH @ rest'],
+            "pH\u209A\u2091\u2090\u2096": self.data['testDefaults']['pH\u209A\u2091\u2090\u2096']
         }
 
         self.unitDefaults = {
@@ -139,10 +143,10 @@ class Settings(object):
             "CvO2_unit": self.data['unitDefaults']['CvO2'],
             "CavO2_unit": self.data['unitDefaults']['CavO2'],
             "QaO2_unit": self.data['unitDefaults']['QaO2'],
-            "T0_unit": self.data['unitDefaults']['T'],
-            "T_unit": self.data['unitDefaults']['T'],
-            "pH0_unit": self.data['unitDefaults']['pH'],
-            "pH_unit": self.data['unitDefaults']['pH'],
+            "Tc @ rest_unit": self.data['unitDefaults']['Tc @ rest'],
+            "Tc\u209A\u2091\u2090\u2096_unit": self.data['unitDefaults']['Tc\u209A\u2091\u2090\u2096'],
+            "pH @ rest_unit": self.data['unitDefaults']['pH @ rest'],
+            "pH\u209A\u2091\u2090\u2096_unit": self.data['unitDefaults']['pH\u209A\u2091\u2090\u2096'],
             "PvO2_unit": self.data['unitDefaults']['PvO2'],
             "DO2_unit": self.data['unitDefaults']['DO2'],
             "Elevation_unit": self.data['unitDefaults']['Elevation'],
@@ -164,10 +168,10 @@ class Settings(object):
             "CvO2_units": self.data['units']['CvO2'],
             "CavO2_units": self.data['units']['CavO2'],
             "QaO2_units": self.data['units']['QaO2'],
-            "T0_units": self.data['units']['T'],
-            "T_units": self.data['units']['T'],
-            "pH0_units": self.data['units']['pH'],
-            "pH_units": self.data['units']['pH'],
+            "Tc @ rest_units": self.data['units']['Tc @ rest'],
+            "Tc\u209A\u2091\u2090\u2096_units": self.data['units']['Tc\u209A\u2091\u2090\u2096'],
+            "pH @ rest_units": self.data['units']['pH @ rest'],
+            "pH\u209A\u2091\u2090\u2096_units": self.data['units']['pH\u209A\u2091\u2090\u2096'],
             "PvO2_units": self.data['units']['PvO2'],
             "DO2_units": self.data['units']['DO2'],
             "Elevation_units": self.data['units']['Elevation'],
@@ -188,10 +192,10 @@ class Settings(object):
             "CvO2_mc": self.data['mcDefaults']['CvO2'],
             "CavO2_mc": self.data['mcDefaults']['CavO2'],
             "QaO2_mc": self.data['mcDefaults']['QaO2'],
-            "T0_mc": self.data['mcDefaults']['T'],
-            "T_mc": self.data['mcDefaults']['T'],
-            "pH0_mc": self.data['mcDefaults']['pH'],
-            "pH_mc": self.data['mcDefaults']['pH'],
+            "Tc @ rest_mc": self.data['mcDefaults']['Tc @ rest'],
+            "Tc\u209A\u2091\u2090\u2096_mc": self.data['mcDefaults']['Tc\u209A\u2091\u2090\u2096'],
+            "pH @ rest_mc": self.data['mcDefaults']['pH @ rest'],
+            "pH\u209A\u2091\u2090\u2096_mc": self.data['mcDefaults']['pH\u209A\u2091\u2090\u2096'],
             "PvO2_mc": self.data['mcDefaults']['PvO2'],
             "DO2_mc": self.data['mcDefaults']['DO2']
         }
@@ -298,7 +302,7 @@ class Settings(object):
             atmMenuButton.grid(column=2, row=1)
 
             # FiO2
-            ttk.Label(container, text='FiO2').grid(column=0, row=2)
+            ttk.Label(container, text='FiO\u2082').grid(column=0, row=2)
             fio2Entry = ttk.Entry(container, width=7)
             fio2Entry.insert(0, self.envDefaults['fio2'])
             fio2Entry.grid(column=1, row=2)
@@ -316,11 +320,18 @@ class Settings(object):
             self.menuButtons['Temperature'] = tempMenuButton
             tempMenuButton.config(text=self.unitDefaults['Temperature_unit'])
 
+            #### RH%
+            ttk.Label(container, text='RH%').grid(column=0, row=4)
+            rhEntry = ttk.Entry(container, width=7)
+            rhEntry.insert(0, self.envDefaults['rh'])
+            rhEntry.grid(column=1, row=4)
+            ttk.Label(container, text='%').grid(column=2, row=4)
+
             tempMenu = Menu(tempMenuButton, tearoff=False)
             for i, u in enumerate(units):
                 MenuElem(tempMenu, tempMenuButton, u, i, units)
             tempMenuButton['menu']=tempMenu
-            tempMenuButton.grid(column=2, row=3)
+            tempMenuButton.grid(column=2, row=5)
 
             ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=2, row=5, sticky='E')
 
@@ -330,6 +341,7 @@ class Settings(object):
                 self.envDefaults['atm'] = atmEntry.get()
                 self.envDefaults['fio2'] = fio2Entry.get()
                 self.envDefaults['temp'] = tempEntry.get()
+                self.envDefaults['rh'] = rhEntry.get()
 
                 # Units
                 for key, val in self.menuButtons.items():
@@ -343,6 +355,7 @@ class Settings(object):
                 self.data['envDefaults']['atm'] = atmEntry.get()
                 self.data['envDefaults']['fio2'] = fio2Entry.get()
                 self.data['envDefaults']['temp'] = tempEntry.get()
+                self.data['envDefaults']['rh'] = rhEntry.get()
 
                 settingsFile = open('settings.pkl', 'wb')
                 pickle.dump(self.data, settingsFile)
@@ -412,17 +425,17 @@ class Settings(object):
             #### QaO2
             SettingsRow(self, container, 'QaO2', 0, 12)
 
-            #### T0
-            SettingsRow(self, container, 'T0', 1, 13)
+            #### Tc @ rest
+            SettingsRow(self, container, 'Tc @ rest', 1, 13)
 
-            #### T
-            SettingsRow(self, container, 'T', 1, 14)
+            #### Tc\u209A\u2091\u2090\u2096
+            SettingsRow(self, container, 'Tc\u209A\u2091\u2090\u2096', 1, 14)
 
-            # pH0
-            SettingsRow(self, container, 'pH0', 1, 15)
+            # pH @ rest
+            SettingsRow(self, container, 'pH @ rest', 1, 15)
 
-            # pH
-            SettingsRow(self, container, 'pH', 1, 16)
+            # pH\u209A\u2091\u2090\u2096
+            SettingsRow(self, container, 'pH\u209A\u2091\u2090\u2096', 1, 16)
 
             #### PvO2
             SettingsRow(self, container, 'PvO2', 0, 17)
@@ -477,7 +490,11 @@ class SettingsRow(object):
     def __init__(self, settings, parent, label, entryFlag, row):
 
         # Menubutton
-        ttk.Label(parent, text=label).grid(column=0, row=row)
+        if '2' in label:
+            label_subscripted = label.replace('2', '\u2082')
+            ttk.Label(parent, text=label_subscripted).grid(column=0, row=row)
+        else:
+            ttk.Label(parent, text=label).grid(column=0, row=row)
         self.menuButton = ttk.Menubutton(parent)
         settings.menuButtons[label] = self.menuButton
         self.menuButton.config(text=settings.unitDefaults[f'{label}_unit'])
@@ -492,7 +509,7 @@ class SettingsRow(object):
         # Unit
         menu = Menu(self.menuButton, tearoff=False)
         units = settings.units[f"{label}_units"]
-        if units != None and label != 'pH' and label != 'pH0':
+        if units != None and label != 'pH\u209A\u2091\u2090\u2096' and label != 'pH @ rest':
             for i, u in enumerate(units):
                 MenuElem(menu, self.menuButton, u, i, units)
             self.menuButton['menu']=menu

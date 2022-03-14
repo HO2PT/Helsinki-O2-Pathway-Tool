@@ -582,10 +582,10 @@ class PlottingPanel(object):
             validValues = False
 
         # pH + temp correction
-        pH = float(details['pH'])
-        pH0 = float(details['pH0'])
-        T = self.formatT(details, 'T')
-        T0 = self.formatT(details, 'T0')
+        pH = float(details['pH @ rest'])
+        pH0 = float(details['pH\u209A\u2091\u2090\u2096'])
+        T = self.formatT(details, 'Tc\u209A\u2091\u2090\u2096')
+        T0 = self.formatT(details, 'Tc @ rest')
         PvO2_calc = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 
         DO2 = self.solveDO2(w, details, VO2, PvO2_calc)
@@ -997,20 +997,20 @@ class PlotLoadTab(object):
         self.rowElements.append(self.do2Row)
 
         # T
-        tValue = float(self.details['T'])
+        tValue = float(self.details['Tc\u209A\u2091\u2090\u2096'])
         if self.details['T_unit'] == 'F':
             tValue = (tValue - 32) / 1.8
-            self.tRow = LoadTabRow(self, self.loadDetails, 'T', tValue, self.index, self.testId, 14, (95,110), self.workLoad)
+            self.tRow = LoadTabRow(self, self.loadDetails, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (95,110), self.workLoad)
         elif self.details['T_unit'] == 'K':
             tValue = tValue - 273.15
-            self.tRow = LoadTabRow(self, self.loadDetails, 'T', tValue, self.index, self.testId, 14, (300,320), self.workLoad)
+            self.tRow = LoadTabRow(self, self.loadDetails, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (300,320), self.workLoad)
         else:
-            self.tRow = LoadTabRow(self, self.loadDetails, 'T', tValue, self.index, self.testId, 14, (35,42), self.workLoad)
+            self.tRow = LoadTabRow(self, self.loadDetails, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (35,42), self.workLoad)
         self.rowElements.append(self.tRow)
 
         # pH
-        phValue = self.details['pH']
-        self.phRow = LoadTabRow(self, self.loadDetails, 'pH', phValue, self.index, self.testId, 15, (0,14), self.workLoad)
+        phValue = self.details['pH\u209A\u2091\u2090\u2096']
+        self.phRow = LoadTabRow(self, self.loadDetails, 'pH\u209A\u2091\u2090\u2096', phValue, self.index, self.testId, 15, (0,14), self.workLoad)
         self.rowElements.append(self.phRow)
 
         # Plot options
@@ -1312,7 +1312,7 @@ class LoadTabRow(object):
         # self.slider.bind('<ButtonRelease-1>', sliderReleased)
 
         # Unit entry
-        if self.label != 'pH':
+        if self.label != 'pH\u209A\u2091\u2090\u2096':
             menuButton = ttk.Menubutton(self.parent)
             menuButton.config(text=self.details[f'{self.label}_unit'])
             tempMenu = Menu(menuButton, tearoff=False)

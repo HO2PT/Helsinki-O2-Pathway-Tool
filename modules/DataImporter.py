@@ -24,8 +24,8 @@ from objects.subject import Subject
 # Stage 11: QaO2
 # Stage 12: SvO2
 # Stage 13: PvO2
-# Stage 14: T0
-# Stage 15: T
+# Stage 14: Tc @ rest
+# Stage 15: Tc\u209A\u2091\u2090\u2096
 # Stage 16: pH0
 # Stage 17: pH
 
@@ -513,21 +513,21 @@ class DataImporter(object):
                         print('**PvO2**')
                         self.getRowValues('PvO2')
 
-                    elif self.stage == 14: #T0
-                        print('**T0**')
-                        self.getRowValues('T0')
+                    elif self.stage == 14: #Tc @ rest
+                        print('**Tc @ rest**')
+                        self.getRowValues('Tc @ rest')
 
-                    elif self.stage == 15: #T
-                        print('**T**')
-                        self.getRowValues('T')
+                    elif self.stage == 15: #Tc\u209A\u2091\u2090\u2096
+                        print('**Tc\u209A\u2091\u2090\u2096**')
+                        self.getRowValues('Tc\u209A\u2091\u2090\u2096')
 
-                    elif self.stage == 16: #pH0
-                        print('**pH0**')
-                        self.getRowValues('pH0')
+                    elif self.stage == 16: #pH @ rest
+                        print('**pH @ rest**')
+                        self.getRowValues('pH @ rest')
 
-                    elif self.stage == 17: #pH
-                        print('**pH**')
-                        self.getRowValues('pH')
+                    elif self.stage == 17: #pH\u209A\u2091\u2090\u2096
+                        print('**pH\u209A\u2091\u2090\u2096**')
+                        self.getRowValues('pH\u209A\u2091\u2090\u2096')
 
                 else: # single rows
                     print('YKSI RIVI')
@@ -593,21 +593,21 @@ class DataImporter(object):
                         print('**PvO2**')
                         self.getRowValues('PvO2')
 
-                    elif self.stage == 14: #T0
-                        print('**T0**')
-                        self.getRowValues('T0')
+                    elif self.stage == 14: #Tc @ rest
+                        print('**Tc @ rest**')
+                        self.getRowValues('Tc @ rest')
 
-                    elif self.stage == 15: #T
-                        print('**T**')
-                        self.getRowValues('T')
+                    elif self.stage == 15: #Tc\u209A\u2091\u2090\u2096
+                        print('**Tc\u209A\u2091\u2090\u2096**')
+                        self.getRowValues('Tc\u209A\u2091\u2090\u2096')
 
-                    elif self.stage == 16: #pH0
-                        print('**pH0**')
-                        self.getRowValues('pH0')
+                    elif self.stage == 16: #pH @ rest
+                        print('**pH @ rest**')
+                        self.getRowValues('pH @ rest')
 
-                    elif self.stage == 17: #pH
-                        print('**pH**')
-                        self.getRowValues('pH')
+                    elif self.stage == 17: #pH\u209A\u2091\u2090\u2096
+                        print('**pH\u209A\u2091\u2090\u2096**')
+                        self.getRowValues('pH\u209A\u2091\u2090\u2096')
 
                 self.nextStage()
 
@@ -658,17 +658,17 @@ class DataImporter(object):
                     elif self.stage == 13: # PvO2
                         self.getColumnValues('PvO2')
 
-                    elif self.stage == 14: # T0
-                        self.getColumnValues('T0')
+                    elif self.stage == 14: # Tc @ rest
+                        self.getColumnValues('Tc @ rest')
 
-                    elif self.stage == 15: # T
-                        self.getColumnValues('T')
+                    elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
+                        self.getColumnValues('Tc\u209A\u2091\u2090\u2096')
 
-                    elif self.stage == 16: # pH0
-                        self.getColumnValues('pH0')
+                    elif self.stage == 16: # pH @ rest
+                        self.getColumnValues('pH @ rest')
 
-                    elif self.stage == 17: # pH
-                        self.getColumnValues('pH')
+                    elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
+                        self.getColumnValues('pH\u209A\u2091\u2090\u2096')
 
                 else: # one column
                     print('YKSI SARAKE')
@@ -724,17 +724,17 @@ class DataImporter(object):
                     elif self.stage == 13: # PvO2
                         self.getColumnValues('PvO2')
 
-                    elif self.stage == 14: # T0
-                        self.getColumnValues('T0')
+                    elif self.stage == 14: # Tc @ rest
+                        self.getColumnValues('Tc @ rest')
 
-                    elif self.stage == 15: # T
-                        self.getColumnValues('T')
+                    elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
+                        self.getColumnValues('Tc\u209A\u2091\u2090\u2096')
 
-                    elif self.stage == 16: # pH0
-                        self.getColumnValues('pH0')
+                    elif self.stage == 16: # pH @ rest
+                        self.getColumnValues('pH @ rest')
 
-                    elif self.stage == 17: # pH
-                        self.getColumnValues('pH')
+                    elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
+                        self.getColumnValues('pH\u209A\u2091\u2090\u2096')
 
                 self.nextStage()
 
@@ -819,25 +819,25 @@ class DataImporter(object):
                         print(f'**DATA FORM** {self.dataMode}')
                         self.getMultiCellValues('PVO2')
                     
-                    elif self.stage == 14: # T0
-                        print('**T0**')
+                    elif self.stage == 14: # Tc @ rest
+                        print('**Tc @ rest**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('T0')
+                        self.getMultiCellValues('Tc @ rest')
 
-                    elif self.stage == 15: # T
-                        print('**T**')
+                    elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
+                        print('**Tc\u209A\u2091\u2090\u2096**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('T')
+                        self.getMultiCellValues('Tc\u209A\u2091\u2090\u2096')
 
-                    elif self.stage == 16: # pH0
-                        print('**pH0**')
+                    elif self.stage == 16: # pH @ rest
+                        print('**pH @ rest**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('pH0')
+                        self.getMultiCellValues('pH @ rest')
 
-                    elif self.stage == 17: # pH
-                        print('**pH**')
+                    elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
+                        print('**pH\u209A\u2091\u2090\u2096**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('pH')
+                        self.getMultiCellValues('pH\u209A\u2091\u2090\u2096')
 
                 else: # single cell
                     print('SINGLE CELL SELECTED')
@@ -900,17 +900,17 @@ class DataImporter(object):
                     elif self.stage == 13: # PvO2
                         self.setSingleCellValue('PvO2', value)
                     
-                    elif self.stage == 14: # T0
-                        self.setSingleCellValue('T0', value)
+                    elif self.stage == 14: # Tc @ rest
+                        self.setSingleCellValue('Tc @ rest', value)
 
-                    elif self.stage == 15: # T
-                        self.setSingleCellValue('T', value)
+                    elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
+                        self.setSingleCellValue('Tc\u209A\u2091\u2090\u2096', value)
 
-                    elif self.stage == 16: # pH0
-                        self.setSingleCellValue('pH0', value)
+                    elif self.stage == 16: # pH @ rest
+                        self.setSingleCellValue('pH @ rest', value)
 
-                    elif self.stage == 17: # pH
-                        self.setSingleCellValue('pH', value)
+                    elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
+                        self.setSingleCellValue('pH\u209A\u2091\u2090\u2096', value)
 
                 self.nextStage()
 
@@ -1098,14 +1098,14 @@ class DataImporter(object):
             self.instructionText.configure(text='Define SvO2 row/column/cell')
         elif self.stage == 13: # -> PvO2
             self.instructionText.configure(text='Define PvO2 row/column/cell')
-        elif self.stage == 14: # -> T0
-            self.instructionText.configure(text='Define T0 row/column/cell')
-        elif self.stage == 15: # -> T
-            self.instructionText.configure(text='Define T row/column/cell')
-        elif self.stage == 16: # -> pH0
-            self.instructionText.configure(text='Define pH0 row/column/cell')
-        elif self.stage == 17: # -> pH
-            self.instructionText.configure(text='Define pH row/column/cell')
+        elif self.stage == 14: # -> Tc @ rest
+            self.instructionText.configure(text='Define Tc @ rest row/column/cell')
+        elif self.stage == 15: # -> Tc\u209A\u2091\u2090\u2096
+            self.instructionText.configure(text='Define Tc\u209A\u2091\u2090\u2096 row/column/cell')
+        elif self.stage == 16: # -> pH @ rest
+            self.instructionText.configure(text='Define pH @ rest row/column/cell')
+        elif self.stage == 17: # -> pH\u209A\u2091\u2090\u2096
+            self.instructionText.configure(text='Define pH\u209A\u2091\u2090\u2096 row/column/cell')
         elif self.stage == 18: # Finish
             self.importData()
 

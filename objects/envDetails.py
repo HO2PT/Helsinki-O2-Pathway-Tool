@@ -9,6 +9,7 @@ class EnvDetails(object):
         self.atm = envDefaults['atm']
         self.fio2 = envDefaults['fio2']
         self.temp = envDefaults['temp']
+        self.rh = envDefaults['rh']
 
         self.elevationUnit = app.settings.getUnitDef()['Elevation_unit']
         self.atmUnit = app.settings.getUnitDef()['ATM_unit']
@@ -25,6 +26,7 @@ class EnvDetails(object):
             'atm': self.atm,
             'fio2': self.fio2,
             'temp': self.temp,
+            'rh': self.rh,
             'pio2Method': self.pio2Method,
             'Elevation_unit': self.elevationUnit,
             'ATM_unit': self.atmUnit,

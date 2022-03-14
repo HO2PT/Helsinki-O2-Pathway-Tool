@@ -19,11 +19,11 @@ class Project(object):
         self.metricsTestObject = Test()
         self.metricsTestObject.setId(self.id)
         self.minLoad = self.metricsTestObject.getWorkLoads()[0]
-        self.minLoad.setName('-1 STD')
+        self.minLoad.setName('-1 SD')
         self.avgLoad = self.metricsTestObject.createLoad()
         self.avgLoad.setName('Avg')
         self.maxLoad = self.metricsTestObject.createLoad()
-        self.maxLoad.setName('+1 STD')
+        self.maxLoad.setName('+1 SD')
 
     def addSubject(self, subject):
         self.subjects.append(subject)

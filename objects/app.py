@@ -134,32 +134,32 @@ class App(object):
             activeProject.VO2min = min(self.vo2maxList)
             activeProject.VO2avg = self.avgVO2
         self.VO2std = np.std(self.vo2maxList)
-        print(f'STD VO2: {self.VO2std}')
+        print(f'SD VO2: {self.VO2std}')
 
         if plotProject == True:
             activeProject.DO2max = max(self.do2maxList)
             activeProject.DO2min = min(self.do2maxList)
             activeProject.DO2avg = self.avgDO2
         self.DO2std = np.std(self.do2maxList)
-        print(f'STD DO2: {np.std(self.do2maxList)}')
+        print(f'SD DO2: {np.std(self.do2maxList)}')
 
         if plotProject == True:
             activeProject.QaO2max = max(self.qao2maxList)
             activeProject.QaO2min = min(self.qao2maxList)
             activeProject.QaO2avg = self.avgQaO2
         self.QAO2std = np.std(self.qao2maxList)
-        print(f'STD QaO2: {np.std(self.qao2maxList)}')
+        print(f'SD QaO2: {np.std(self.qao2maxList)}')
 
         self.stdCaO2 = np.std(self.cao2maxList)
-        print(f'STD CaO2: {np.std(self.cao2maxList)}')
+        print(f'SD CaO2: {np.std(self.cao2maxList)}')
         self.stdSvO2 = np.std(self.svo2maxList)
-        print(f'STD SvO2: {np.std(self.svo2maxList)}')
+        print(f'SD SvO2: {np.std(self.svo2maxList)}')
         self.stdCvO2 = np.std(self.cvo2maxList)
-        print(f'STD CvO2: {np.std(self.cvo2maxList)}')
+        print(f'SD CvO2: {np.std(self.cvo2maxList)}')
         self.stdCavO2 = np.std(self.cavo2maxList)
-        print(f'STD CavO2: {np.std(self.cavo2maxList)}')
+        print(f'SD CavO2: {np.std(self.cavo2maxList)}')
         self.stdPvO2 = np.std(self.pvo2maxList)
-        print(f'STD PvO2: {np.std(self.pvo2maxList)}')
+        print(f'SD PvO2: {np.std(self.pvo2maxList)}')
 
         if plotProject == True:
             self.projectDetailModule.refreshDetails()
@@ -175,11 +175,11 @@ class App(object):
         if plotProject == True:
             self.meanTestObject.setId('Project mean')
         self.minLoad = self.meanTestObject.getWorkLoads()[0]
-        self.minLoad.setName('-1 STD')
+        self.minLoad.setName('-1 SD')
         self.avgLoad = self.meanTestObject.createLoad()
         self.avgLoad.setName('Avg')
         self.maxLoad = self.meanTestObject.createLoad()
-        self.maxLoad.setName('+1 STD')
+        self.maxLoad.setName('+1 SD')
 
         # project = app.getActiveProject()
         # projectTest = project.getMetricsTestObject()

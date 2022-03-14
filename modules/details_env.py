@@ -28,8 +28,11 @@ class EnvDetailModule(object):
         self.tempLabel = ttk.Label(self.container, text='')
         self.tempLabel.grid(column=0, row=3)
 
+        self.rhLabel = ttk.Label(self.container, text='')
+        self.rhLabel.grid(column=0, row=4)
+
         self.calcMethod = ttk.LabelFrame(self.container, text='')
-        self.calcMethod.grid(column=0, row=4, columnspan=2)
+        self.calcMethod.grid(column=0, row=5, columnspan=2)
 
     def refresh(self):
         self.container.destroy()
@@ -50,6 +53,10 @@ class EnvDetailModule(object):
         # Temperature
         self.tempLabel.configure(text='Temp')
         envDetailRow(self.container, 'temp')
+
+        # %RH
+        self.rhLabel.configure(text='RH%')
+        envDetailRow(self.container, 'rh')
 
         # PiO2 calculation method
         self.calcMethod.config(text='PiO\u2082 calculation method')
@@ -131,6 +138,16 @@ class envDetailRow(object):
                 EnvMenuElem(tempMenu, tempMenuButton, u, i, units, 'Temperature_unit')
             tempMenuButton['menu']=tempMenu
             tempMenuButton.grid(column=2, row=3)
+        
+        if label == 'rh':
+            # Value
+            self.rhVar = StringVar(value=self.envDetails.rh, name=f'{self.label}-{app.getActiveTest().id}')
+            self.rhVar.trace('w', self.updateRh)
+            self.rhEntry = ttk.Entry(self.container, width=7, textvariable=self.rhVar)
+            self.rhEntry.grid(column=1, row=4)
+
+            # Unit
+            ttk.Label(self.container, text='%').grid(column=2, row=4)
 
         if label == 'pio2Method':
             self.methodVar = IntVar(value=self.envDetails.pio2Method, name=f'{self.label}-{app.getActiveTest().id}') 
@@ -157,6 +174,10 @@ class envDetailRow(object):
     def updateTemp(self, name, index, mode):
         name = name.split('-')[0]
         setattr(self.envDetails, name, self.tempVar.get())
+
+    def updateRh(self, name, index, mode):
+        name = name.split('-')[0]
+        setattr(self.envDetails, name, self.rhVar.get())
     
     def updatePio2Method(self, name, index, mode):
         name = name.split('-')[0]
