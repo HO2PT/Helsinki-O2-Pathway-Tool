@@ -941,7 +941,10 @@ class DataImporter(object):
 
             for j, l in enumerate(loads):
                 details = l.getDetails()
-                details.setValue(label, self.colValues[j][i])
+                if label == 'Hb':
+                    details.setValue(label, self.colValues[0][i])
+                else:
+                    details.setValue(label, self.colValues[j][i])
     
     def getLoadsFromCols(self):
         for i, s in enumerate(self.subjects):

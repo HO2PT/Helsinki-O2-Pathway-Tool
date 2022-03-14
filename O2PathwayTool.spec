@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['O2PathwayTool.py'],
-             pathex=['C:\\Koulu\\Inssityö\\O2PathwayTool'],
+             pathex=[],
              binaries=[],
              datas=[],
              hiddenimports=[],

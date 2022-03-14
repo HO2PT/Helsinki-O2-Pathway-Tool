@@ -427,7 +427,7 @@ class Settings(object):
             #### PvO2
             SettingsRow(self, container, 'PvO2', 0, 17)
 
-            ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=4, row=16, sticky='E')
+            ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=4, row=18, sticky='E')
 
             def saveSettings():
                 for key, val in self.entries.items():
@@ -492,7 +492,7 @@ class SettingsRow(object):
         # Unit
         menu = Menu(self.menuButton, tearoff=False)
         units = settings.units[f"{label}_units"]
-        if units != None:
+        if units != None and label != 'pH' and label != 'pH0':
             for i, u in enumerate(units):
                 MenuElem(menu, self.menuButton, u, i, units)
             self.menuButton['menu']=menu

@@ -78,6 +78,7 @@ root.config(menu=menu)
 def on_closing():
     if askokcancel("Quit", "Do you want to quit?"):
         root.destroy()
+        root.quit()
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 

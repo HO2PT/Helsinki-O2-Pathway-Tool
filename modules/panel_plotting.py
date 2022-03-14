@@ -1312,13 +1312,17 @@ class LoadTabRow(object):
         # self.slider.bind('<ButtonRelease-1>', sliderReleased)
 
         # Unit entry
-        menuButton = ttk.Menubutton(self.parent)
-        menuButton.config(text=self.details[f'{self.label}_unit'])
-        tempMenu = Menu(menuButton, tearoff=False)
-        units = app.settings.getUnits()[f'{self.label}_units']
+        if self.label != 'pH':
+            menuButton = ttk.Menubutton(self.parent)
+            menuButton.config(text=self.details[f'{self.label}_unit'])
+            tempMenu = Menu(menuButton, tearoff=False)
+            units = app.settings.getUnits()[f'{self.label}_units']
 
-        for i, u in enumerate(units):
-            LoadMenuElem(self, tempMenu, menuButton, self.var, u, i, units, f'{self.label}', self.workLoad)
+            for i, u in enumerate(units):
+                LoadMenuElem(self, tempMenu, menuButton, self.var, u, i, units, f'{self.label}', self.workLoad)
+            
+            menuButton['menu']=tempMenu
+            menuButton.grid(column=2, row=row)
             
         # M/C Radiobuttons
         self.mcVar = IntVar(value=self.details[f'{self.label}_MC'])
@@ -1330,8 +1334,7 @@ class LoadTabRow(object):
         self.radio2.grid(column=4, row=row)
         self.mcVar.trace('w', self.updateMc)
 
-        menuButton['menu']=tempMenu
-        menuButton.grid(column=2, row=row)
+        
 
     def updateMc(self, name, index, mode):
         self.workLoad.setMC(f'{self.label}_MC', self.mcVar.get())

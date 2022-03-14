@@ -279,7 +279,7 @@ class TestDetailRow(object):
         self.valueVar.trace('w', self.updateValue)
 
         # Unit
-        if self.label != 'pH' or self.label != 'pH0':
+        if self.label != 'pH' and self.label != 'pH0':
             units = app.settings.getUnits()[f'{self.label}_units']
             tempMenuButton = ttk.Menubutton(rowFrame)
             tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
