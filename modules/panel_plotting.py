@@ -555,7 +555,6 @@ class PlottingPanel(object):
 
     def calc(self, w, details, updatedVar = None, VO2Lock = None):
         validValues = True
-        print(f'Details from calc: {details}')
         Q = self.formatQ(w, details, updatedVar)
         VO2 = self.formatVO2(w, details, Q, updatedVar, VO2Lock)
         Hb = self.formatHb(details, updatedVar)
@@ -672,6 +671,17 @@ class PlotTab(object):
         self.canvasTk.pack(fill=BOTH, expand=1)
         self.canvas.draw()
 
+        # Change y-axis unit based on used vo2 unit
+        vo2unit = self.workLoads[0].getDetails().VO2_unit
+        yfmt = ticker.FuncFormatter(self.numfmt)
+        plt.gca().yaxis.set_major_formatter(yfmt)
+        if vo2unit == 'l/min':
+            plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
+            yLimit = self.plot[1].get_ylim()[1] / 1000
+        elif vo2unit == 'ml/min':
+            plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
+            yLimit = self.plot[1].get_ylim()[1]
+
         # Custom figure tools container
         self.toolbarContainer = ttk.Frame(self.canvasFrame)
         self.toolbarContainer.pack(fill=BOTH, expand=1)
@@ -686,24 +696,30 @@ class PlotTab(object):
         ttk.Label(self.toolbarWrapper, text='Set Y-axis max. value').grid(column=0, row=0)
 
         # Set y limit
-        self.yValue = StringVar(self.toolbarWrapper, value=self.plot[1].get_ylim()[1])
+        # self.yValue = StringVar(self.toolbarWrapper, value=self.plot[1].get_ylim()[1])
+        self.yValue = StringVar(self.toolbarWrapper, value=yLimit)
         self.yEntry = ttk.Entry(self.toolbarWrapper, textvariable=self.yValue)
         self.yEntry.grid(column=0, row=1)
-        self.yValue.trace('w', self.updateY)
-        ttk.Button(self.toolbarWrapper, text='Set', command=lambda: self.updateFig()).grid(column=1, row=1)
+        # self.yValue.trace('w', self.updateY)
+        ttk.Button(self.toolbarWrapper, text='Set', command=lambda: self.setYLim()).grid(column=1, row=1)
 
         self.toolbarWrapper.grid_columnconfigure(2, minsize=25)
 
-        # Set step size
-        ttk.Label(self.toolbarWrapper, text='Tick count in y-axis:').grid(column=3, row=0, columnspan=2)
-        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks()).grid(column=3, row=1)
-        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks()).grid(column=4, row=1)
+        # Set Y tick size
+        ttk.Label(self.toolbarWrapper, text='Y-axis ticks').grid(column=3, row=0, columnspan=2)
+        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks('y')).grid(column=3, row=1)
+        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks('y')).grid(column=4, row=1)
+
+        # Set X tick size
+        ttk.Label(self.toolbarWrapper, text='X-axis ticks').grid(column=5, row=0, columnspan=2)
+        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=5, row=1)
+        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks('x')).grid(column=6, row=1)
         
         self.toolbarWrapper.grid_columnconfigure(5, minsize=25)
 
         # Hide legend button
-        ttk.Button(self.toolbarWrapper, text='Hide legend', command=lambda: self.hideLegend()).grid(column=6, row=1)
-        ttk.Button(self.toolbarWrapper, text='DETAILS', command=lambda: print(self.workLoads[0].getDetails().getWorkLoadDetails())).grid(column=7, row=1)
+        ttk.Button(self.toolbarWrapper, text='Hide legend', command=lambda: self.hideLegend()).grid(column=7, row=1)
+        ttk.Button(self.toolbarWrapper, text='DETAILS', command=lambda: print(self.workLoads[0].getDetails().getWorkLoadDetails())).grid(column=8, row=1)
 
         # Create loads notebook frame and loadnotebook
         self.loadNotebookFrame = ttk.Frame(self.tabFrame)
@@ -720,6 +736,14 @@ class PlotTab(object):
             self.loadTabs.append(loadTabObject)
 
         return self.tabFrame
+    
+    def numfmt(self, x, pos=None):
+            vo2unit = self.workLoads[0].getDetails().VO2_unit
+            if vo2unit == 'l/min':
+                s = '{0:.1f}'.format(x / 1000.0)
+            elif vo2unit == 'ml/min':
+                s = '{0:.0f}'.format(x)
+            return s
 
     def hideLegend(self):
         legend = self.plot[1].get_legend()
@@ -730,23 +754,40 @@ class PlotTab(object):
             legend.set_visible(True)
         self.plot[0].canvas.draw()
 
-    def incTicks(self):
-        yticks = self.plot[1].get_yticks()
-        n = len(yticks)+1
-        self.plot[1].yaxis.set_major_locator(plt.LinearLocator(numticks=n))
-        self.plot[0].canvas.draw()
+    def incTicks(self, axis):
+        if axis == 'y':
+            yticks = self.plot[1].get_yticks()
+            n = len(yticks) + 1
+            self.plot[1].yaxis.set_major_locator(plt.LinearLocator(numticks=n))
+            self.plot[0].canvas.draw()
+        else:
+            xticks = self.plot[1].get_xticks()
+            n = len(xticks) + 1
+            self.plot[1].xaxis.set_major_locator(plt.LinearLocator(numticks=n))
+            self.plot[0].canvas.draw()
 
-    def decTicks(self):
-        yticks = self.plot[1].get_yticks()
-        n = len(yticks)-1
-        self.plot[1].yaxis.set_major_locator(plt.LinearLocator(numticks=n))
-        self.plot[0].canvas.draw()
+    def decTicks(self, axis):
+        if axis == 'y':
+            yticks = self.plot[1].get_yticks()
+            n = len(yticks) - 1
+            self.plot[1].yaxis.set_major_locator(plt.LinearLocator(numticks=n))
+            self.plot[0].canvas.draw()
+        else:
+            xticks = self.plot[1].get_xticks()
+            n = len(xticks) - 1
+            self.plot[1].xaxis.set_major_locator(plt.LinearLocator(numticks=n))
+            self.plot[0].canvas.draw()
 
-    def updateY(self, name, index, mode):
-        pass
+    # def updateY(self, name, index, mode):
+    #     pass
     
-    def updateFig(self):
-        limit = self.yValue.get()
+    def setYLim(self):
+        vo2unit = self.workLoads[0].getDetails().VO2_unit
+        if vo2unit == 'ml/min':
+            limit = float(self.yValue.get())
+        elif vo2unit == 'l/min':
+            limit = float(self.yValue.get()) * 1000
+        print(f'limit {limit}')
         self.plot[1].set_ylim(top=float(limit))
         self.plot[0].canvas.draw()
 
@@ -754,8 +795,6 @@ class PlotTab(object):
         PvO2 = np.arange(0,100,1)
         self.plot = plt.subplots()
         self.fig, self.ax = self.plot
-        
-        #print()
 
         self.fig.set_figheight(3)
         self.fig.set_figwidth(3)
@@ -765,12 +804,7 @@ class PlotTab(object):
         #print(f'NOTEBOOK: {self.parentFrame.winfo_reqwidth()}, {self.parentFrame.winfo_reqheight()}')
         #print(f'TOOLBAR: {self.toolbarContainer.winfo_reqwidth()},{self.toolbarContainer.winfo_reqheight()}')
         self.ax.set_title('O2 Pathway')
-        self.ax.set_ylabel('VO\u2082')
         self.ax.set_xlabel('PvO\u2082 (mmHg)')
-        """ if self.workLoads[0].getDetails().getWorkLoadDetails()['VO2_unit'] == 'l/min':
-            self.ax.set_ylim(top=5.0, bottom=0)
-        else:
-            self.ax.set_ylim(top=5000, bottom=0) """
         self.ax.set_ylim(top=5000, bottom=0)
         self.ax.set_xlim(left=0, right=100)
         self.handles = []
@@ -1334,8 +1368,6 @@ class LoadTabRow(object):
         self.radio2.grid(column=4, row=row)
         self.mcVar.trace('w', self.updateMc)
 
-        
-
     def updateMc(self, name, index, mode):
         self.workLoad.setMC(f'{self.label}_MC', self.mcVar.get())
 
@@ -1423,7 +1455,21 @@ class LoadMenuElem(object):
         self.menu.add_command(label=f'{self.label}', command=lambda: self.updateValue())
 
     def updateValue(self):
-        self.menuButton.config(text=self.unitElems[self.index])
-        self.parentObject.updateEntryAndScale(self.unitElems[self.index])
+        unit = self.unitElems[self.index]
+        self.menuButton.config(text=unit)
+        self.parentObject.updateEntryAndScale(unit)
 
-        self.workLoad.setUnit(f'{self.name}_unit', self.unitElems[self.index])
+        self.workLoad.setUnit(f'{self.name}_unit', unit)
+
+        if self.name == 'VO2':
+            figure = app.getPlottingPanel().plots[0].plot[0]
+            yValueVar = app.getPlottingPanel().plots[0].yValue
+            yValue = float(yValueVar.get())
+
+            if unit == 'l/min':
+                plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
+                yValueVar.set(yValue/1000)
+            elif unit == 'ml/min':
+                plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
+                yValueVar.set(yValue*1000)
+            figure.canvas.draw()
