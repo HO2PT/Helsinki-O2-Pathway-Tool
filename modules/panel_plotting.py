@@ -43,7 +43,6 @@ class PlottingPanel(object):
                 del self.plots[clickedTabIndex]
 
     def plot(self):
-        # Check if plotNotebook is visible and if not, make it visible
         self.origWorkLoads = app.getActiveTest().getWorkLoads()
         self.workLoads = copy.deepcopy(self.origWorkLoads) # Workload objects
         validValues = True
@@ -556,6 +555,7 @@ class PlottingPanel(object):
 
     def calc(self, w, details, updatedVar = None, VO2Lock = None):
         validValues = True
+        print(f'Details from calc: {details}')
         Q = self.formatQ(w, details, updatedVar)
         VO2 = self.formatVO2(w, details, Q, updatedVar, VO2Lock)
         Hb = self.formatHb(details, updatedVar)
@@ -998,10 +998,10 @@ class PlotLoadTab(object):
 
         # T
         tValue = float(self.details['Tc\u209A\u2091\u2090\u2096'])
-        if self.details['T_unit'] == 'F':
+        if self.details['Tc\u209A\u2091\u2090\u2096_unit'] == 'F':
             tValue = (tValue - 32) / 1.8
             self.tRow = LoadTabRow(self, self.loadDetails, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (95,110), self.workLoad)
-        elif self.details['T_unit'] == 'K':
+        elif self.details['Tc\u209A\u2091\u2090\u2096_unit'] == 'K':
             tValue = tValue - 273.15
             self.tRow = LoadTabRow(self, self.loadDetails, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (300,320), self.workLoad)
         else:

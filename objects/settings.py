@@ -455,6 +455,20 @@ class Settings(object):
                     self.mcDefaults[key] = val.get()
                     self.data['mcDefaults'][key] = val.get()
 
+                ## Update change to every project
+                projects = app.getProjects()
+                if len(projects) > 0:
+                    for p in projects:
+                        subjects = p.getSubjects()
+                        for s in subjects:
+                            tests = s.getTests()
+                            for t in tests:
+                                loads = t.getWorkLoads()
+                                for l in loads:
+                                    for key, val in self.unitDefaults.items():
+                                        l.getDetails().setUnit(key, val)
+                    app.testDetailModule.refreshTestDetails()
+
                 settingsFile = open('settings.pkl', 'wb')
                 pickle.dump(self.data, settingsFile)
                 settingsFile.close()
