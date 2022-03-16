@@ -719,7 +719,13 @@ class PlotTab(object):
 
         # Hide legend button
         ttk.Button(self.toolbarWrapper, text='Hide legend', command=lambda: self.hideLegend()).grid(column=7, row=1)
-        ttk.Button(self.toolbarWrapper, text='DETAILS', command=lambda: print(self.workLoads[0].getDetails().getWorkLoadDetails())).grid(column=8, row=1)
+        ttk.Button(self.toolbarWrapper, text='DETAILS', command=lambda: getZeDetails()).grid(column=8, row=1)
+
+        ## DEBUG
+        def getZeDetails():
+            for l in self.workLoads:
+                print(l.getDetails().getWorkLoadDetails())
+        ##
 
         # Create loads notebook frame and loadnotebook
         self.loadNotebookFrame = ttk.Frame(self.tabFrame)
@@ -1347,16 +1353,16 @@ class LoadTabRow(object):
 
         # Unit entry
         if self.label != 'pH\u209A\u2091\u2090\u2096':
-            menuButton = ttk.Menubutton(self.parent)
-            menuButton.config(text=self.details[f'{self.label}_unit'])
-            tempMenu = Menu(menuButton, tearoff=False)
+            self.menuButton = ttk.Menubutton(self.parent)
+            self.menuButton.config(text=self.details[f'{self.label}_unit'])
+            tempMenu = Menu(self.menuButton, tearoff=False)
             units = app.settings.getUnits()[f'{self.label}_units']
 
             for i, u in enumerate(units):
-                LoadMenuElem(self, tempMenu, menuButton, self.var, u, i, units, f'{self.label}', self.workLoad)
+                LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}', self.workLoad)
             
-            menuButton['menu']=tempMenu
-            menuButton.grid(column=2, row=row)
+            self.menuButton['menu']=tempMenu
+            self.menuButton.grid(column=2, row=row)
             
         # M/C Radiobuttons
         self.mcVar = IntVar(value=self.details[f'{self.label}_MC'])
@@ -1437,8 +1443,10 @@ class LoadTabRow(object):
     
     def updateText(self, details):
         #self.valUnit.config(text=f'{"{0:.2f}".format(details[self.label]) } {details[f"{self.label}_unit"]}')
-        self.entry.delete(0,END)
-        self.entry.insert(0, f'{"{0:.1f}".format(float(details[self.label]))}')
+        # self.entry.delete(0,END)
+        # self.entry.insert(0, f'{"{0:.1f}".format(float(details[self.label]))}')
+        # print(f'updating to: {"{0:.1f}".format(float(details[self.label]))}')
+        self.entry.configure(text=f'{"{0:.1f}".format(float(details[self.label]))}')
 
 class LoadMenuElem(object):
     def __init__(self, parentObject, menu, menuButton, var, label, index, unitElems, name, workload):
@@ -1457,13 +1465,26 @@ class LoadMenuElem(object):
     def updateValue(self):
         unit = self.unitElems[self.index]
         self.menuButton.config(text=unit)
-        self.parentObject.updateEntryAndScale(unit)
 
-        self.workLoad.setUnit(f'{self.name}_unit', unit)
+        # update unit change to every loadtab workload details
+        plotTabWorkloads = self.parentObject.parentObject.parentPlotTab.workLoads
+        for l in plotTabWorkloads:
+            details = l.getDetails() # Workload details object
+            details.setUnit(f'{self.name}_unit', unit)
+            self.parentObject.updateText(details.getWorkLoadDetails())
+
+        # update unit change to every loadtab
+        for tab in self.parentObject.parentObject.parentPlotTab.loadTabs:
+            for elem in tab.rowElements:
+                if elem.label == self.name:
+                    elem.updateEntryAndScale(unit)
+                    elem.menuButton.config(text=unit)
 
         if self.name == 'VO2':
-            figure = app.getPlottingPanel().plots[0].plot[0]
-            yValueVar = app.getPlottingPanel().plots[0].yValue
+            plotIndex = app.getPlottingPanel().plotNotebook.index('current')
+
+            # Update figure
+            yValueVar = app.getPlottingPanel().plots[plotIndex].yValue
             yValue = float(yValueVar.get())
 
             if unit == 'l/min':
@@ -1472,4 +1493,6 @@ class LoadMenuElem(object):
             elif unit == 'ml/min':
                 plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
                 yValueVar.set(yValue*1000)
+
+            figure = app.getPlottingPanel().plots[plotIndex].plot[0]
             figure.canvas.draw()

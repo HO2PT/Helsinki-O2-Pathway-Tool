@@ -32,14 +32,41 @@ class ProjectList(object):
         ttk.Button(buttonContainer, text='Import...').grid(column=0, row=1)
         # Mitä halutaan verrata???
         ttk.Button(buttonContainer, text='Compare', command=lambda: self.showComparisonOptions(), state=DISABLED).grid(column=1, row=1)
-        ttk.Button(buttonContainer, text='Plot mean', command=lambda: self.printSelectedMean()).grid(column=2, row=1)
+        ttk.Button(buttonContainer, text='Plot mean', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
 
-    def printSelectedMean(self):
-        if len(self.projectList.curselection()) < 2:
-            emptyTest = Test()
-            app.plotMaxMinAvg(emptyTest, plotProject=True)
+    def plotMeanSd(self):
+        emptyTest = Test()
+        app.plotMean(emptyTest, plotProject=True)
+    
+    def plotMeanIqr(self):
+        emptyTest = Test()
+        app.plotMean(emptyTest, plotProject=True, iqr=True)
+
+    def showMeanOptions(self):
+        if len(self.projectList.curselection()) == 1:
+            # Create popup
+            editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*4)
+            editscreen.title('Plot options')
+            editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
+            ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+            editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
+            editscreen.grid_propagate(False)
+                
+            self.var = IntVar(value=0)
+            opt1 = ttk.Radiobutton(editscreen, text='Mean/SD', variable=self.var, value=0)
+            opt1.grid(column=1, row=0, sticky='w')
+            opt2 = ttk.Radiobutton(editscreen, text='Mean/IQR', variable=self.var, value=1)
+            opt2.grid(column=1, row=1, sticky='w')
+            ttk.Button(editscreen, text='Plot', command=lambda: plot()).grid(column=3, row=3, sticky='se')
+
+            def plot():
+                if self.var.get() == 0:
+                    self.plotMeanSd()
+                else:
+                    self.plotMeanIqr()
+                editscreen.destroy()
         else:
-            notification.create('error', 'Select single project for plotting mean figures', '5000')
+            notification.create('error', 'Select single project for plotting mean figure', '5000')
 
     def showComparisonOptions(self):
         if len(self.projectList.curselection()) > 1:

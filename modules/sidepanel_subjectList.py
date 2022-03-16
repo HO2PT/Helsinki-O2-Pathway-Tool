@@ -36,7 +36,7 @@ class SubjectList(object):
             for i in self.subjectList.curselection():
                 subjects.append(app.getActiveProject().getSubjects()[i])
             emptyTest = Test()
-            app.plotMaxMinAvg(test=emptyTest, subjects=subjects)
+            app.plotMean(test=emptyTest, subjects=subjects)
         # else:
             # notification.create('error', 'Select at least 2 subjects for comparison', '5000')
 

@@ -15,24 +15,24 @@ class ProjectDetailsModule(object):
         self.VO2max.pack(expand=False)
         self.VO2min = ttk.Label(self.container, text=None)
         self.VO2min.pack(expand=False)
-        self.VO2avg = ttk.Label(self.container, text=None)
-        self.VO2avg.pack(expand=False)
+        self.VO2mean = ttk.Label(self.container, text=None)
+        self.VO2mean.pack(expand=False)
 
         # QaO2 details
         self.QaO2max = ttk.Label(self.container, text=None)
         self.QaO2max.pack(expand=False)
         self.QaO2min = ttk.Label(self.container, text=None)
         self.QaO2min.pack(expand=False)
-        self.QaO2avg = ttk.Label(self.container, text=None)
-        self.QaO2avg.pack(expand=False)
+        self.QaO2mean = ttk.Label(self.container, text=None)
+        self.QaO2mean.pack(expand=False)
 
         # DO2 details
         self.DO2max = ttk.Label(self.container, text=None)
         self.DO2max.pack(expand=False)
         self.DO2min = ttk.Label(self.container, text=None)
         self.DO2min.pack(expand=False)
-        self.DO2avg = ttk.Label(self.container, text=None)
-        self.DO2avg.pack(expand=False)
+        self.DO2mean = ttk.Label(self.container, text=None)
+        self.DO2mean.pack(expand=False)
 
         self.calculateButton = ttk.Button(self.container, text="Calculate", command=lambda: app.getMaxMinAvg(plotProject=True))
 
@@ -48,12 +48,12 @@ class ProjectDetailsModule(object):
         # VO2
         self.VO2max.config(text=f'VO\u2082\u2098\u2090\u2093 peak: {"{0:.1f}".format(float(activeProject.VO2max))}')
         self.VO2min.config(text=f'VO\u2082\u2098\u2090\u2093 min: {"{0:.1f}".format(float(activeProject.VO2min))}')
-        self.VO2avg.config(text=f'VO\u2082\u2098\u2090\u2093 avg: {"{0:.1f}".format(float(activeProject.VO2avg))}')
+        self.VO2mean.config(text=f'VO\u2082\u2098\u2090\u2093 mean: {"{0:.1f}".format(float(activeProject.VO2mean))}')
         # QaO2
         self.QaO2max.config(text=f'QaO\u2082 peak: {"{0:.1f}".format(float(activeProject.QaO2max))}')
         self.QaO2min.config(text=f'QaO\u2082 min: {"{0:.1f}".format(float(activeProject.QaO2min))}')
-        self.QaO2avg.config(text=f'QaO\u2082 avg: {"{0:.1f}".format(float(activeProject.QaO2avg))}')
+        self.QaO2mean.config(text=f'QaO\u2082 mean: {"{0:.1f}".format(float(activeProject.QaO2mean))}')
         # DO2
         self.DO2max.config(text=f'DO\u2082 peak: {"{0:.1f}".format(float(activeProject.DO2max))}')
         self.DO2min.config(text=f'DO\u2082 min: {"{0:.1f}".format(float(activeProject.DO2min))}')
-        self.DO2avg.config(text=f'DO\u2082 avg: {"{0:.1f}".format(float(activeProject.DO2avg))}')
+        self.DO2mean.config(text=f'DO\u2082 mean: {"{0:.1f}".format(float(activeProject.DO2mean))}')
