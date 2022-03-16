@@ -84,7 +84,7 @@ class LoadNotebook(object):
         ])
         
         ## Notebook
-        self.loadbook = ScrollableNotebook(parent,style="loadNotebook.TNotebook", wheelscroll=True)
+        self.loadbook = ScrollableNotebook(parent, parentObj='testDetailsModule', style="loadNotebook.TNotebook", wheelscroll=True)
 
         # Add/edit button
         self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())

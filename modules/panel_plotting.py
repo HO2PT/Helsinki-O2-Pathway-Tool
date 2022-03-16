@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter.messagebox import askokcancel
 from objects.app import app
 from modules.notification import notification
+from modules.ScrollableNotebook import ScrollableNotebook
 import numpy as np
 import copy
 import random
@@ -28,19 +29,12 @@ class PlottingPanel(object):
         self.container.pack(fill=BOTH, expand=TRUE)
 
         # Plots notebook
-        self.plotNotebook = ttk.Notebook(self.container, style='loadNotebook.TNotebook')
-        self.plotNotebook.bind('<Button-1>', lambda e: self.closePlotTab(e))
+        self.plotNotebook = ScrollableNotebook(self.container, parentObj='plottingPanel', style="loadNotebook.TNotebook", wheelscroll=True)
+
         try:
             print(f'PACKINFO: {self.plotNotebook.pack_info()}')
         except TclError:
             return
-
-    def closePlotTab(self, e):
-        if self.plotNotebook.identify(e.x, e.y) == 'close':
-            if askokcancel("Confirm", "Do you want to remove the tab?"):
-                clickedTabIndex = self.plotNotebook.index(f'@{e.x},{e.y}')
-                self.plotNotebook.forget(clickedTabIndex)
-                del self.plots[clickedTabIndex]
 
     def plot(self):
         self.origWorkLoads = app.getActiveTest().getWorkLoads()
@@ -731,7 +725,7 @@ class PlotTab(object):
         self.loadNotebookFrame = ttk.Frame(self.tabFrame)
         self.loadNotebookFrame.pack(side=RIGHT, fill=Y)
 
-        self.loadNotebook = ttk.Notebook(self.loadNotebookFrame)
+        self.loadNotebook = ScrollableNotebook(self.loadNotebookFrame, parentObj='plotTab', wheelscroll=True)
         self.loadNotebook.pack(expand=TRUE, fill=BOTH)
 
         # Create tabs for loads
@@ -1147,7 +1141,7 @@ class PlotOptions(object):
         self.lineTypeMenuButton.grid(column=1, row=0)
 
         # Set line color
-        ttk.Label(self.plotOptions, text='Change line color').grid(column=3, row=0)
+        ttk.Label(self.plotOptions, text='Change line color').grid(column=0, row=1)
         self.lineColorMenuButton = ttk.Menubutton(self.plotOptions)
 
         lineColorMenu = Menu(self.lineColorMenuButton, tearoff=False)
@@ -1164,7 +1158,7 @@ class PlotOptions(object):
 
         self.lineColorMenuButton['menu']=lineColorMenu
         self.lineColorMenuButton.config(text= self.getInitialColor(self.mapLines()[self.loadIndex][0].get_color()) )
-        self.lineColorMenuButton.grid(column=4, row=0)
+        self.lineColorMenuButton.grid(column=1, row=1)
 
         self.plotOptions.grid_columnconfigure(2, minsize=20 )
 

@@ -4,9 +4,10 @@
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
+from tkinter.messagebox import askokcancel
 
 class ScrollableNotebook(ttk.Frame):
-    def __init__(self,parent, wheelscroll=False, tabmenu=False, *args,**kwargs):
+    def __init__(self, parent, parentObj=None, wheelscroll=False, tabmenu=False, *args, **kwargs):
         ttk.Frame.__init__(self, parent, *args)
         self.xLocation = 0
         self.notebookContent = ttk.Notebook(self,**kwargs)
@@ -30,6 +31,7 @@ class ScrollableNotebook(ttk.Frame):
         rightArrow.bind("<1>",self._rightSlide)
         rightArrow.pack(side=RIGHT)
         self.notebookContent.bind("<Configure>", self._resetSlide)
+        self.parentObj = parentObj
 
     def handleTabClick(self, e):
         clickedTabIndex = self.notebookTab.index(f'@{e.x},{e.y}')
@@ -37,9 +39,15 @@ class ScrollableNotebook(ttk.Frame):
         workLoads = activeTest.getWorkLoads()
 
         if self.notebookTab.identify(e.x, e.y) == 'close':
-            self.notebookTab.forget(clickedTabIndex)
-            self.notebookContent.forget(clickedTabIndex)
-            del workLoads[clickedTabIndex]
+            if askokcancel("Confirm", "Do you want to remove the tab?"):
+                self.notebookTab.forget(clickedTabIndex)
+                self.notebookContent.forget(clickedTabIndex)
+
+                if self.parentObj == 'testDetailsModule':
+                    del workLoads[clickedTabIndex]
+                elif self.parentObj == 'plottingPanel':
+                    del app.getPlottingPanel().plots[clickedTabIndex]
+            
 
     def _wheelscroll(self, event):
         if event.delta > 0:
