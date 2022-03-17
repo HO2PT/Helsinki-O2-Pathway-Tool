@@ -190,7 +190,7 @@ class PlottingPanel(object):
             else:
                 return Q
 
-    def formatVO2(self, w, details, Q, updatedVar, VO2Lock):
+    def formatVO2(self, w, details, Q, updatedVar):
         VO2 = float(details['VO2'])
         unit = details['VO2_unit']
 
@@ -215,32 +215,7 @@ class PlottingPanel(object):
                 elif unit == 'ml/min': # Convert VO2 to ml/min
                     return Q * CavO2 * 1000
         else:
-            if VO2Lock == False:
-                if updatedVar == 'CavO2' or updatedVar == 'Q':
-                    print('Q IS UPDATED (VO2)')
-                    CavO2 = float(details['CavO2'])
-                    CavO2Unit = details['CavO2_unit']
-                    QUnit = details['Q_unit']
-                    w.getDetails().setMC('VO2_MC', 1)
-
-                    if Q != 0 and CavO2 != 0:
-                        if CavO2Unit == 'ml/dl': # -> l/l
-                            CavO2 = CavO2 / 100
-                        else:
-                            CavO2 = CavO2 / 1000 # -> l/l
-
-                        if QUnit == 'ml/min': # -> l/min
-                            Q = Q / 1000
-
-                        if unit == 'l/min': # Convert VO2 to l/min
-                            return Q * CavO2
-
-                        elif unit == 'ml/min': # Convert VO2 to ml/min
-                            return Q * CavO2 * 1000
-                else:
-                    return VO2
-            else:
-                return VO2
+            return VO2
     
     def formatHb(self, details, updatedVar):
         Hb = float(details['Hb'])
@@ -547,10 +522,10 @@ class PlottingPanel(object):
         
         return VO2 / 2 / PvO2_calc * 1000
 
-    def calc(self, w, details, updatedVar = None, VO2Lock = None):
+    def calc(self, w, details, updatedVar = None):
         validValues = True
         Q = self.formatQ(w, details, updatedVar)
-        VO2 = self.formatVO2(w, details, Q, updatedVar, VO2Lock)
+        VO2 = self.formatVO2(w, details, Q, updatedVar)
         Hb = self.formatHb(details, updatedVar)
         SaO2 = float(details['SaO2'])
 
@@ -582,8 +557,6 @@ class PlottingPanel(object):
         PvO2_calc = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 
         DO2 = self.solveDO2(w, details, VO2, PvO2_calc)
-
-        #print(f'DO2 {DO2}')
 
         # Fick's law - Diffusion line 
         # VO2 = DO2 * 2 * PvO2
@@ -1290,7 +1263,6 @@ class LoadTabRow(object):
         self.scale = scale
         self.workLoad = workLoad.getDetails()
         self.details = self.workLoad.getWorkLoadDetails()
-        self.VO2Lock = False
 
         #print(f'VALUE: {self.value}')
         self.var = DoubleVar(self.parent, value=f'{"{0:.1f}".format(float(self.value))}')

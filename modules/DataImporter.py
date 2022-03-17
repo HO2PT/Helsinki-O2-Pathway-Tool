@@ -1,9 +1,7 @@
-from dataclasses import dataclass
 import math
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
-from numpy import NaN
 import pandas as pd
 from pandastable import Table, TableModel
 from modules.notification import notification
@@ -19,7 +17,6 @@ from objects.subject import Subject
 # Stage 5: q
 # Stage 6: hb
 # Stage 7: sao2
-
 # Stage 8: CaO2
 # Stage 9: CvO2
 # Stage 10: CavO2
@@ -34,8 +31,6 @@ from objects.subject import Subject
 # Luo vaihtoehdot tuo projekti, tuo käyttäjä, tuo testi
 # tuodessa testiä lisätään aktiivisen käyttäjän alle jnejne.
 
-# BUG: Jos valitsee yhden solun id:ksi, ei osaa hakea data modea ja sekoittaa koko paketin
-
 class DataImporter(object):
     def __init__(self):
         print('IMPORTING YOU SAY')
@@ -47,14 +42,15 @@ class DataImporter(object):
         self.tests = []
         self.subjects = []
         self.currentDf = None
+        self.tempLocData = {}
 
         file = askopenfile(mode ='r')
         if file is not None:
-            data = pd.ExcelFile(file.name)
+            self.data = pd.ExcelFile(file.name)
             self.dfList= {}
 
-            for sheet in data.sheet_names:
-                self.dfList[sheet] = pd.read_excel(data, sheet, header=None)
+            for sheet in self.data.sheet_names:
+                self.dfList[sheet] = pd.read_excel(self.data, sheet, header=None)
 
             self.window = Toplevel()
             self.window.title('Import')
@@ -105,10 +101,10 @@ class DataImporter(object):
             self.selectionText.pack(side=RIGHT, fill=X)
 
             # Create menubutton for selection of excel sheet
-            self.menuButton = ttk.Menubutton(headerFrame, text=list(data.sheet_names)[0])
+            self.menuButton = ttk.Menubutton(headerFrame, text=list(self.data.sheet_names)[0])
             menu = Menu(self.menuButton, tearoff=False)
 
-            for s in data.sheet_names:
+            for s in self.data.sheet_names:
                 DataMenuElem(self, menu,self.menuButton, s)
 
             self.menuButton['menu'] = menu
@@ -439,7 +435,7 @@ class DataImporter(object):
                         self.selectionText.configure(text=text)
                     temp = r
 
-    def chechDataForm(self):
+    def checkDataForm(self):
         # print(f'len collist: {len(self.multiplecollist)}')
         # print(f'len rowlist: {len(self.multiplerowlist)}')
         # print(f'selected rows: {len(self.dataTable.getSelectedRows())}')
@@ -462,10 +458,12 @@ class DataImporter(object):
         self.rowNames= []
 
         if len(self.multiplecollist) > 0 and len(self.multiplerowlist) > 0: # set up values lists if multicell
-            for c in self.multiplecollist:
-                self.dataTable.setSelectedCol(c)
-                self.colValues.append(self.customGetSelectionValues()[0][0:])
-                self.columnNames.append(self.customGetSelectionValues()[0][0])
+            for i, c in enumerate(self.customGetSelectionValues()):
+                # self.dataTable.setSelectedCol(c)
+                # self.colValues.append(self.customGetSelectionValues()[0][0:])
+                # self.columnNames.append(self.customGetSelectionValues()[0][0])
+                self.colValues.append(c[0:])
+                self.columnNames.append(c[0])
 
             for r in self.multiplerowlist:
                 self.dataTable.setSelectedRow(r)
@@ -506,7 +504,7 @@ class DataImporter(object):
                     print('USEAMPI RIVI')
 
                     if self.stage == 0: # ids
-                        self.chechDataForm()
+                        self.checkDataForm()
                         for id in self.rowNames:
                             # Create subject, set its id, add a test, reset workloads
                             subject = Subject()
@@ -514,6 +512,8 @@ class DataImporter(object):
                             subject.addTest()
                             subject.getTests()[0].workLoads = []
                             self.subjects.append(subject)
+                        
+                        self.tempLocData['id'] = self.rowNames
 
                     elif self.stage == 1: # Loads
                         print('**LOADS**')
@@ -586,7 +586,7 @@ class DataImporter(object):
                 else: # single rows
                     print('YKSI RIVI')
                     if self.stage == 0: #ids
-                        self.chechDataForm()
+                        self.checkDataForm()
                         for id in self.rowValues[0]:
                             # Create subject, set its id, add a test, reset workloads
                             subject = Subject()
@@ -594,6 +594,8 @@ class DataImporter(object):
                             subject.addTest()
                             subject.getTests()[0].workLoads = []
                             self.subjects.append(subject)
+
+                        self.tempLocData['id'] = self.rowValues[0]
 
                     elif self.stage == 1: # load
                         print('**LOADS**')
@@ -672,7 +674,7 @@ class DataImporter(object):
                     # print(colValues)
                     
                     if self.stage == 0: # ids
-                        self.chechDataForm()
+                        self.checkDataForm()
                         for c in self.colValues:
                             # Create subject, set its id, add a test, reset workloads
                             id = c[0]
@@ -681,6 +683,8 @@ class DataImporter(object):
                             subject.addTest()
                             subject.getTests()[0].workLoads = []
                             self.subjects.append(subject)
+
+                        self.tempLocData['id'] = self.colValues
 
                     elif self.stage == 1: # Loads
                         self.getLoadsFromCols()
@@ -738,7 +742,7 @@ class DataImporter(object):
                     # print( colValues )
 
                     if self.stage == 0: # ids
-                        self.chechDataForm()
+                        self.checkDataForm()
 
                         for id in self.colValues[0][1:]:
                             # Create subject, set its id, add a test, reset workloads
@@ -747,6 +751,8 @@ class DataImporter(object):
                             subject.addTest()
                             subject.getTests()[0].workLoads = []
                             self.subjects.append(subject)
+
+                        self.tempLocData['id'] = self.colValues[0][1:]
                     
                     elif self.stage == 1: # loads
                         self.getLoadsFromCols()
@@ -803,11 +809,11 @@ class DataImporter(object):
                 self.nextStage()
 
             if row >= 0 and col >= 0: # cells selected
-                if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1: # TESTED multiple cells
+                if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1: # multiple cells
                     print('MULTIPLE CELLS SELECTED')
 
                     if self.stage == 0: # ids
-                        self.chechDataForm()
+                        self.checkDataForm()
                         self.subjects = []
 
                         if self.dataMode == 'wide':
@@ -815,19 +821,24 @@ class DataImporter(object):
                                 for r in self.multiplerowlist:
                                     # Create subject, set its id, add a test, reset workloads
                                     subject = Subject()
-                                    subject.setId(self.colValues[i][r])
+                                    subject.setId(self.columnNames[i])
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
                                     self.subjects.append(subject)
+
+                            self.tempLocData['id'] = self.columnNames
+
                         elif self.dataMode == 'long':
-                            for i, c in enumerate(self.multiplecollist):
-                                for r in self.multiplerowlist:
+                            for i, r in enumerate(self.multiplerowlist):
+                                for c in self.multiplecollist:
                                     # Create subject, set its id, add a test, reset workloads
                                     subject = Subject()
-                                    subject.setId(self.colValues[i][r])
+                                    subject.setId(self.rowNames[i])
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
                                     self.subjects.append(subject)
+                                    
+                            self.tempLocData['id'] = self.rowNames
                     
                     elif self.stage == 1: # loads
                         print('**LOADS**')
@@ -929,6 +940,8 @@ class DataImporter(object):
                         subject.getTests()[0].workLoads = []
                         self.subjects.append(subject)
                         self.dataMode = None
+
+                        self.tempLocData['id'] = value
 
                     elif self.stage == 1: # loads
                         s = self.subjects[0]
@@ -1035,12 +1048,14 @@ class DataImporter(object):
             for j, l in enumerate(loads):
                 details = l.getDetails()
                 
-                if label == 'Hb':
+                if self.stage == 6: # Hb
                     colValues = self.colValues[0][1:]
                     details.setValue(label, colValues[i])
                 else:
                     colValues = self.colValues[j][1:]
                     details.setValue(label, colValues[i])
+
+        self.tempLocData[label] = self.columnNames
     
     def getLoadsFromCols(self):
         for i, s in enumerate(self.subjects):
@@ -1052,6 +1067,8 @@ class DataImporter(object):
                     load = test.createLoad()
                     load.setName(self.columnNames[j]) # column name
                     load.getDetails().setValue('Load', l[i]) # set value
+        
+        self.tempLocData['Load'] = self.columnNames
 
     def getLoadsFromRows(self):
         for i, s in enumerate(self.subjects):
@@ -1062,6 +1079,8 @@ class DataImporter(object):
                     load = test.createLoad()
                     load.setName(self.rowNames[j]) # row name
                     load.getDetails().setValue('Load', l[i]) # set value
+        
+        self.tempLocData['Load'] = self.rowNames
 
     def getRowValues(self, label):
         for i, s in enumerate(self.subjects):
@@ -1071,6 +1090,8 @@ class DataImporter(object):
             for j, l in enumerate(loads):
                 details = l.getDetails()
                 details.setValue(label, self.rowValues[j][i])
+        
+        self.tempLocData[label] = self.rowNames
 
     def getMultiCellLoads(self):
         colList = self.multiplecollist
@@ -1255,6 +1276,57 @@ class DataImporter(object):
         app.setActiveSubject(None)
         app.setActiveTest(None)
 
+        project.data = self.dfList
+
+        # Add dataloc information
+        project.idLoc = self.tempLocData.get('id', None)
+        project.loadLoc = self.tempLocData.get('Load', None)
+        project.vo2Loc = self.tempLocData.get('VO2', None)
+        project.hrLoc = self.tempLocData.get('HR', None)
+        project.svLoc = self.tempLocData.get('Sv', None)
+
+        project.qLoc = self.tempLocData.get('Q', None)
+        project.hbLoc = self.tempLocData.get('Hb', None)
+        project.sao2Loc = self.tempLocData.get('SaO2', None)
+        project.cao2Loc = self.tempLocData.get('CaO2', None)
+        project.cvo2Loc = self.tempLocData.get('CvO2', None)
+
+        project.cavo2Loc = self.tempLocData.get('CavO2', None)
+        project.qao2Loc = self.tempLocData.get('QaO2', None)
+        project.svo2Loc = self.tempLocData.get('SvO2', None)
+        project.pvo2Loc = self.tempLocData.get('PvO2', None)
+
+        project.tcRestLoc = self.tempLocData.get('Tc @ rest', None)
+        project.tcLoc = self.tempLocData.get('Tc\u209A\u2091\u2090\u2096', None)
+        project.phRestLoc = self.tempLocData.get('pH @ rest', None) 
+        project.phLoc = self.tempLocData.get('pH\u209A\u2091\u2090\u2096', None)
+        
+        # for key, value in self.dfList.items():
+        #     print(key)
+        #     print(value)
+
+        """ print(project.idLoc)
+        print(project.loadLoc)
+        print(project.vo2Loc)
+        print(project.hrLoc)
+        print(project.svLoc)
+
+        print(project.qLoc)
+        print(project.hbLoc)
+        print(project.sao2Loc)
+        print(project.cao2Loc)
+        print(project.cvo2Loc)
+
+        print(project.cavo2Loc)
+        print(project.qao2Loc)
+        print(project.svo2Loc)
+        print(project.pvo2Loc)
+
+        print(project.tcRestLoc)
+        print(project.tcLoc)
+        print(project.phRestLoc)
+        print(project.phLoc) """
+
         for s in self.subjects:
             project.addSubject(s)
 
@@ -1272,12 +1344,14 @@ class DataImporter(object):
         self.window.destroy()
 
 class DataMenuElem(object):
-    def __init__(self, importer, menu, menuButton, option):
+    def __init__(self, importer, menu, menuButton, option, isExporter = False):
         self.importer = importer
         self.menuButton = menuButton
         self.option = option
+        self.isExporter = isExporter
         menu.add_command(label=option, command=lambda: self.handleMenuSelect())
 
     def handleMenuSelect(self):
         self.menuButton.config(text=self.option)
-        self.importer.updateTable(self.option)
+        if self.isExporter == False:
+            self.importer.updateTable(self.option)
