@@ -303,15 +303,18 @@ class TestDetailRow(object):
     
     def updateValue(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.workLoadObject, name, self.valueVar.get())
+        self.workLoadObject.setValue(name, self.valueVar.get())
+        # setattr(self.workLoadObject, name, self.valueVar.get())
 
     def updateUnit(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.workLoadObject, name, self.unitVar.get())
+        self.workLoadObject.setUnit(name, self.unitVar.get())
+        # setattr(self.workLoadObject, name, self.unitVar.get())
     
     def updateMC(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.workLoadObject, name, self.mcVar.get())
+        self.workLoadObject.setMC(name, self.mcVar.get())
+        # setattr(self.workLoadObject, name, self.mcVar.get())
 
 class TestDetailMenuElem(object):
     def __init__(self, menu, menuButton, label, index, elems, name, workload):

@@ -31,6 +31,13 @@ from objects.subject import Subject
 # Luo vaihtoehdot tuo projekti, tuo käyttäjä, tuo testi
 # tuodessa testiä lisätään aktiivisen käyttäjän alle jnejne.
 
+##
+## - Lisää tsekkaus, jos esim. len(collist) = 0, iske sarakkeen tiedot
+## kaikkiin kuormiin
+##
+## - Virheilmoitus jos tulee indexerror
+##
+
 class DataImporter(object):
     def __init__(self):
         print('IMPORTING YOU SAY')
@@ -1045,13 +1052,14 @@ class DataImporter(object):
             test = s.getTests()[0]
             loads = test.getWorkLoads()
 
-            for j, l in enumerate(loads):
-                details = l.getDetails()
-                
-                if self.stage == 6: # Hb
+            if len(self.colValues) == 1:
+                for j, l in enumerate(loads):
+                    details = l.getDetails()
                     colValues = self.colValues[0][1:]
                     details.setValue(label, colValues[i])
-                else:
+            else:
+                for j, l in enumerate(loads):
+                    details = l.getDetails()
                     colValues = self.colValues[j][1:]
                     details.setValue(label, colValues[i])
 
@@ -1086,10 +1094,15 @@ class DataImporter(object):
         for i, s in enumerate(self.subjects):
             test = s.getTests()[0]
             loads = test.getWorkLoads()
-
-            for j, l in enumerate(loads):
-                details = l.getDetails()
-                details.setValue(label, self.rowValues[j][i])
+            
+            if len(self.rowValues) == 1:
+                for j, l in enumerate(loads):
+                        details = l.getDetails()
+                        details.setValue(label, self.rowValues[0][i])
+            else:
+                for j, l in enumerate(loads):
+                    details = l.getDetails()
+                    details.setValue(label, self.rowValues[j][i])
         
         self.tempLocData[label] = self.rowNames
 
@@ -1279,6 +1292,7 @@ class DataImporter(object):
         project.data = self.dfList
 
         # Add dataloc information
+        project.dataMode = self.dataMode
         project.idLoc = self.tempLocData.get('id', None)
         project.loadLoc = self.tempLocData.get('Load', None)
         project.vo2Loc = self.tempLocData.get('VO2', None)

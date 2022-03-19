@@ -21,8 +21,10 @@ class MenuBar(object):
         file.add_cascade(label ='Import', menu = importFile)
 
         exportMenu = Menu(self.menuBar, tearoff=0)
-        exportMenu.add_command(label='To new file...', command=lambda: DataExporter(mode=0))
-        exportMenu.add_command(label='To imported file...', command=lambda: DataExporter(mode=1))
+        exportMenu.add_command(label='Project to new file...', command=lambda: DataExporter(toNew=1))
+        exportMenu.add_command(label='Project to imported file...', command=lambda: DataExporter(toNew=0))
+        exportMenu.add_command(label='Plots to new file...', command=lambda: DataExporter(toNew=1, onlyPlots=1))
+        exportMenu.add_command(label='Plots to imported file...', command=lambda: DataExporter(toNew=0, onlyPlots=1))
         file.add_cascade(label='Export...', menu=exportMenu)
 
         file.add_separator()

@@ -27,6 +27,7 @@ class Project(object):
         self.maxLoad.setName('+1 SD')
 
         # Columns/rows used in dataimport
+        self.dataMode = None
         self.idLoc = None
         self.loadLoc = None
         self.vo2Loc = None
