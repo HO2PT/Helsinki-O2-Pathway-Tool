@@ -1,12 +1,10 @@
 from tkinter import *
 from tkinter import ttk
-from tkinter.messagebox import askokcancel
 from objects.app import app
 from modules.notification import notification
 from modules.ScrollableNotebook import ScrollableNotebook
 import numpy as np
 import copy
-import random
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import (
@@ -1343,66 +1341,76 @@ class LoadTabRow(object):
     def updateMc(self, name, index, mode):
         self.workLoad.setMC(f'{self.label}_MC', self.mcVar.get())
 
-    def updateEntryAndScale(self, unit):
-        if unit == 'ml/min': # l/min -> ml/min
-            self.workLoad.setValue(self.label, self.var.get()*1000)
-            self.var.set(self.var.get()*1000)
-            # self.slider.config(to=10000)
-        
-        elif unit == 'l/min': # ml/min -> l/min
-            self.workLoad.setValue(self.label, self.var.get()/1000)
-            self.var.set(self.var.get()/1000)
-            # self.slider.config(to=10)
-
-        elif unit == 'g/l': # g/dl -> g/l
-            self.workLoad.setValue(self.label, self.var.get()*10)
-            self.var.set(self.var.get()*10)
-            # self.slider.config(to=self.scale[1]*10)
-
-        elif unit == 'g/dl': # g/l -> g/dl
-            self.workLoad.setValue(self.label, self.var.get()/10)
-            self.var.set(self.var.get()/10)
-            # self.slider.config(to=self.scale[1]/10)
-
-        elif unit == 'ml/l': # ml/dl -> ml/l
-            self.workLoad.setValue(self.label, self.var.get()*10)
-            self.var.set(self.var.get()*10)
-            # self.slider.config(to=self.scale[1])
-
-        elif unit == 'ml/dl': # ml/l -> ml/dl
-            self.workLoad.setValue(self.label, self.var.get()/10)
-            self.var.set(self.var.get()/10)
-            # self.slider.config(to=self.scale[1]/10)
-        
-        elif unit == 'l': #ml -> l
-            self.workLoad.setValue(self.label, self.var.get()/1000)
-            self.var.set(self.var.get()/1000)
-            # self.slider.config(to=1)
-
-        elif unit == 'ml': #l -> ml
-            self.workLoad.setValue(self.label, self.var.get()*1000)
-            self.var.set(self.var.get()*1000)
-            # self.slider.config(to=1000)
-
-        elif unit == 'F': # C -> F
-            self.workLoad.setValue(self.label, self.var.get() * 1.8 + 32)
-            self.var.set(self.var.get() * 1.8 + 32)
-            # self.slider.config(from_=95, to=110)
-
-        elif unit == 'K': # C -> K
-            self.workLoad.setValue(self.label, self.var.get() + 273.15)
-            self.var.set(self.var.get() + 273.15)
-            # self.slider.config(from_=300, to=320)
-        
-        elif unit == '\N{DEGREE SIGN}C': # K/F -> C
-            if self.var.get() > 94 and self.var.get() < 111: # F
-                self.workLoad.setValue(self.label, (self.var.get() - 32) / 1.8)
-                self.var.set((self.var.get() - 32) / 1.8)
-            else: # K
-                self.workLoad.setValue(self.label, self.var.get() - 273.15)
-                self.var.set(self.var.get() - 273.15)
+    def updateEntryAndScale(self, unit, prevUnit):
+        if unit != prevUnit:
+            if unit == 'ml/min': # l/min -> ml/min
+                self.workLoad.setValue(self.label, self.var.get()*1000)
+                self.var.set(self.var.get()*1000)
+                # self.slider.config(to=10000)
             
-            # self.slider.config(from_=35, to=42)
+            elif unit == 'l/min': # ml/min -> l/min
+                self.workLoad.setValue(self.label, self.var.get()/1000)
+                self.var.set(self.var.get()/1000)
+                # self.slider.config(to=10)
+
+            elif unit == 'g/l': # g/dl -> g/l
+                self.workLoad.setValue(self.label, self.var.get()*10)
+                self.var.set(self.var.get()*10)
+                # self.slider.config(to=self.scale[1]*10)
+
+            elif unit == 'g/dl': # g/l -> g/dl
+                self.workLoad.setValue(self.label, self.var.get()/10)
+                self.var.set(self.var.get()/10)
+                # self.slider.config(to=self.scale[1]/10)
+
+            elif unit == 'ml/l': # ml/dl -> ml/l
+                self.workLoad.setValue(self.label, self.var.get()*10)
+                self.var.set(self.var.get()*10)
+                # self.slider.config(to=self.scale[1])
+
+            elif unit == 'ml/dl': # ml/l -> ml/dl
+                self.workLoad.setValue(self.label, self.var.get()/10)
+                self.var.set(self.var.get()/10)
+                # self.slider.config(to=self.scale[1]/10)
+            
+            elif unit == 'l': #ml -> l
+                self.workLoad.setValue(self.label, self.var.get()/1000)
+                self.var.set(self.var.get()/1000)
+                # self.slider.config(to=1)
+
+            elif unit == 'ml': #l -> ml
+                self.workLoad.setValue(self.label, self.var.get()*1000)
+                self.var.set(self.var.get()*1000)
+                # self.slider.config(to=1000)
+
+            elif unit == 'F': 
+                if prevUnit == '\N{DEGREE SIGN}C': # C -> F
+                    self.workLoad.setValue(self.label, self.var.get() * 1.8 + 32)
+                    self.var.set( f'{"{0:.1f}".format( float(( self.var.get() * 1.8 + 32 )) )}' )
+                    # self.slider.config(from_=95, to=110)
+                else: # K -> F
+                    self.workLoad.setValue(self.label, 1.8 * (self.var.get() - 273) + 32)
+                    self.var.set( f'{"{0:.1f}".format( float(( 1.8 * (self.var.get() - 273) + 32)) )}' )
+
+            elif unit == 'K':
+                if prevUnit == '\N{DEGREE SIGN}C': # C -> K
+                    self.workLoad.setValue(self.label, self.var.get() + 273.15)
+                    self.var.set( f'{"{0:.1f}".format( float(( self.var.get() + 273.15)) )}' )
+                    # self.slider.config(from_=300, to=320)
+                else: # F -> K
+                    self.workLoad.setValue(self.label, 5/9 * (self.var.get() + 459.67))
+                    self.var.set( f'{"{0:.1f}".format( float(( 5/9 * (self.var.get() + 459.67) )) )}' )
+                    #5/9 * F + 459,67
+            
+            elif unit == '\N{DEGREE SIGN}C': # K/F -> C
+                if self.var.get() > 94 and self.var.get() < 111: # F
+                    self.workLoad.setValue(self.label, (self.var.get() - 32) / 1.8)
+                    self.var.set( f'{"{0:.1f}".format( float(( (self.var.get() - 32) / 1.8)) )}' )
+                else: # K
+                    self.workLoad.setValue(self.label, self.var.get() - 273.15)
+                    self.var.set( f'{"{0:.1f}".format( float(( self.var.get() - 273.15)) ) }' )
+                
+                # self.slider.config(from_=35, to=42)
 
     def getValue(self):
         return self.var.get()
@@ -1429,9 +1437,10 @@ class LoadMenuElem(object):
         self.menu.add_command(label=f'{self.label}', command=lambda: self.updateValue())
 
     def updateValue(self):
+        prevUnit = self.menuButton.cget("text")
         unit = self.unitElems[self.index]
         self.menuButton.config(text=unit)
-
+        
         # update unit change to every loadtab workload details
         plotTabWorkloads = self.parentObject.parentObject.parentPlotTab.workLoads
         for l in plotTabWorkloads:
@@ -1443,22 +1452,22 @@ class LoadMenuElem(object):
         for tab in self.parentObject.parentObject.parentPlotTab.loadTabs:
             for elem in tab.rowElements:
                 if elem.label == self.name:
-                    elem.updateEntryAndScale(unit)
+                    elem.updateEntryAndScale(unit, prevUnit)
                     elem.menuButton.config(text=unit)
+        if unit != prevUnit:
+            if self.name == 'VO2':
+                plotIndex = app.getPlottingPanel().plotNotebook.index('current')
 
-        if self.name == 'VO2':
-            plotIndex = app.getPlottingPanel().plotNotebook.index('current')
+                # Update figure
+                yValueVar = app.getPlottingPanel().plots[plotIndex].yValue
+                yValue = float(yValueVar.get())
 
-            # Update figure
-            yValueVar = app.getPlottingPanel().plots[plotIndex].yValue
-            yValue = float(yValueVar.get())
+                if unit == 'l/min':
+                    plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
+                    yValueVar.set(yValue/1000)
+                elif unit == 'ml/min':
+                    plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
+                    yValueVar.set(yValue*1000)
 
-            if unit == 'l/min':
-                plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
-                yValueVar.set(yValue/1000)
-            elif unit == 'ml/min':
-                plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
-                yValueVar.set(yValue*1000)
-
-            figure = app.getPlottingPanel().plots[plotIndex].plot[0]
-            figure.canvas.draw()
+                figure = app.getPlottingPanel().plots[plotIndex].plot[0]
+                figure.canvas.draw()

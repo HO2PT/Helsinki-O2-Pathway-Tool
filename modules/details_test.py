@@ -1,3 +1,4 @@
+import gc
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
@@ -33,6 +34,7 @@ class TestDetailModule(object):
 class LoadNotebook(object):
     def __init__(self, parent):
         self.loadTabs = []
+        self.parent = parent
 
         # Add 'x'-button to tabs
         style = ttk.Style()
@@ -109,10 +111,20 @@ class LoadNotebook(object):
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
 
     def refresh(self):
+        for tab in self.loadTabs:
+            # tab.loadFrame.destroy()
+            del tab
         self.loadTabs = []
-        # Hide previous tabs
+
         for t in self.loadbook.tabs():
             self.loadbook.forget(t)
+            del t
+
+        for i,c in enumerate(self.loadbook.winfo_children()):
+            if c.winfo_class() == 'TFrame':
+                c.pack_forget()
+                c.destroy()
+                del c
 
         activeTest = app.getActiveTest()
 
@@ -134,6 +146,9 @@ class LoadNotebook(object):
         self.loadbook.pack(fill="both",expand=True)
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
+
+        print(self.loadbook.children)
+        gc.collect()
             
     def editLoad(self):
         index = self.loadbook.index('current')
