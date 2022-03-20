@@ -133,10 +133,11 @@ class ProjectList(object):
 
     def deleteProject(self):
         index = self.projectList.curselection()[0]
-        p = app.getProjects()
-        del p[index]
+        app.deleteProject(index)
         self.refreshList()
         app.setActiveProject(None)
+        app.sidepanel_subjectList.refreshList()
+        app.sidepanel_testList.refreshList()
 
     def refreshList(self):
         projects = app.getProjects()
