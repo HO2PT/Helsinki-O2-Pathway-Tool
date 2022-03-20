@@ -28,17 +28,47 @@ class SubjectList(object):
         
         ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare', command=lambda: self.showComparisonOptions()).grid(column=1, row=1)
-        ttk.Button(buttonContainer, text='Plot mean', command=lambda: self.printSelectedMean()).grid(column=2, row=1)
+        ttk.Button(buttonContainer, text='Plot mean', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
 
-    def printSelectedMean(self):
-        # if len(self.subjectList.curselection()) > 1:
-            subjects = []
-            for i in self.subjectList.curselection():
-                subjects.append(app.getActiveProject().getSubjects()[i])
-            emptyTest = Test()
-            app.plotMean(test=emptyTest, subjects=subjects)
-        # else:
-            # notification.create('error', 'Select at least 2 subjects for comparison', '5000')
+    def showMeanOptions(self):
+        if len(self.subjectList.curselection()) > 0:
+            # Create popup
+            editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*4)
+            editscreen.title('Plot options')
+            editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
+            ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+            editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
+            editscreen.grid_propagate(False)
+                
+            self.var = IntVar(value=0)
+            opt1 = ttk.Radiobutton(editscreen, text='Mean/SD', variable=self.var, value=0)
+            opt1.grid(column=1, row=0, sticky='w')
+            opt2 = ttk.Radiobutton(editscreen, text='Mean/IQR', variable=self.var, value=1)
+            opt2.grid(column=1, row=1, sticky='w')
+            ttk.Button(editscreen, text='Plot', command=lambda: plot()).grid(column=3, row=3, sticky='se')
+
+            def plot():
+                if self.var.get() == 0:
+                    self.plotMeanSd()
+                else:
+                    self.plotMeanIqr()
+                editscreen.destroy()
+        else:
+            notification.create('error', 'Not a single project selected', '5000')
+
+    def plotMeanSd(self):
+        subjects = []
+        for i in self.subjectList.curselection():
+            subjects.append(app.getActiveProject().getSubjects()[i])
+        emptyTest = Test()
+        app.plotMean(test=emptyTest, subjects=subjects)
+    
+    def plotMeanIqr(self):
+        subjects = []
+        for i in self.subjectList.curselection():
+            subjects.append(app.getActiveProject().getSubjects()[i])
+        emptyTest = Test()
+        app.plotMean(test=emptyTest, subjects=subjects, iqr=True)
 
     def handleShiftSelect(self,e):
         endSel = f'@{e.x},{e.y}'

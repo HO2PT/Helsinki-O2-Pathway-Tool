@@ -195,9 +195,15 @@ class App(object):
                 self.meanTestObject.setId('Project mean-IQR')
         else:
             if len(subjects) > 1:
-                self.meanTestObject.setId('Subjects mean')
+                if iqr == False:
+                    self.meanTestObject.setId('Subjects mean-SD')
+                else:
+                    self.meanTestObject.setId('Subjects mean-IQR')
             else:
-                self.meanTestObject.setId(f'{subjects[0].id} mean')
+                if iqr == False:
+                    self.meanTestObject.setId(f'{subjects[0].id} mean-SD')
+                else:
+                    self.meanTestObject.setId(f'{subjects[0].id} mean-IQR')
 
         self.minLoad = self.meanTestObject.getWorkLoads()[0]
         if iqr == False:
