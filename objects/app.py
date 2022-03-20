@@ -179,14 +179,14 @@ class App(object):
         if plotProject == True:
             self.projectDetailModule.refreshDetails()
 
-    def plotMean(self, test=None, plotProject=False, subjects=None, iqr=False):
+    def plotMean(self, test=None, plotProject=False, subjects=None, iqr=False, export=False):
         self.meanTestObject = test
 
         if plotProject == True:
             if iqr == False:
-                self.meanTestObject.setId('Project mean/SD')
+                self.meanTestObject.setId('Project mean-SD')
             else:
-                self.meanTestObject.setId('Project mean/IQR')
+                self.meanTestObject.setId('Project mean-IQR')
         else:
             if len(subjects) > 1:
                 self.meanTestObject.setId('Subjects mean')
@@ -210,7 +210,8 @@ class App(object):
         # project = app.getActiveProject()
         # projectTest = project.getMetricsTestObject()
         # app.setActiveTest(projectTest)
-        app.setActiveTest(self.meanTestObject)
+        if export == False:
+            app.setActiveTest(self.meanTestObject)
 
         self.getMaxMinAvg(plotProject, subjects)
 
@@ -232,7 +233,8 @@ class App(object):
         self.updateMC(maxLoad)
         self.calcCoords(maxLoad)
 
-        app.getPlottingPanel().plotProject()
+        if export == False:
+            app.getPlottingPanel().plotProject()
 
     def updateMC(self, load):
         load.getDetails().setMC('VO2_MC', 1)
