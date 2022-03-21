@@ -23,7 +23,7 @@ class DetailsPanel(object):
         self.envDetails = EnvDetailModule(self.detailsPanel)
         app.envDetailModule = self.envDetails
 
-        ttk.Button(self.detailsPanel, text='Plot', command=lambda: self.plotData()).pack(side=RIGHT)
+        ttk.Button(self.detailsPanel, text='Plot', command=lambda: self.plotData()).pack(side=RIGHT, fill=Y)
 
     def plotData(self):
         app.getPlottingPanel().plot()

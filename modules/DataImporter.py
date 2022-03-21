@@ -852,7 +852,7 @@ class DataImporter(object):
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
                                     self.subjects.append(subject)
-
+                            success = True
                             self.tempLocData['id'] = self.columnNames
 
                         elif self.dataMode == 'long':
@@ -864,93 +864,94 @@ class DataImporter(object):
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
                                     self.subjects.append(subject)
-                                    
+                            success = True
                             self.tempLocData['id'] = self.rowNames
                     
                     elif self.stage == 1: # loads
                         print('**LOADS**')
                         print(f'**DATA FORM** {self.dataMode}')
                         self.getMultiCellLoads()
+                        success = True
 
                     elif self.stage == 2: # VO2
                         print('**VO2**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('VO2')
+                        success = self.getMultiCellValues('VO2')
 
                     elif self.stage == 3: # HR
                         print('**HR**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('HR')
+                        success = self.getMultiCellValues('HR')
                     
                     elif self.stage == 4: # Sv
                         print('**Sv**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('Sv')
+                        success = self.getMultiCellValues('Sv')
 
                     elif self.stage == 5: # Q
                         print('**Q**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('Q')
+                        success = self.getMultiCellValues('Q')
 
                     elif self.stage == 6: # Hb
                         print('**Hb**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('Hb')
+                        success = self.getMultiCellValues('Hb')
 
                     elif self.stage == 7: # SaO2
                         print('**SaO2**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('SaO2')
+                        success = self.getMultiCellValues('SaO2')
 
                     elif self.stage == 8: # CaO2
                         print('**CaO2**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('CaO2')
+                        success = self.getMultiCellValues('CaO2')
 
                     elif self.stage == 9: # CvO2
                         print('**CvO2**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('CvO2')
+                        success = self.getMultiCellValues('CvO2')
 
                     elif self.stage == 10: # CavO2
                         print('**CavO2**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('CavO2')
+                        success = self.getMultiCellValues('CavO2')
 
                     elif self.stage == 11: # QaO2
                         print('**QaO2**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('QaO2')
+                        success = self.getMultiCellValues('QaO2')
 
                     elif self.stage == 12: # SvO2
                         print('**SvO2**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('SvO2')
+                        success = self.getMultiCellValues('SvO2')
 
                     elif self.stage == 13: # PvO2
                         print('**PvO2**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('PVO2')
+                        success = self.getMultiCellValues('PVO2')
                     
                     elif self.stage == 14: # Tc @ rest
                         print('**Tc @ rest**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('Tc@rest')
+                        success = self.getMultiCellValues('Tc@rest')
 
                     elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
                         print('**Tc\u209A\u2091\u2090\u2096**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('Tc\u209A\u2091\u2090\u2096')
+                        success = self.getMultiCellValues('Tc\u209A\u2091\u2090\u2096')
 
                     elif self.stage == 16: # pH @ rest
                         print('**pH @ rest**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('pH@rest')
+                        success = self.getMultiCellValues('pH@rest')
 
                     elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
                         print('**pH\u209A\u2091\u2090\u2096**')
                         print(f'**DATA FORM** {self.dataMode}')
-                        self.getMultiCellValues('pH\u209A\u2091\u2090\u2096')
+                        success = self.getMultiCellValues('pH\u209A\u2091\u2090\u2096')
 
                 else: # single cell
                     print('SINGLE CELL SELECTED')
@@ -967,7 +968,7 @@ class DataImporter(object):
                         subject.getTests()[0].workLoads = []
                         self.subjects.append(subject)
                         self.dataMode = None
-
+                        success = True
                         self.tempLocData['id'] = value
 
                     elif self.stage == 1: # loads
@@ -980,57 +981,59 @@ class DataImporter(object):
                             load.setName(columnName) # column name """
                         load.setName(columnName) # column name
                         load.getDetails().setValue('Load', value) # set value
+                        success = True
 
                     elif self.stage == 2: # VO2
-                        self.setSingleCellValue('VO2', value)
+                        success = self.getSingleCellValue('VO2', value)
 
                     elif self.stage == 3: # HR
-                        self.setSingleCellValue('HR', value)
+                        success = self.getSingleCellValue('HR', value)
 
                     elif self.stage == 4: # SV
-                        self.setSingleCellValue('Sv', value)
+                        success = self.getSingleCellValue('Sv', value)
 
                     elif self.stage == 5: # Q
-                        self.setSingleCellValue('Q', value)
+                        success = self.getSingleCellValue('Q', value)
 
                     elif self.stage == 6: # Hb
-                        self.setSingleCellValue('Hb', value)
+                        success = self.getSingleCellValue('Hb', value)
 
                     elif self.stage == 7: # SaO2
-                        self.setSingleCellValue('SaO2', value)
+                        success = self.getSingleCellValue('SaO2', value)
 
                     elif self.stage == 8: # CaO2
-                        self.setSingleCellValue('CaO2', value)
+                        success = self.getSingleCellValue('CaO2', value)
 
                     elif self.stage == 9: # CvO2
-                        self.setSingleCellValue('CvO2', value)
+                        success = self.getSingleCellValue('CvO2', value)
 
                     elif self.stage == 10: # CavO2
-                        self.setSingleCellValue('CavO2', value)
+                        success = self.getSingleCellValue('CavO2', value)
 
                     elif self.stage == 11: # QaO2
-                        self.setSingleCellValue('QaO2', value)
+                        success = self.getSingleCellValue('QaO2', value)
 
                     elif self.stage == 12: # SvO2
-                        self.setSingleCellValue('SvO2', value)
+                        success = self.getSingleCellValue('SvO2', value)
 
                     elif self.stage == 13: # PvO2
-                        self.setSingleCellValue('PvO2', value)
+                        success = self.getSingleCellValue('PvO2', value)
                     
                     elif self.stage == 14: # Tc @ rest
-                        self.setSingleCellValue('Tc@rest', value)
+                        success = self.getSingleCellValue('Tc@rest', value)
 
                     elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
-                        self.setSingleCellValue('Tc\u209A\u2091\u2090\u2096', value)
+                        success = self.getSingleCellValue('Tc\u209A\u2091\u2090\u2096', value)
 
                     elif self.stage == 16: # pH @ rest
-                        self.setSingleCellValue('pH@rest', value)
+                        success = self.getSingleCellValue('pH@rest', value)
 
                     elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
-                        self.setSingleCellValue('pH\u209A\u2091\u2090\u2096', value)
+                        success = self.getSingleCellValue('pH\u209A\u2091\u2090\u2096', value)
 
-                self.addCheckMark(self.stage)
-                self.nextStage()
+                if success:
+                    self.addCheckMark(self.stage)
+                    self.nextStage()
 
     def closeImporter(self):
         if hasattr(self, 'test'):
@@ -1169,6 +1172,8 @@ class DataImporter(object):
                     load.setName(columnName) # column name
                     load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
 
+            self.tempLocData['Load'] = self.colValues
+
         elif self.dataMode == 'wide':
             for ci, c in enumerate(colList):
                 test = self.subjects[ci].getTests()[0]
@@ -1179,35 +1184,62 @@ class DataImporter(object):
                     load = test.createLoad()
                     load.setName(rowName) # column name
                     load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+            
+            self.tempLocData['Load'] = self.colValues
 
     def getMultiCellValues(self, label):
         colList = self.multiplecollist
         rowList = self.multiplerowlist
+        nLoads = len(self.tempLocData['Load'])
+        flag = False
 
         if self.dataMode == 'long':
             for si, s in enumerate(self.subjects):
                 test = s.getTests()[0]
                 loads = test.getWorkLoads()
+                    
+                if len(colList) < nLoads:
+                    s = ttk.Style()
+                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                    self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(colList)} values given')
+                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+                else:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        if len(colList) == 1:
+                            value = self.dataTable.model.getValueAt(rowList[si], colList[0])
+                        else:
+                            value = self.dataTable.model.getValueAt(rowList[si], colList[li])
+                        details.setValue(label, value)   
+                        flag = True
 
-                for li, l in enumerate(loads):
-                    details = l.getDetails()
-                    value = self.dataTable.model.getValueAt(rowList[si], colList[li])
-                    details.setValue(label, value)
         elif self.dataMode == 'wide':
             for si, s in enumerate(self.subjects):
                 test = s.getTests()[0]
                 loads = test.getWorkLoads()
 
-                for li, l in enumerate(loads):
-                    details = l.getDetails()
-                    value = self.dataTable.model.getValueAt(rowList[li], colList[si])
-                    details.setValue(label, value)
+                if len(rowList) < nLoads:
+                    s = ttk.Style()
+                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                    self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(rowList)} values given')
+                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+                else:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        if len(rowList) == 1:
+                            value = self.dataTable.model.getValueAt(rowList[0], colList[si])
+                        else:
+                            value = self.dataTable.model.getValueAt(rowList[li], colList[si])
+                        details.setValue(label, value)
+                        flag = True
+        return flag
 
-    def setSingleCellValue(self, label, value):
+    def getSingleCellValue(self, label, value):
         s = self.subjects[0]
         test = s.getTests()[0]
         load = test.getWorkLoads()[0]
         load.getDetails().setValue(label, value) # set value
+        return True
 
     def prevStage(self):
         to = self.stage - 1
