@@ -7,7 +7,8 @@ from modules.ScrollableNotebook import ScrollableNotebook
 class TestDetailModule(object):    
     def __init__(self, detailsPanel):
         self.container = ttk.Labelframe(detailsPanel, text="Test details")
-        self.container.pack(side = LEFT, fill = BOTH, expand=TRUE)
+        if app.settings.visDefaults['testDetails']:
+            self.container.pack(side = LEFT, fill = BOTH, expand=TRUE)
 
         ## Details frame
         details = ttk.Frame(self.container)

@@ -15,7 +15,14 @@ class Settings(object):
         except:
             print('SETTINGS NOT FOUND')
             defData = {
-                "userMode": 0,
+                # "userMode": 0,
+                "layout": {
+                    'sideMenu': True,
+                    'allDetails': True,
+                    'projectDetails': True,
+                    'testDetails': True,
+                    'envDetails': False,
+                },
                 "envDefaults": {
                     "elevation": 1000,
                     "atm": 101,
@@ -109,11 +116,21 @@ class Settings(object):
             settingsFile.close()
             self.processData()
 
-        app.activeMode = self.data['userMode']
+        # app.activeMode = self.data['userMode']
         print(f'SETTINGS LOADED')
 
     def processData(self):
-        self.userMode = self.data['userMode']
+        # self.userMode = self.data['userMode']
+
+        print(self.data['layout'])
+
+        self.visDefaults = {
+            'sideMenu': self.data['layout']['sideMenu'],
+            'allDetails': self.data['layout']['allDetails'],
+            'projectDetails': self.data['layout']['projectDetails'],
+            'testDetails': self.data['layout']['testDetails'],
+            'envDetails': self.data['layout']['envDetails']
+        }
 
         self.envDefaults = {
             'elevation': self.data['envDefaults']['elevation'],
@@ -215,6 +232,17 @@ class Settings(object):
     def getMcDef(self):
         return self.mcDefaults
 
+    def saveLayout(self, side, details, project, test, env):
+        self.data['layout']['sideMenu'] = side
+        self.data['layout']['allDetails'] = details
+        self.data['layout']['projectDetails'] = project
+        self.data['layout']['testDetails'] = test
+        self.data['layout']['envDetails'] = env
+
+        settingsFile = open('settings.pkl', 'wb')
+        pickle.dump(self.data, settingsFile)
+        settingsFile.close()
+
     def openSettings(self):
         settingsWindow = Toplevel()
         settingsWindow.title("Settings")
@@ -223,19 +251,23 @@ class Settings(object):
         settingsX = app.root.winfo_rootx() + (app.root.winfo_reqwidth()/1.5)
         settingsY = app.root.winfo_rooty() + (app.root.winfo_reqheight()*0.1)
         settingsWindow.geometry("+%d+%d" % ( settingsX, settingsY ))
-
-        self.notification = ttk.Frame(settingsWindow, height=25)
-        self.notification.pack(fill=X)
         
-        self.sideMenu = Listbox(settingsWindow, exportselection=FALSE, width=5)
-        self.sideMenu.pack(side=LEFT, fill=BOTH, expand=TRUE)
+        self.sideMenu = Listbox(settingsWindow, exportselection=FALSE, width=20)
+        self.sideMenu.pack(side=LEFT, fill=Y)
+        self.sideMenu.pack_propagate(False)
         self.sideMenu.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
 
-        self.sideMenu.insert('end', 'General')
-        self.sideMenu.insert('end', 'Environmental')
+        # self.sideMenu.insert('end', 'General')
         self.sideMenu.insert('end', 'Test')
+        self.sideMenu.insert('end', 'Environmental')
+
+        rightContainer = ttk.Frame(settingsWindow)
+        rightContainer.pack(fill=BOTH, expand=1)
+
+        self.notification = ttk.Frame(rightContainer, height=25)
+        self.notification.pack(fill=X)
         
-        self.settingsContainer = ttk.Frame(settingsWindow)
+        self.settingsContainer = ttk.Frame(rightContainer)
         self.settingsContainer.pack(side=LEFT, fill=BOTH, expand=TRUE)
         
         self.sideMenu.selection_set(0)
@@ -249,18 +281,18 @@ class Settings(object):
         for child in self.settingsContainer.winfo_children():
             child.destroy()
 
-        app.intVars = []
+        # app.intVars = []
 
-        if index == 0:
-            labelFrame = LabelFrame(self.settingsContainer, text='General defaults')
-            labelFrame.grid()
-            container = ttk.Frame(labelFrame)
-            container.grid()
+        # if index == 0:
+        #     labelFrame = LabelFrame(self.settingsContainer, text='General defaults')
+        #     labelFrame.grid()
+        #     container = ttk.Frame(labelFrame)
+        #     container.grid()
 
-            UserMode(self, container)
-        elif index == 1: # Environmental
+        #     UserMode(self, container)
+        if index == 1: # Environmental
             labelFrame = LabelFrame(self.settingsContainer, text='Environmental defaults')
-            labelFrame.grid()
+            labelFrame.pack(fill=BOTH, expand=1, pady=(5,5), padx=(5,5))
             container = ttk.Frame(labelFrame)
             container.grid()
             self.menuButtons = {}
@@ -363,9 +395,10 @@ class Settings(object):
 
                 self.createNotification('info', 'Settings saved', 5000)
                 
-        elif index == 2: # Test
+        elif index == 0: # Test
             labelFrame = LabelFrame(self.settingsContainer, text='Test defaults')
-            labelFrame.grid()
+            labelFrame.pack(fill=BOTH, expand=1, pady=(5,5), padx=(5,5))
+            # labelFrame.grid_columnconfigure(0, weight=1)
             container = ttk.Frame(labelFrame)
             container.grid()
 
@@ -540,7 +573,7 @@ class SettingsRow(object):
         self.radio2.grid(column=4, row=row)
         settings.mcs[f'{label}_mc'] = self.intVar
 
-class UserMode(object):
+""" class UserMode(object):
     def __init__(self, settings, parent):
         # Measured/Calculated
         ttk.Label(parent, text='User mode').grid(column=0, row=0)
@@ -573,4 +606,4 @@ class UserMode(object):
         if self.intVar.get() == 0:
             settings.createNotification('info', f'Usermode set to Basic', 5000)
         else:
-            settings.createNotification('info', f'Usermode set to Advanced', 5000)
+            settings.createNotification('info', f'Usermode set to Advanced', 5000) """

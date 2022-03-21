@@ -9,7 +9,8 @@ class SidePanel(object):
     def __init__(self, mainFrame):
 
         self.sidePanel = ttk.Frame(mainFrame, width=200)
-        self.sidePanel.pack(side=LEFT, fill=Y)
+        if app.settings.visDefaults['sideMenu']:
+            self.sidePanel.pack(side=LEFT, fill=Y)
 
         projects = ProjectList(self.sidePanel)
         app.sidepanel_projectList = projects

@@ -41,14 +41,13 @@ class MenuBar(object):
 
         # Settings - mode
         modes = Menu(self.menuBar, tearoff = 0)
-        settings.add_cascade(label ='Modes', menu = modes)
+        # settings.add_cascade(label ='Modes', menu = modes)
         # Get default usermode from settings
-        var = IntVar(value=app.getActiveMode(), name='userMode')
-        if var not in app.intVars:
-            app.intVars.append(var)
-        basic = modes.add_radiobutton(label ='Basic Mode', value=0, variable=var, command = lambda: self.setMode(var))
-        advanced = modes.add_radiobutton(label ='Advanced Mode', value=1, variable=var, command = lambda: self.setMode(var))
-        
+        # var = IntVar(value=app.getActiveMode(), name='userMode')
+        # if var not in app.intVars:
+        #     app.intVars.append(var)
+        # basic = modes.add_radiobutton(label ='Basic Mode', value=0, variable=var, command = lambda: self.setMode(var))
+        # advanced = modes.add_radiobutton(label ='Advanced Mode', value=1, variable=var, command = lambda: self.setMode(var))
 
         # Settings - default settings
         settings.add_command(label ='Settings...', command = lambda: app.settings.openSettings())
@@ -430,12 +429,12 @@ Test-settings contain default values and units for the test parameters. The defa
     def getMenubar(self):
         return self.menuBar
 
-    def setMode(self, var):
+    """ def setMode(self, var):
         app.setActiveMode(var.get())
         if var.get() == 0:
             self.showBasicLayout()
         else:
-            self.showAdvLayout()
+            self.showAdvLayout() """
 
     def createDemoGraph(self):
         print('Creating demograph')
@@ -570,7 +569,7 @@ Test-settings contain default values and units for the test parameters. The defa
             if text == 'Hide environment details':
                 envContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
 
-    def showAdvLayout(self):
+    """ def showAdvLayout(self):
         testContainer = app.testDetailModule.container
         envContainer = app.envDetailModule.frame
         projectContainer = app.projectDetailModule.container
@@ -597,4 +596,4 @@ Test-settings contain default values and units for the test parameters. The defa
         self.view.entryconfigure(3, label='Show environment menu')
         envContainer.pack_forget()
 
-        testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
+        testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE) """

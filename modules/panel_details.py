@@ -11,16 +11,17 @@ class DetailsPanel(object):
         s.configure('detailsPanel.TFrame')
 
         self.detailsPanel = ttk.Frame(mainFrame, style='detailsPanel.TFrame')
-        self.detailsPanel.pack(side=TOP, fill=X)
+        if app.settings.visDefaults['allDetails']:
+            self.detailsPanel.pack(side=TOP, fill=X)
 
-        projectDetails = ProjectDetailsModule(self.detailsPanel)
-        app.projectDetailModule = projectDetails
+        self.projectDetails = ProjectDetailsModule(self.detailsPanel)
+        app.projectDetailModule = self.projectDetails
 
-        testDetails = TestDetailModule(self.detailsPanel)
-        app.testDetailModule = testDetails
+        self.testDetails = TestDetailModule(self.detailsPanel)
+        app.testDetailModule = self.testDetails
         
-        envDetails = EnvDetailModule(self.detailsPanel)
-        app.envDetailModule = envDetails
+        self.envDetails = EnvDetailModule(self.detailsPanel)
+        app.envDetailModule = self.envDetails
 
         ttk.Button(self.detailsPanel, text='Plot', command=lambda: self.plotData()).pack(side=RIGHT)
 

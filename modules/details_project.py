@@ -5,7 +5,8 @@ from objects.app import app
 class ProjectDetailsModule(object):
     def __init__(self, detailsPanel):
         self.container = ttk.Labelframe(detailsPanel, text="Project details")
-        self.container.pack(side = LEFT, fill=Y)
+        if app.settings.visDefaults['projectDetails']:
+            self.container.pack(side = LEFT, fill=Y)
 
         self.subjectCount = ttk.Label(self.container, text=None)
         self.subjectCount.pack(expand=False)

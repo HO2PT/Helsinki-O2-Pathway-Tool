@@ -39,7 +39,7 @@ app.detailsPanel = detailsPanel
 plottingPanel = PlottingPanel(mainframe)
 app.plottingPanel = plottingPanel
 
-def showAdvLayout():
+""" def showAdvLayout():
     testContainer = app.testDetailModule.container
     envContainer = app.envDetailModule.frame
     projectContainer = app.projectDetailModule.container
@@ -66,7 +66,7 @@ def showBasicLayout():
 if app.getActiveMode() == 0:
     showBasicLayout()
 else:
-    showAdvLayout()
+    showAdvLayout() """
 
 # Menubar
 menuObj = MenuBar(root)
@@ -77,6 +77,39 @@ root.config(menu=menu)
 
 def on_closing():
     if askokcancel("Quit", "Do you want to quit?"):
+        side = False
+        details = False
+        project = False
+        test = False
+        env = False
+
+        try:
+            sidePanel.sidePanel.pack_info()
+            side = True
+        except:
+            pass
+        try:
+            detailsPanel.detailsPanel.pack_info()
+            details = True
+        except:
+            pass
+        try:
+            detailsPanel.projectDetails.container.pack_info()
+            project = True
+        except:
+            pass
+        try:
+            detailsPanel.testDetails.container.pack_info()
+            test = True
+        except:
+            pass
+        try:
+            detailsPanel.envDetails.frame.pack_info()
+            env = True
+        except:
+            pass
+
+        settings.saveLayout(side, details, project, test, env)
         root.destroy()
         root.quit()
 

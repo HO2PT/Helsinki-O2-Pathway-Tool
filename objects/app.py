@@ -13,20 +13,30 @@ class App(object):
         self.settings = None
 
         self.sidePanel = None
+        # self.sidePanelVis = None
+        
         self.sidepanel_projectList = None
         self.sidepanel_subjectList = None
         self.sidepanel_testList = None
 
         self.detailsPanel = None
+        # self.detailsVis = None
+
         self.projectDetailModule = None
+        # self.projectDetailsVis = None
+
         self.testDetailModule = None
+        # self.testDetailsVis = None
+
         self.envDetailModule = None
+        # self.envDetailsVis = None
+
         self.plottingPanel = None
         self.menu = None
 
         self.root = None
-        self.strVars = None
-        self.intVars = None
+        # self.strVars = None
+        # self.intVars = None
 
     def setActiveTest(self, test):
         self.activeTest = test
@@ -55,11 +65,11 @@ class App(object):
     def addProject(self, project):
         self.projects.append(project)
 
-    def getActiveMode(self):
-        return self.activeMode
+    # def getActiveMode(self):
+    #     return self.activeMode
 
-    def setActiveMode(self, mode):
-        self.activeMode = mode
+    # def setActiveMode(self, mode):
+    #     self.activeMode = mode
 
     def getPlottingPanel(self):
         return self.plottingPanel

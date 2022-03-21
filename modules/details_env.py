@@ -5,7 +5,8 @@ from objects.app import app
 class EnvDetailModule(object):
     def __init__(self, detailsPanel):
         self.frame = ttk.Labelframe(detailsPanel, text="Environment details")
-        self.frame.pack(side = LEFT, fill = Y)
+        if app.settings.visDefaults['envDetails']:
+            self.frame.pack(side = LEFT, fill = Y)
         
         #print(self.frame.pack_info())
 
