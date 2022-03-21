@@ -551,9 +551,11 @@ class PlottingPanel(object):
             validValues = False
 
         # pH + temp correction
-        pH = float(details['pH @ rest'])
-        pH0 = float(details['pH\u209A\u2091\u2090\u2096'])
-        T = self.formatT(details, 'Tc\u209A\u2091\u2090\u2096')
+        # pH = float(details['pH @ rest'])
+        pH = float(details['pH'])
+        pH0 = float(details['pH @ rest'])
+        # T = self.formatT(details, 'Tc\u209A\u2091\u2090\u2096')
+        T = self.formatT(details, 'T')
         T0 = self.formatT(details, 'Tc @ rest')
         PvO2_calc = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 

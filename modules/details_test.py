@@ -337,47 +337,47 @@ class TestDetailRow(object):
             self.radioLabel = temp[2][0]
             self.radio = temp[2][1]
 
-        if '2' in self.label:
-            self.label_subscripted = self.label.replace('2', '\u2082')
-            ttk.Label(rowFrame, text=self.label_subscripted, anchor='w').grid(column=0, row=row)
-        else:
-            ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row)
-        
-
-        #Value
-        self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
+        if self.label != 'Tc\u209A\u2091\u2090\u2096' and self.label != 'Tc @ rest' and self.label != 'pH\u209A\u2091\u2090\u2096' and self.label != 'pH @ rest':
+            if '2' in self.label:
+                self.label_subscripted = self.label.replace('2', '\u2082')
+                ttk.Label(rowFrame, text=self.label_subscripted, anchor='w').grid(column=0, row=row)
+            else:
+                ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row)
             
-        self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
-        self.valueEntry.grid(column=1, row=row)
-        self.valueVar.trace('w', self.updateValue)
+            #Value
+            self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
+                
+            self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
+            self.valueEntry.grid(column=1, row=row)
+            self.valueVar.trace('w', self.updateValue)
 
-        # Unit
-        units = app.settings.getUnits()[f'{self.label}_units']
-        if len(units) != 1:
-            if self.label != 'pH':
-                units = app.settings.getUnits()[f'{self.label}_units']
-                self.tempMenuButton = ttk.Menubutton(rowFrame)
-                self.tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
+            # Unit
+            units = app.settings.getUnits()[f'{self.label}_units']
+            if len(units) != 1:
+                if self.label != 'pH':
+                    units = app.settings.getUnits()[f'{self.label}_units']
+                    self.tempMenuButton = ttk.Menubutton(rowFrame)
+                    self.tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
 
-                tempMenu = Menu(self.tempMenuButton, tearoff=False)
-                for i, u in enumerate(units):
-                    TestDetailMenuElem(tempMenu, self.tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
-                self.tempMenuButton['menu']=tempMenu
-                self.tempMenuButton.grid(column=2, row=row)
-        else:
-            ttk.Label(rowFrame, text=units[0]).grid(column=2, row=row)
+                    tempMenu = Menu(self.tempMenuButton, tearoff=False)
+                    for i, u in enumerate(units):
+                        TestDetailMenuElem(tempMenu, self.tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
+                    self.tempMenuButton['menu']=tempMenu
+                    self.tempMenuButton.grid(column=2, row=row)
+            else:
+                ttk.Label(rowFrame, text=units[0]).grid(column=2, row=row)
 
-        if self.flag != 1:
-            # Measured/Calculated
-            self.mcVar = IntVar(value=self.radio, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
+            if self.flag != 1:
+                # Measured/Calculated
+                self.mcVar = IntVar(value=self.radio, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
 
-            self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
-            self.radio1.grid(column=3, row=row)
+                self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
+                self.radio1.grid(column=3, row=row)
 
-            self.radio2 = ttk.Radiobutton(rowFrame, value=1, variable=self.mcVar)
-            self.radio2.grid(column=4, row=row)
-            self.mcVar.trace('w', self.updateMC)
-    
+                self.radio2 = ttk.Radiobutton(rowFrame, value=1, variable=self.mcVar)
+                self.radio2.grid(column=4, row=row)
+                self.mcVar.trace('w', self.updateMC)
+        
     def updateValue(self, name, index, mode):
         name = name.split('-')[0]
         self.workLoadObject.setValue(name, self.valueVar.get())

@@ -293,21 +293,21 @@ class WorkLoadDetails(object):
             'T_unit': self.T_unit,
             'T_MC': self.T_MC,
 
-            # 'Tc @ rest': self.T0,
-            # 'Tc @ rest_unit': self.T0_unit,
-            # 'Tc @ rest_MC': self.T0_MC,
+            'Tc @ rest': self.T0,
+            'Tc @ rest_unit': self.T0_unit,
+            'Tc @ rest_MC': self.T0_MC,
 
-            # 'Tc\u209A\u2091\u2090\u2096': self.T,
-            # 'Tc\u209A\u2091\u2090\u2096_unit': self.T_unit,
-            # 'Tc\u209A\u2091\u2090\u2096_MC': self.T_MC,
+            'Tc\u209A\u2091\u2090\u2096': self.T,
+            'Tc\u209A\u2091\u2090\u2096_unit': self.T_unit,
+            'Tc\u209A\u2091\u2090\u2096_MC': self.T_MC,
 
-            # 'pH @ rest': self.pHrest,
-            # 'pH @ rest_unit': self.pHrest_unit,
-            # 'pH @ rest_MC': self.pHrest_MC,
+            'pH @ rest': self.pHrest,
+            'pH @ rest_unit': self.pHrest_unit,
+            'pH @ rest_MC': self.pHrest_MC,
 
-            # 'pH\u209A\u2091\u2090\u2096': self.pH,
-            # 'pH\u209A\u2091\u2090\u2096_unit': self.pH_unit,
-            # 'pH\u209A\u2091\u2090\u2096_MC': self.pH_MC,
+            'pH\u209A\u2091\u2090\u2096': self.pH,
+            'pH\u209A\u2091\u2090\u2096_unit': self.pH_unit,
+            'pH\u209A\u2091\u2090\u2096_MC': self.pH_MC,
 
             'pH': self.pH,
             'pH_unit': self.pH_unit,
