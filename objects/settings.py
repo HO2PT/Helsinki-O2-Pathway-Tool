@@ -49,6 +49,7 @@ class Settings(object):
                     "CvO2": 'ml/l',
                     "CavO2": 'ml/l',
                     "QaO2": 'ml/min',
+                    "T": '\N{DEGREE SIGN}C',
                     "Tc @ rest": '\N{DEGREE SIGN}C',
                     "Tc\u209A\u2091\u2090\u2096": '\N{DEGREE SIGN}C',
                     "pH @ rest": '',
@@ -74,8 +75,10 @@ class Settings(object):
                     "CvO2": ["ml/l", "ml/dl"],
                     "CavO2": ["ml/l", "ml/dl"],
                     "QaO2": ["ml/min", "l/min"],
+                    "T": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "Tc @ rest": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "Tc\u209A\u2091\u2090\u2096": ['\N{DEGREE SIGN}C', 'F', 'K'],
+                    "pH": [""],
                     "pH @ rest": [""],
                     "pH\u209A\u2091\u2090\u2096": [""],
                     "PvO2": ["mmHg"],
@@ -98,6 +101,7 @@ class Settings(object):
                     "CvO2": 0,
                     "CavO2": 0,
                     "QaO2": 0,
+                    "T": 0,
                     "Tc @ rest": 0,
                     "Tc\u209A\u2091\u2090\u2096": 0,
                     "pH @ rest": 0,
@@ -158,8 +162,10 @@ class Settings(object):
             "CvO2_unit": self.data['unitDefaults']['CvO2'],
             "CavO2_unit": self.data['unitDefaults']['CavO2'],
             "QaO2_unit": self.data['unitDefaults']['QaO2'],
+            "T_unit": self.data['unitDefaults']['T'],
             "Tc @ rest_unit": self.data['unitDefaults']['Tc @ rest'],
             "Tc\u209A\u2091\u2090\u2096_unit": self.data['unitDefaults']['Tc\u209A\u2091\u2090\u2096'],
+            "pH_unit": '',
             "pH @ rest_unit": self.data['unitDefaults']['pH @ rest'],
             "pH\u209A\u2091\u2090\u2096_unit": self.data['unitDefaults']['pH\u209A\u2091\u2090\u2096'],
             "PvO2_unit": self.data['unitDefaults']['PvO2'],
@@ -183,8 +189,10 @@ class Settings(object):
             "CvO2_units": self.data['units']['CvO2'],
             "CavO2_units": self.data['units']['CavO2'],
             "QaO2_units": self.data['units']['QaO2'],
+            "T_units": self.data['units']['T'],
             "Tc @ rest_units": self.data['units']['Tc @ rest'],
             "Tc\u209A\u2091\u2090\u2096_units": self.data['units']['Tc\u209A\u2091\u2090\u2096'],
+            "pH_units": '',
             "pH @ rest_units": self.data['units']['pH @ rest'],
             "pH\u209A\u2091\u2090\u2096_units": self.data['units']['pH\u209A\u2091\u2090\u2096'],
             "PvO2_units": self.data['units']['PvO2'],
@@ -498,6 +506,8 @@ class Settings(object):
                                 for l in loads:
                                     for key, val in self.unitDefaults.items():
                                         l.getDetails().setUnit(key, val)
+                                    for key, val in self.testDefaults.items():
+                                        l.getDetails().setValue(key, val)
                     app.testDetailModule.refreshTestDetails()
 
                 settingsFile = open('settings.pkl', 'wb')

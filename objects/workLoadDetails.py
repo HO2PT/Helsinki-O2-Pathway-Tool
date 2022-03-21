@@ -20,8 +20,10 @@ class WorkLoadDetails(object):
         self.QaO2 = 0
         self.T0 = testDefaults['Tc @ rest']
         self.pHrest = testDefaults['pH @ rest']
-        self.T = testDefaults['Tc\u209A\u2091\u2090\u2096']
-        self.pH = testDefaults['pH\u209A\u2091\u2090\u2096']
+        # self.T = testDefaults['Tc\u209A\u2091\u2090\u2096']
+        # self.pH = testDefaults['pH\u209A\u2091\u2090\u2096']
+        self.T = testDefaults['Tc @ rest']
+        self.pH = testDefaults['pH @ rest']
         self.PvO2 = 0
         self.DO2 = 0
 
@@ -214,6 +216,12 @@ class WorkLoadDetails(object):
         if label == 'Tc\u209A\u2091\u2090\u2096': 
             self.T = value
 
+        if label == 'T': 
+            self.T = value
+
+        if label == 'pH': 
+            self.pH = value
+
         if label == 'pH @ rest': 
             self.pHrest = value
 
@@ -281,21 +289,29 @@ class WorkLoadDetails(object):
             'PvO2_unit': self.PvO2_unit,
             'PvO2_MC': self.PvO2_MC,
 
-            'Tc @ rest': self.T0,
-            'Tc @ rest_unit': self.T0_unit,
-            'Tc @ rest_MC': self.T0_MC,
+            'T': self.T,
+            'T_unit': self.T_unit,
+            'T_MC': self.T_MC,
 
-            'Tc\u209A\u2091\u2090\u2096': self.T,
-            'Tc\u209A\u2091\u2090\u2096_unit': self.T_unit,
-            'Tc\u209A\u2091\u2090\u2096_MC': self.T_MC,
+            # 'Tc @ rest': self.T0,
+            # 'Tc @ rest_unit': self.T0_unit,
+            # 'Tc @ rest_MC': self.T0_MC,
 
-            'pH @ rest': self.pHrest,
-            'pH @ rest_unit': self.pHrest_unit,
-            'pH @ rest_MC': self.pHrest_MC,
+            # 'Tc\u209A\u2091\u2090\u2096': self.T,
+            # 'Tc\u209A\u2091\u2090\u2096_unit': self.T_unit,
+            # 'Tc\u209A\u2091\u2090\u2096_MC': self.T_MC,
 
-            'pH\u209A\u2091\u2090\u2096': self.pH,
-            'pH\u209A\u2091\u2090\u2096_unit': self.pH_unit,
-            'pH\u209A\u2091\u2090\u2096_MC': self.pH_MC,
+            # 'pH @ rest': self.pHrest,
+            # 'pH @ rest_unit': self.pHrest_unit,
+            # 'pH @ rest_MC': self.pHrest_MC,
+
+            # 'pH\u209A\u2091\u2090\u2096': self.pH,
+            # 'pH\u209A\u2091\u2090\u2096_unit': self.pH_unit,
+            # 'pH\u209A\u2091\u2090\u2096_MC': self.pH_MC,
+
+            'pH': self.pH,
+            'pH_unit': self.pH_unit,
+            'pH_MC': self.pH_MC,
 
             'DO2': self.DO2,
             'DO2_unit': self.DO2_unit,

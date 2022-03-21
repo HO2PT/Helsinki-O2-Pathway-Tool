@@ -1,4 +1,5 @@
 import gc
+from re import A
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
@@ -100,13 +101,52 @@ class LoadNotebook(object):
         i = len(self.loadTabs)
         details = workLoadObject.getDetails()
 
+        # Add linear change in pH and T
+        pHrest = float(app.settings.testDefaults['pH @ rest'])
+        Trest = float(app.settings.testDefaults['Tc @ rest'])
+        # print(f'settings pHrest: {pHrest}')
+        pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
+        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
+        # print(f'settings pHpeak: {pHpeak}')
+        pHDif = float(pHrest) - float(pHpeak)
+        Tdif = float(Tpeak) - float(Trest)
+        # print(pHDif)
+
+        if pHrest != pHpeak:
+            details.setValue('pH', pHpeak)
+
+        if Trest != Tpeak:
+            details.setValue('T', Tpeak)
+
         newLoad = LoadTab(i, workLoadObject, details, self.loadbook)
-            
+        
+        pHstep = pHDif / (len(activeTest.getWorkLoads())-1)
+        pHvalues = []
+
+        Tstep = Tdif / (len(activeTest.getWorkLoads())-1)
+        Tvalues = []
+        nLoads = len(activeTest.getWorkLoads())
+
+        # Add linear change
+        for i, w in enumerate(activeTest.getWorkLoads()):
+            pHValue = pHrest - (i * pHstep)
+            pHvalues.append(f'{"{0:.2f}".format(pHValue)}')
+            details.setValue('pH', pHValue)
+
+            Tvalue = Trest + (i * Tstep)
+            Tvalues.append(f'{"{0:.1f}".format(Tvalue)}')
+            details.setValue('T', Tvalue)
+
         # Append tab
         self.loadTabs.append(newLoad)
         tabCount = self.loadbook.index('end')
         self.loadbook.add(newLoad.loadFrame, text=newLoad.getName())
         self.loadbook.select(tabCount) 
+
+        for i, l in enumerate(self.loadTabs):
+            if i != 0 and i != len(self.loadTabs)-1:
+                l.updateValues('pH', pHvalues[i])
+                l.updateValues('T', Tvalues[i])
 
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
@@ -260,20 +300,29 @@ class LoadTab(object):
     def setName(self, name):
         self.name = name
 
+    def updateValues(self, label, value):
+        for r in self.detailRows:
+            if r.label == label:
+                r.valueVar.set(value)
+
     def updateUnitButtons(self, unit, value):
         for r in self.detailRows:
             if hasattr(r, 'tempMenuButton'):
                 unitName = f'{r.label}_unit'
                 if unitName == unit:
                     r.tempMenuButton.configure(text=value)
+
+    def updateMCs(self, mc, value):
+        for r in self.detailRows:
+            name = f'{r.label}_MC'
+            if name == f'{mc}':
+                r.mcVar.set(value)
             
 class TestDetailRow(object):
-
     def __init__(self, rowFrame, temp, workLoadObject, row):
         self.workLoadObject = workLoadObject
         self.flag = 0
 
-        
         if temp[0][0] == 'id':
             self.label = temp[1][0]
             self.value = temp[1][1]
@@ -305,7 +354,7 @@ class TestDetailRow(object):
         # Unit
         units = app.settings.getUnits()[f'{self.label}_units']
         if len(units) != 1:
-            if self.label != 'pH\u209A\u2091\u2090\u2096' and self.label != 'pH @ rest':
+            if self.label != 'pH':
                 units = app.settings.getUnits()[f'{self.label}_units']
                 self.tempMenuButton = ttk.Menubutton(rowFrame)
                 self.tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
@@ -337,7 +386,6 @@ class TestDetailRow(object):
     def updateUnit(self, name, index, mode):
         name = name.split('-')[0]
         # Update unit change to every load
-        print('unit update')
         for l in app.getActiveTest().getWorkLoads():
             print(l)
             l.setUnit(name, self.unitVar.get())
@@ -347,6 +395,17 @@ class TestDetailRow(object):
     def updateMC(self, name, index, mode):
         name = name.split('-')[0]
         self.workLoadObject.setMC(name, self.mcVar.get())
+
+        # Update every load
+        for l in app.getActiveTest().getWorkLoads():
+            l.getDetails().setMC(name, self.mcVar.get())
+            # print(l.getDetails().getWorkLoadDetails())
+
+        loadTabs = app.testDetailModule.loadNotebook.loadTabs
+
+        for l in loadTabs:
+            l.updateMCs(name, self.mcVar.get())
+
         # setattr(self.workLoadObject, name, self.mcVar.get())
 
 class TestDetailMenuElem(object):
@@ -365,7 +424,7 @@ class TestDetailMenuElem(object):
         self.menuButton.config(text=self.elems[self.index])
         for l in app.getActiveTest().getWorkLoads():
             l.getDetails().setUnit(self.name, self.elems[self.index])
-            print(l.getDetails().getWorkLoadDetails())
+            # print(l.getDetails().getWorkLoadDetails())
 
         loadTabs = app.testDetailModule.loadNotebook.loadTabs
 
