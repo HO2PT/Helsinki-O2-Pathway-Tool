@@ -35,12 +35,15 @@ How to download?
 3. Click "Download"-button                                                3. Click "O2PathwayTool.exe"
 
 What kind of data can I use?
+
 The tool can read and save excel-files (.xlsx). Your data can be formatted in multiple ways and have multiple sheets, 
 that is why O2PathwayTool has an importing tool which guides you through the importing process. 
 
 How about exporting results?
+
 The O2PathwayTool makes a copy of your data, so you don't have to worry about overriding your existing data. Results can be 
 exported into a new excel file or they can be concatenated to the same file that was used to import data.
 
 Do I need measurement data?
+
 No. You can create projects, subjects, tests and input data by hand. 
