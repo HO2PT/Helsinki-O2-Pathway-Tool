@@ -74,7 +74,7 @@ class Load(object):
         self.name = name
     
     def setDemoDetails(self):
-        print('Setting demo details')
+        #print('Setting demo details')
         self.details.setValue('VO2', 2)
         self.details.setUnit('VO2_unit', 'l/min')
 

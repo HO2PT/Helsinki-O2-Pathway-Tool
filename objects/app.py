@@ -57,10 +57,10 @@ class App(object):
         return self.activeProject
 
     def deleteProject(self, index):
-        print(f'list before {self.projects}')
-        print(f'deleting project {index}')
+        #print(f'list before {self.projects}')
+        #print(f'deleting project {index}')
         del(self.projects[index])
-        print(f'list after {self.projects}')
+        #print(f'list after {self.projects}')
     
     def addProject(self, project):
         self.projects.append(project)

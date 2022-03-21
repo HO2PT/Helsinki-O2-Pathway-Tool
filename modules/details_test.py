@@ -188,7 +188,7 @@ class LoadNotebook(object):
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
 
-        print(self.loadbook.children)
+        #print(self.loadbook.children)
         gc.collect()
             
     def editLoad(self):
@@ -387,7 +387,7 @@ class TestDetailRow(object):
         name = name.split('-')[0]
         # Update unit change to every load
         for l in app.getActiveTest().getWorkLoads():
-            print(l)
+            #print(l)
             l.setUnit(name, self.unitVar.get())
         # self.workLoadObject.setUnit(name, self.unitVar.get())
         # setattr(self.workLoadObject, name, self.unitVar.get())

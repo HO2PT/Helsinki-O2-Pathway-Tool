@@ -32,7 +32,8 @@ class PlottingPanel(object):
         self.plotNotebook = ScrollableNotebook(self.container, parentObj='plottingPanel', style="loadNotebook.TNotebook", wheelscroll=True)
 
         try:
-            print(f'PACKINFO: {self.plotNotebook.pack_info()}')
+            #print(f'PACKINFO: {self.plotNotebook.pack_info()}')
+            self.plotNotebook.pack_info()
         except TclError:
             return
 
@@ -41,7 +42,7 @@ class PlottingPanel(object):
         self.workLoads = copy.deepcopy(self.origWorkLoads) # Workload objects
         validValues = True
 
-        print('VALIDATING VALUES')
+        #print('VALIDATING VALUES')
         for i, w in enumerate(self.workLoads):
             details = w.getDetails().getWorkLoadDetails()
             validValues = self.calc(w, details)
@@ -50,7 +51,7 @@ class PlottingPanel(object):
 
         # Proceed if values are valid
         if validValues == True:
-            print('VALUES OK')
+            #print('VALUES OK')
             # Check if plotNotebook is visible and if not, make it visible
             try:
                 self.plotNotebook.pack_info()
@@ -65,7 +66,7 @@ class PlottingPanel(object):
             self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
             self.plots.append(plotTabObject)
         else:
-            print('VALIDATION ERROR')
+            #print('VALIDATION ERROR')
             notification.create('error', f'Invalid values. Please check the values of {i+1}. load and try again.', 5000)
     
     def plotProject(self):
@@ -546,7 +547,7 @@ class PlottingPanel(object):
         #print(f'WTF2: {a}, {b}, {PvO2_calc}')
 
         if PvO2_calc < 0:
-            print('PvO2 negative')
+            #print('PvO2 negative')
             validValues = False
 
         # pH + temp correction
@@ -597,7 +598,7 @@ class PlottingPanel(object):
             try:
                 yDiff.append( (float(y_temp)-float(y2_temp)) )
             except TypeError:
-                print('TYPEERROR IN CALC')
+                #print('TYPEERROR IN CALC')
                 validValues = False
                 return validValues
 
@@ -701,7 +702,8 @@ class PlotTab(object):
         ## DEBUG
         def getZeDetails():
             for l in self.workLoads:
-                print(l.getDetails().getWorkLoadDetails())
+                #print(l.getDetails().getWorkLoadDetails())
+                pass
         ##
 
         # Create loads notebook frame and loadnotebook
@@ -770,7 +772,7 @@ class PlotTab(object):
             limit = float(self.yValue.get())
         elif vo2unit == 'l/min':
             limit = float(self.yValue.get()) * 1000
-        print(f'limit {limit}')
+        #print(f'limit {limit}')
         self.plot[1].set_ylim(top=float(limit))
         self.plot[0].canvas.draw()
 
@@ -837,7 +839,7 @@ class PlotTab(object):
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
         
         def rescale(e):
-            print(f'JEEP, {e}, {e.width}')
+            #print(f'JEEP, {e}, {e.width}')
             #print(f'CANVAS: {self.canvasFrame.winfo_reqwidth()},{self.canvasFrame.winfo_reqheight()}')
             #print(f'FIG: {self.fig.get_figwidth()},{self.fig.get_figheight()}')
             #print(f'NOTEBOOK: {self.parentFrame.winfo_reqwidth()}, {self.parentFrame.winfo_reqheight()}')
@@ -853,7 +855,7 @@ class PlotTab(object):
             evt.char = None
             evt.delta = None
             evt.type = 22
-            print(evt)
+            #print(evt)
             self.canvas.resize(evt)
             self.canvasFrame.configure(height=100)#self.fig.get_figheight())
 

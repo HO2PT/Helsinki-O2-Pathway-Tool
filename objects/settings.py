@@ -13,7 +13,7 @@ class Settings(object):
             settingsFile.close()
             self.processData()
         except:
-            print('SETTINGS NOT FOUND')
+            #print('SETTINGS NOT FOUND')
             defData = {
                 # "userMode": 0,
                 "layout": {
@@ -121,7 +121,7 @@ class Settings(object):
             self.processData()
 
         # app.activeMode = self.data['userMode']
-        print(f'SETTINGS LOADED')
+        #print(f'SETTINGS LOADED')
 
     def processData(self):
         # self.userMode = self.data['userMode']

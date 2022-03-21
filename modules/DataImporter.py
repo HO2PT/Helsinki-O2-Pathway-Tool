@@ -42,7 +42,7 @@ from objects.subject import Subject
 
 class DataImporter(object):
     def __init__(self):
-        print('IMPORTING YOU SAY')
+        #print('IMPORTING YOU SAY')
         self.multiplecollist = []
         self.multiplerowlist = []
         self.multiplecells = []
@@ -455,10 +455,10 @@ class DataImporter(object):
         # print(f'len rowlist: {len(self.multiplerowlist)}')
         # print(f'selected rows: {len(self.dataTable.getSelectedRows())}')
         if len(self.multiplecollist) > 1 or (len(self.multiplecollist) == 0 and len(self.dataTable.getSelectedRows()) > 0):
-            print('LEVEÄ MUOTO')
+            #print('LEVEÄ MUOTO')
             self.dataMode = 'wide'
         else:
-            print('PITKÄ MUOTO')
+            #print('PITKÄ MUOTO')
             self.dataMode = 'long'
 
     def getInput(self):
@@ -510,10 +510,10 @@ class DataImporter(object):
         # print(nRows)
         
         # print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
-        print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
+        #print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
 
         if col == -1 and row == -1: # nothing selected
-            print('NOTHING SELECTED')
+            #print('NOTHING SELECTED')
             s = ttk.Style()
             s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
             self.notif.configure(style='error.TLabel', text=f'Nothing selected')
@@ -521,7 +521,7 @@ class DataImporter(object):
         else: # something selected
             if col == -1: # rows selected
                 if len(rows) > 1 and col == -1: # multiple row
-                    print('USEAMPI RIVI')
+                    #print('USEAMPI RIVI')
 
                     if self.stage == 0: # ids
                         self.checkDataForm()
@@ -537,76 +537,76 @@ class DataImporter(object):
                         success = True
 
                     elif self.stage == 1: # Loads
-                        print('**LOADS**')
+                        #print('**LOADS**')
                         self.getLoadsFromRows()
                         success = True
 
                     elif self.stage == 2: #VO2
-                        print('**VO2**')
+                        #print('**VO2**')
                         success = self.getRowValues('VO2')
 
                     elif self.stage == 3: #HR
-                        print('**HR**')
+                        #print('**HR**')
                         success = self.getRowValues('HR')
 
                     elif self.stage == 4: #Sv
-                        print('**Sv**')
+                        #print('**Sv**')
                         success = self.getRowValues('Sv')
 
                     elif self.stage == 5: #Q
-                        print('**Q**')
+                        #print('**Q**')
                         success = self.getRowValues('Q')
 
                     elif self.stage == 6: #Hb
-                        print('**Hb**')
+                        #print('**Hb**')
                         success = self.getRowValues('Hb')
 
                     elif self.stage == 7: #SaO2
-                        print('**SaO2**')
+                        #print('**SaO2**')
                         success = self.getRowValues('SaO2')
 
                     elif self.stage == 8: #CaO2
-                        print('**CaO2**')
+                        #print('**CaO2**')
                         success = self.getRowValues('CaO2')
 
                     elif self.stage == 9: #CvO2
-                        print('**CvO2**')
+                        #print('**CvO2**')
                         success = self.getRowValues('CvO2')
 
                     elif self.stage == 10: #CavO2
-                        print('**CavO2**')
+                        #print('**CavO2**')
                         success = self.getRowValues('CavO2')
 
                     elif self.stage == 11: #QaO2
-                        print('**QaO2**')
+                        #print('**QaO2**')
                         success = self.getRowValues('QaO2')
 
                     elif self.stage == 12: #SvO2
-                        print('**SvO2**')
+                        #print('**SvO2**')
                         success = self.getRowValues('SvO2')
 
                     elif self.stage == 13: #PvO2
-                        print('**PvO2**')
+                        #print('**PvO2**')
                         success = self.getRowValues('PvO2')
 
                     elif self.stage == 14: #Tc @ rest
-                        print('**Tc@rest**')
+                        #print('**Tc@rest**')
                         success = self.getRowValues('Tc@rest')
 
                     elif self.stage == 15: #Tc\u209A\u2091\u2090\u2096
-                        print('**Tc\u209A\u2091\u2090\u2096**')
+                        #print('**Tc\u209A\u2091\u2090\u2096**')
                         success = self.getRowValues('Tc\u209A\u2091\u2090\u2096')
 
                     elif self.stage == 16: #pH @ rest
-                        print('**pH@rest**')
+                        #print('**pH@rest**')
                         success = self.getRowValues('pH@rest')
 
                     elif self.stage == 17: #pH\u209A\u2091\u2090\u2096
-                        print('**pH\u209A\u2091\u2090\u2096**')
+                        #print('**pH\u209A\u2091\u2090\u2096**')
                         success = self.getRowValues('pH\u209A\u2091\u2090\u2096')
 
                 else: # single rows
-                    print('YKSI RIVI')
+                    #print('YKSI RIVI')
                     if self.stage == 0: #ids
                         self.checkDataForm()
                         for id in self.rowValues[0]:
@@ -621,72 +621,72 @@ class DataImporter(object):
                         success = True
 
                     elif self.stage == 1: # load
-                        print('**LOADS**')
+                        #print('**LOADS**')
                         self.getLoadsFromRows()
                         success = True
 
                     elif self.stage == 2: # VO2
-                        print('**VO2**')
+                        #print('**VO2**')
                         success = self.getRowValues('VO2')
 
                     elif self.stage == 3: #HR
-                        print('**HR**')
+                        #print('**HR**')
                         success = self.getRowValues('HR')
 
                     elif self.stage == 4: #Sv
-                        print('**Sv**')
+                        #print('**Sv**')
                         success = self.getRowValues('Sv')
 
                     elif self.stage == 5: #Q
-                        print('**Q**')
+                        #print('**Q**')
                         success = self.getRowValues('Q')
 
                     elif self.stage == 6: #Hb
-                        print('**Hb**')
+                        #print('**Hb**')
                         success = self.getRowValues('Hb')
 
                     elif self.stage == 7: #SaO2
-                        print('**SaO2**')
+                        #print('**SaO2**')
                         success = self.getRowValues('SaO2')
 
                     elif self.stage == 8: #CaO2
-                        print('**CaO2**')
+                        #print('**CaO2**')
                         success = self.getRowValues('CaO2')
 
                     elif self.stage == 9: #CvO2
-                        print('**CvO2**')
+                        #print('**CvO2**')
                         success = self.getRowValues('CvO2')
 
                     elif self.stage == 10: #CavO2
-                        print('**CavO2**')
+                        #print('**CavO2**')
                         success = self.getRowValues('CavO2')
 
                     elif self.stage == 11: #QaO2
-                        print('**QaO2**')
+                        #print('**QaO2**')
                         success = self.getRowValues('QaO2')
 
                     elif self.stage == 12: #SvO2
-                        print('**SvO2**')
+                        #print('**SvO2**')
                         success = self.getRowValues('SvO2')
 
                     elif self.stage == 13: #PvO2
-                        print('**PvO2**')
+                        #print('**PvO2**')
                         success = self.getRowValues('PvO2')
 
                     elif self.stage == 14: #Tc @ rest
-                        print('**Tc@rest**')
+                        #print('**Tc@rest**')
                         success = self.getRowValues('Tc@rest')
 
                     elif self.stage == 15: #Tc\u209A\u2091\u2090\u2096
-                        print('**Tc\u209A\u2091\u2090\u2096**')
+                        #print('**Tc\u209A\u2091\u2090\u2096**')
                         self.getRowValues('Tc\u209A\u2091\u2090\u2096')
 
                     elif self.stage == 16: #pH @ rest
-                        print('**pH@rest**')
+                        #print('**pH@rest**')
                         success = self.getRowValues('pH@rest')
 
                     elif self.stage == 17: #pH\u209A\u2091\u2090\u2096
-                        print('**pH\u209A\u2091\u2090\u2096**')
+                        #print('**pH\u209A\u2091\u2090\u2096**')
                         success = self.getRowValues('pH\u209A\u2091\u2090\u2096')
 
                 if success:
@@ -695,7 +695,7 @@ class DataImporter(object):
 
             if row == -1: # cols selected
                 if len(self.multiplecollist) > 1: # multiple columns
-                    print('USEAMPI SARAKE')
+                    #print('USEAMPI SARAKE')
                     # print(colValues)
                     
                     if self.stage == 0: # ids
@@ -764,7 +764,7 @@ class DataImporter(object):
                         success = self.getColumnValues('pH\u209A\u2091\u2090\u2096')
 
                 else: # one column
-                    print('YKSI SARAKE')
+                    #print('YKSI SARAKE')
                     # print( colValues )
 
                     if self.stage == 0: # ids
@@ -837,7 +837,7 @@ class DataImporter(object):
 
             if row >= 0 and col >= 0: # cells selected
                 if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1: # multiple cells
-                    print('MULTIPLE CELLS SELECTED')
+                    #print('MULTIPLE CELLS SELECTED')
 
                     if self.stage == 0: # ids
                         self.checkDataForm()
@@ -868,93 +868,93 @@ class DataImporter(object):
                             self.tempLocData['id'] = self.rowNames
                     
                     elif self.stage == 1: # loads
-                        print('**LOADS**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**LOADS**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         self.getMultiCellLoads()
                         success = True
 
                     elif self.stage == 2: # VO2
-                        print('**VO2**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**VO2**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('VO2')
 
                     elif self.stage == 3: # HR
-                        print('**HR**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**HR**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('HR')
                     
                     elif self.stage == 4: # Sv
-                        print('**Sv**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**Sv**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('Sv')
 
                     elif self.stage == 5: # Q
-                        print('**Q**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**Q**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('Q')
 
                     elif self.stage == 6: # Hb
-                        print('**Hb**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**Hb**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('Hb')
 
                     elif self.stage == 7: # SaO2
-                        print('**SaO2**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**SaO2**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('SaO2')
 
                     elif self.stage == 8: # CaO2
-                        print('**CaO2**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**CaO2**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('CaO2')
 
                     elif self.stage == 9: # CvO2
-                        print('**CvO2**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**CvO2**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('CvO2')
 
                     elif self.stage == 10: # CavO2
-                        print('**CavO2**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**CavO2**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('CavO2')
 
                     elif self.stage == 11: # QaO2
-                        print('**QaO2**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**QaO2**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('QaO2')
 
                     elif self.stage == 12: # SvO2
-                        print('**SvO2**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**SvO2**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('SvO2')
 
                     elif self.stage == 13: # PvO2
-                        print('**PvO2**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**PvO2**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('PVO2')
                     
                     elif self.stage == 14: # Tc @ rest
-                        print('**Tc @ rest**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**Tc @ rest**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('Tc@rest')
 
                     elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
-                        print('**Tc\u209A\u2091\u2090\u2096**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**Tc\u209A\u2091\u2090\u2096**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('Tc\u209A\u2091\u2090\u2096')
 
                     elif self.stage == 16: # pH @ rest
-                        print('**pH @ rest**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**pH @ rest**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('pH@rest')
 
                     elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
-                        print('**pH\u209A\u2091\u2090\u2096**')
-                        print(f'**DATA FORM** {self.dataMode}')
+                        #print('**pH\u209A\u2091\u2090\u2096**')
+                        #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('pH\u209A\u2091\u2090\u2096')
 
                 else: # single cell
-                    print('SINGLE CELL SELECTED')
+                    #print('SINGLE CELL SELECTED')
                     value = self.dataTable.model.getValueAt(row, col)
                     columnName = self.dataTable.getSelectionValues()[0][0]
                     rowName = self.dataTable.getSelectedRows().iloc[0,0]
@@ -1250,7 +1250,7 @@ class DataImporter(object):
             # self.stage += 1 
             to = self.stage + 1
 
-        print(f'tällä hetkellä stage: {to}')
+        #print(f'tällä hetkellä stage: {to}')
 
         if to > 0:
             ttk.Button(self.footer, text='Prev', command=lambda: self.prevStage()).grid(column=0, row=0)

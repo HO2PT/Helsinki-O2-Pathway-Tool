@@ -324,8 +324,8 @@ Test-settings contain default values and units for the test parameters. The defa
 
             container = ttk.Frame(self.content, height=1500)
             container.pack(fill=BOTH, expand=True, padx=(5,5), pady=(5,5))
-            print(container.winfo_reqwidth())
-            print(container.winfo_reqheight())
+            #print(container.winfo_reqwidth())
+            #print(container.winfo_reqheight())
 
             # Define the figure size and plot the figure
             fig = Figure(figsize=(7.5,15))
@@ -340,8 +340,8 @@ Test-settings contain default values and units for the test parameters. The defa
             scrollbar = Scrollbar(container)
             scrollbar.pack(side=RIGHT, fill=Y)
 
-            print(fig)
-            print(wx)
+            #print(fig)
+            #print(wx)
 
             canvas = FigureCanvasTkAgg(fig, master=container)
             canvas.get_tk_widget().config(scrollregion=(0,0,1500,3000))
@@ -349,8 +349,8 @@ Test-settings contain default values and units for the test parameters. The defa
             canvas.get_tk_widget().config(yscrollcommand=scrollbar.set)
             canvas.get_tk_widget().configure(bg=self.window.cget('bg'))
             canvas.get_tk_widget().pack(fill=BOTH, expand=True)
-            print( canvas.get_tk_widget().winfo_reqheight() )
-            print( canvas.get_tk_widget().winfo_reqwidth() )
+            #print( canvas.get_tk_widget().winfo_reqheight() )
+            #print( canvas.get_tk_widget().winfo_reqwidth() )
 
             scrollbar.config(command=canvas.get_tk_widget().yview)
 
@@ -437,16 +437,16 @@ Test-settings contain default values and units for the test parameters. The defa
             self.showAdvLayout() """
 
     def createDemoGraph(self):
-        print('Creating demograph')
+        #print('Creating demograph')
         demoTest = Test()
         demoTest.workLoads[0].setDemoDetails()
         app.setActiveTest(demoTest)
-        print( app.getActiveTest().getWorkLoads()[0].getDetails().getWorkLoadDetails() )
+        #print( app.getActiveTest().getWorkLoads()[0].getDetails().getWorkLoadDetails() )
         app.plottingPanel.plot()
 
     def hideAllDetails(self):
         text = self.view.entrycget(4, 'label')
-        print(self.view.entrycget(4, 'label'))
+        #print(self.view.entrycget(4, 'label'))
         if text == 'Hide all details':
             self.view.entryconfigure(4, label='Show all details')
         else:
@@ -466,7 +466,7 @@ Test-settings contain default values and units for the test parameters. The defa
 
     def hideSidePanel(self):
         text = self.view.entrycget(0, 'label')
-        print(self.view.entrycget(0, 'label'))
+        #print(self.view.entrycget(0, 'label'))
         if text == 'Hide side menu':
             self.view.entryconfigure(0, label='Show side menu')
         else:
@@ -490,7 +490,7 @@ Test-settings contain default values and units for the test parameters. The defa
 
     def hideProjectDetails(self):
         text = self.view.entrycget(1, 'label')
-        print(self.view.entrycget(1, 'label'))
+        #print(self.view.entrycget(1, 'label'))
         if text == 'Hide project details':
             self.view.entryconfigure(1, label='Show project details')
         else:
@@ -519,7 +519,7 @@ Test-settings contain default values and units for the test parameters. The defa
 
     def hideTestDetails(self):
         text = self.view.entrycget(2, 'label')
-        print(self.view.entrycget(2, 'label'))
+        #print(self.view.entrycget(2, 'label'))
         if text == 'Hide test details':
             self.view.entryconfigure(2, label='Show test details')
         else:
@@ -545,7 +545,7 @@ Test-settings contain default values and units for the test parameters. The defa
 
     def hideEnvDetails(self):
         text = self.view.entrycget(3, 'label')
-        print(self.view.entrycget(3, 'label'))
+        #print(self.view.entrycget(3, 'label'))
         if text == 'Hide environment details':
             self.view.entryconfigure(3, label='Show environment details')
         else:

@@ -143,7 +143,7 @@ class DataExporter(object):
             notification.create('error', 'No imported file detected. Data input by hand?', 5000)
 
     def exportToNew(self):
-        print('exporting to new')
+        #print('exporting to new')
         
         imgs = []
         columns = []
@@ -279,7 +279,7 @@ class DataExporter(object):
             self.exportOptions.destroy()
 
     def exportToSelected(self):
-        print('exporting to existing')
+        #print('exporting to existing')
 
         excel = app.getActiveProject().data
         ordered, units, mcs = self.getSortedData()
@@ -295,14 +295,14 @@ class DataExporter(object):
             saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
             with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
                 for sheet in self.sheetNames:
-                    print(f'sheet: {sheet}')
+                    #print(f'sheet: {sheet}')
                     df = pd.DataFrame.from_dict(excel[sheet])
                     df.to_excel(writer, sheet_name=sheet, index=False, header=False)
 
                     for i, (key, value) in enumerate(self.dfs.items()):
                         if sheet == str(key)[0:30]:
-                            print('osuma')
-                            print(str(key)[0:30])
+                            #print('osuma')
+                            #print(str(key)[0:30])
                             worksheet = writer.sheets[sheet]
                             imgDest = f'{os.getcwd()}\plot{key}.png'
                             worksheet.insert_image('N1', imgDest)

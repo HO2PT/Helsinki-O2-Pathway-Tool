@@ -83,7 +83,7 @@ class SubjectList(object):
             self.subjectList.selection_set(index)
 
     def compareSubjects(self, n):
-        print(n)
+        #print(n)
         comparisonTest = Test()
         comparisonTest.setId('Subject comparison')
         comparisonTest.workLoads = []
