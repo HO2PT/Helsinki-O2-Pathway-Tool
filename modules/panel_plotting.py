@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import ttk
+
+from click import style
 from objects.app import app
 from modules.notification import notification
 from modules.ScrollableNotebook import ScrollableNotebook
@@ -629,7 +631,15 @@ class PlotTab(object):
         self.canvasFrame.pack(side=LEFT, expand=TRUE, fill=BOTH)
 
         # Figure instructions
-        ttk.Label(self.canvasFrame, text='Right click - hide all | Middle click - show all', anchor='n').pack(fill=X)
+        instructions = ttk.Frame(self.canvasFrame)
+        instructions.pack()
+        wrap = ttk.Frame(instructions)
+        wrap.grid()
+        ttk.Label(wrap, text='Left click - show/hide').grid(column=0, row=0, sticky=NSEW)
+        wrap.grid_columnconfigure(1, weight=1, minsize=50)
+        ttk.Label(wrap, text='Middle click - show all').grid(column=2, row=0, sticky=NSEW)
+        wrap.grid_columnconfigure(3, weight=1, minsize=50)
+        ttk.Label(wrap, text='Right click - hide all').grid(column=4, row=0, sticky=NSEW)
 
         self.canvas = self.createPlot() # FigureCanvasTkAgg
         self.canvasTk = self.canvas.get_tk_widget() # Tkinter canvas
