@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 
-from click import style
+import math
 from objects.app import app
 from modules.notification import notification
 from modules.ScrollableNotebook import ScrollableNotebook
@@ -608,6 +608,8 @@ class PlottingPanel(object):
         if details['Hb_unit'] == 'g/l': # g/dl -> g/l
             Hb = Hb * 10
 
+        SvO2_calc = SvO2_calc * 100
+
         w.getDetails().setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2_calc, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_calc, DO2)
         #print(f'UPDATED DETAILS: {w.getDetails().getWorkLoadDetails()}')
         return validValues
@@ -786,9 +788,9 @@ class PlotTab(object):
         #print(f'TOOLBAR: {self.toolbarContainer.winfo_reqwidth()},{self.toolbarContainer.winfo_reqheight()}')
         self.ax.set_title('O2 Pathway')
         self.ax.set_xlabel('PvO\u2082 (mmHg)')
-        self.ax.set_ylim(top=5000, bottom=0)
         self.ax.set_xlim(left=0, right=100)
         self.handles = []
+        ylim = []
 
         for i, w in enumerate(self.workLoads):
             coords = w.getDetails().getCoords()
@@ -797,14 +799,23 @@ class PlotTab(object):
             xi = coords['xi']
             yi = coords['yi']
 
+            ylim.append(y2[0])
+
             line, = self.ax.plot(PvO2, y, lw=2, color=f'C{i}', label=w.name)
             curve, = self.ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=w.name)
             dot, = self.ax.plot(xi, yi, 'o', color='red', label=w.name)
 
             self.handles.insert(i, line)
 
-        self.leg = self.ax.legend(handles=self.handles , loc='upper center', bbox_to_anchor=(0.5, 1.1),
-            fancybox=True, shadow=True, ncol=5)
+        if max(ylim) > 50: # ml/min
+            ylim = 1000 * math.ceil( max(ylim) / 1000 )
+        else: # l/min
+            ylim = 1 * math.ceil( max(ylim) / 1 ) + 1
+
+        self.ax.set_ylim(top=ylim, bottom=0)
+
+        self.leg = self.ax.legend(handles=self.handles , loc='upper right',
+            fancybox=True, shadow=True, ncol=2)
 
         # we will set up a dict mapping legend line to orig line, and enable
         # picking on the legend line
@@ -965,7 +976,7 @@ class PlotLoadTab(object):
         self.rowElements.append(self.sao2Row)
 
         # SvO2
-        svo2Value = float(self.details['SvO2']) * 100
+        svo2Value = float(self.details['SvO2'])
         self.svo2Row = LoadTabRow(self, self.loadDetails, 'SvO2', svo2Value, self.index, self.testId, 7, (0,20), self.workLoad)
         self.rowElements.append(self.svo2Row)
 
@@ -1324,7 +1335,7 @@ class LoadTabRow(object):
         # self.entry.bind('<FocusIn>', entryFocusIn)
         # self.entry.bind('<FocusOut>', entryFocusOut)
         # self.slider.bind('<ButtonRelease-1>', sliderReleased)
-        
+
         units = app.settings.getUnits()[f'{self.label}_units']
         if len(units) != 1:
             # Unit entry

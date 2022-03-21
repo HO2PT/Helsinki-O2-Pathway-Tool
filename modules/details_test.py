@@ -182,6 +182,7 @@ class LoadTab(object):
             self.name = load.getName()
         self.details = details
         self.notebook = notebook
+        self.detailRows = []
         
         self.loadFrame = ttk.Frame(self.notebook)
         self.loadFrame.pack(fill=BOTH, expand=TRUE)
@@ -231,15 +232,15 @@ class LoadTab(object):
         for key, value in self.details.getWorkLoadDetails().items():
             if i == 3:
                 if n == 1:
-                    TestDetailRow(self.loadFrame1, temp, self.details, row)
+                    self.detailRows.append( TestDetailRow(self.loadFrame1, temp, self.details, row) )
                     temp=[]
                     i = 0
                 elif n == 2:
-                    TestDetailRow(self.loadFrame2, temp, self.details, row)
+                    self.detailRows.append( TestDetailRow(self.loadFrame2, temp, self.details, row) )
                     temp=[]
                     i = 0
                 else:
-                    TestDetailRow(self.loadFrame3, temp, self.details, row)
+                    self.detailRows.append( TestDetailRow(self.loadFrame3, temp, self.details, row) )
                     temp=[]
                     i = 0
                         
@@ -258,6 +259,13 @@ class LoadTab(object):
 
     def setName(self, name):
         self.name = name
+
+    def updateUnitButtons(self, unit, value):
+        for r in self.detailRows:
+            if hasattr(r, 'tempMenuButton'):
+                unitName = f'{r.label}_unit'
+                if unitName == unit:
+                    r.tempMenuButton.configure(text=value)
             
 class TestDetailRow(object):
 
@@ -299,14 +307,14 @@ class TestDetailRow(object):
         if len(units) != 1:
             if self.label != 'pH\u209A\u2091\u2090\u2096' and self.label != 'pH @ rest':
                 units = app.settings.getUnits()[f'{self.label}_units']
-                tempMenuButton = ttk.Menubutton(rowFrame)
-                tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
+                self.tempMenuButton = ttk.Menubutton(rowFrame)
+                self.tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
 
-                tempMenu = Menu(tempMenuButton, tearoff=False)
+                tempMenu = Menu(self.tempMenuButton, tearoff=False)
                 for i, u in enumerate(units):
-                    TestDetailMenuElem(tempMenu, tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
-                tempMenuButton['menu']=tempMenu
-                tempMenuButton.grid(column=2, row=row)
+                    TestDetailMenuElem(tempMenu, self.tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
+                self.tempMenuButton['menu']=tempMenu
+                self.tempMenuButton.grid(column=2, row=row)
         else:
             ttk.Label(rowFrame, text=units[0]).grid(column=2, row=row)
 
@@ -328,7 +336,12 @@ class TestDetailRow(object):
 
     def updateUnit(self, name, index, mode):
         name = name.split('-')[0]
-        self.workLoadObject.setUnit(name, self.unitVar.get())
+        # Update unit change to every load
+        print('unit update')
+        for l in app.getActiveTest().getWorkLoads():
+            print(l)
+            l.setUnit(name, self.unitVar.get())
+        # self.workLoadObject.setUnit(name, self.unitVar.get())
         # setattr(self.workLoadObject, name, self.unitVar.get())
     
     def updateMC(self, name, index, mode):
@@ -350,4 +363,14 @@ class TestDetailMenuElem(object):
 
     def updateValue(self):
         self.menuButton.config(text=self.elems[self.index])
-        self.workLoad.setUnit(self.name, self.elems[self.index])
+        for l in app.getActiveTest().getWorkLoads():
+            l.getDetails().setUnit(self.name, self.elems[self.index])
+            print(l.getDetails().getWorkLoadDetails())
+
+        loadTabs = app.testDetailModule.loadNotebook.loadTabs
+
+        for l in loadTabs:
+            l.updateUnitButtons(self.name, self.elems[self.index])
+        
+        # self.workLoad.setUnit(self.name, self.elems[self.index])
+        
