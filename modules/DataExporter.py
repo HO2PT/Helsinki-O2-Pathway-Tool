@@ -17,8 +17,11 @@ class DataExporter(object):
         # 1 = create new file
         self.toNew = toNew
         self.onlyPlots = onlyPlots
+
         if self.onlyPlots == True and len(app.getPlottingPanel().plots) == 0:
-            notification.create('error', 'No created plots to export.', '5000')
+            notification.create('error', 'No created plots to export', '5000')
+        elif app.getActiveProject() == None:
+            notification.create('error', 'No selected project', '5000')
         else:
             self.showOptions()
         self.temp = {}
@@ -107,7 +110,7 @@ class DataExporter(object):
             self.vars.append(phVar)
             ttk.Checkbutton(container, text='pH\u209A\u2091\u2090\u2096', variable=phVar).grid(column=0, row=14, sticky='nw')
 
-            ttk.Button(container, text='asd', command=lambda: getSelected()).grid(column=1, row=15)
+            ttk.Button(container, text='Export', command=lambda: getSelected()).grid(column=1, row=15)
 
             if self.toNew == False:
                 self.sheetNames = []

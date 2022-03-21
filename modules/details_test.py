@@ -295,16 +295,20 @@ class TestDetailRow(object):
         self.valueVar.trace('w', self.updateValue)
 
         # Unit
-        if self.label != 'pH\u209A\u2091\u2090\u2096' and self.label != 'pH @ rest':
-            units = app.settings.getUnits()[f'{self.label}_units']
-            tempMenuButton = ttk.Menubutton(rowFrame)
-            tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
+        units = app.settings.getUnits()[f'{self.label}_units']
+        if len(units) != 1:
+            if self.label != 'pH\u209A\u2091\u2090\u2096' and self.label != 'pH @ rest':
+                units = app.settings.getUnits()[f'{self.label}_units']
+                tempMenuButton = ttk.Menubutton(rowFrame)
+                tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
 
-            tempMenu = Menu(tempMenuButton, tearoff=False)
-            for i, u in enumerate(units):
-                TestDetailMenuElem(tempMenu, tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
-            tempMenuButton['menu']=tempMenu
-            tempMenuButton.grid(column=2, row=row)
+                tempMenu = Menu(tempMenuButton, tearoff=False)
+                for i, u in enumerate(units):
+                    TestDetailMenuElem(tempMenu, tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
+                tempMenuButton['menu']=tempMenu
+                tempMenuButton.grid(column=2, row=row)
+        else:
+            ttk.Label(rowFrame, text=units[0]).grid(column=2, row=row)
 
         if self.flag != 1:
             # Measured/Calculated

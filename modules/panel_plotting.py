@@ -1324,19 +1324,22 @@ class LoadTabRow(object):
         # self.entry.bind('<FocusIn>', entryFocusIn)
         # self.entry.bind('<FocusOut>', entryFocusOut)
         # self.slider.bind('<ButtonRelease-1>', sliderReleased)
+        
+        units = app.settings.getUnits()[f'{self.label}_units']
+        if len(units) != 1:
+            # Unit entry
+            if self.label != 'pH\u209A\u2091\u2090\u2096':
+                self.menuButton = ttk.Menubutton(self.parent)
+                self.menuButton.config(text=self.details[f'{self.label}_unit'])
+                tempMenu = Menu(self.menuButton, tearoff=False)
 
-        # Unit entry
-        if self.label != 'pH\u209A\u2091\u2090\u2096':
-            self.menuButton = ttk.Menubutton(self.parent)
-            self.menuButton.config(text=self.details[f'{self.label}_unit'])
-            tempMenu = Menu(self.menuButton, tearoff=False)
-            units = app.settings.getUnits()[f'{self.label}_units']
-
-            for i, u in enumerate(units):
-                LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}', self.workLoad)
-            
-            self.menuButton['menu']=tempMenu
-            self.menuButton.grid(column=2, row=row)
+                for i, u in enumerate(units):
+                    LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}', self.workLoad)
+                
+                self.menuButton['menu']=tempMenu
+                self.menuButton.grid(column=2, row=row)
+        else:
+            ttk.Label(self.parent, text=units[0]).grid(column=2, row=row)
             
         # M/C Radiobuttons
         self.mcVar = IntVar(value=self.details[f'{self.label}_MC'])

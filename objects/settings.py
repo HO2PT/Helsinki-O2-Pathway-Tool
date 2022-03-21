@@ -122,8 +122,6 @@ class Settings(object):
     def processData(self):
         # self.userMode = self.data['userMode']
 
-        print(self.data['layout'])
-
         self.visDefaults = {
             'sideMenu': self.data['layout']['sideMenu'],
             'allDetails': self.data['layout']['allDetails'],
@@ -553,14 +551,17 @@ class SettingsRow(object):
             tempEntry.insert(0, settings.testDefaults[label])
             tempEntry.grid(column=1, row=row)
 
-        # Unit
-        menu = Menu(self.menuButton, tearoff=False)
-        units = settings.units[f"{label}_units"]
-        if units != None and label != 'pH\u209A\u2091\u2090\u2096' and label != 'pH @ rest':
-            for i, u in enumerate(units):
-                MenuElem(menu, self.menuButton, u, i, units)
-            self.menuButton['menu']=menu
-            self.menuButton.grid(column=2, row=row)
+         # Unit
+        if len(settings.units[f"{label}_units"]) != 1:
+            menu = Menu(self.menuButton, tearoff=False)
+            units = settings.units[f"{label}_units"]
+            if units != None and label != 'pH\u209A\u2091\u2090\u2096' and label != 'pH @ rest':
+                for i, u in enumerate(units):
+                    MenuElem(menu, self.menuButton, u, i, units)
+                self.menuButton['menu']=menu
+                self.menuButton.grid(column=2, row=row)
+        else:
+            ttk.Label(parent, text=settings.units[f"{label}_units"][0]).grid(column=2, row=row)
 
         # Measured/Calculated
         self.intVar = IntVar(value=settings.mcDefaults[f'{label}_mc'], name=f'{label}_mc')
