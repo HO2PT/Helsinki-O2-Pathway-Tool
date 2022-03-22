@@ -118,6 +118,8 @@ class LoadNotebook(object):
         if Trest != Tpeak:
             details.setValue('T', Tpeak)
 
+        details = workLoadObject.getDetails()
+
         newLoad = LoadTab(i, workLoadObject, details, self.loadbook)
         
         pHstep = pHDif / (len(activeTest.getWorkLoads())-1)
@@ -152,20 +154,13 @@ class LoadNotebook(object):
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
 
     def refresh(self):
-        for tab in self.loadTabs:
-            # tab.loadFrame.destroy()
-            del tab
-        self.loadTabs = []
-
         for t in self.loadbook.tabs():
             self.loadbook.forget(t)
-            del t
 
-        for i,c in enumerate(self.loadbook.winfo_children()):
-            if c.winfo_class() == 'TFrame':
-                c.pack_forget()
-                c.destroy()
-                del c
+        for tab in self.loadTabs:
+            tab.loadFrame.destroy()
+            del tab
+        self.loadTabs = []
 
         activeTest = app.getActiveTest()
 
@@ -184,12 +179,12 @@ class LoadNotebook(object):
             self.loadbook.add(newLoad.loadFrame, text=l.getName())
             self.loadbook.select(tabCount)
 
-        self.loadbook.pack(fill="both",expand=True)
-        self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
-        self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
-
-        #print(self.loadbook.children)
-        gc.collect()
+        try:
+            self.loadbook.pack_info()
+        except:
+            self.loadbook.pack(fill="both",expand=True)
+            self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
+            self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
             
     def editLoad(self):
         index = self.loadbook.index('current')
@@ -268,6 +263,36 @@ class LoadTab(object):
         row = 1
         n = 1
 
+        """ items1 = ['VO2','HR','Sv','Q','Hb','SaO2']
+        items2 = ['CaO2', 'CvO2','CavO2','QaO2','SvO2','PvO2']
+        items3 = ['T', 'pH']
+
+        loadDetails = self.details.getWorkLoadDetails()
+
+        for i in items1:
+            label = [i]
+            value = [i,loadDetails[i]]
+            unit = [f'{i}_unit', loadDetails[f'{i}_unit']]
+            mc = [f'{i}_MC', loadDetails[f'{i}_MC']]
+            temp = [label, value, unit, mc]
+            TestDetailRow(self.loadFrame1, temp, self.details, i)
+
+        for i in items2:
+            label = [i]
+            value = [i,loadDetails[i]]
+            unit = [f'{i}_unit', loadDetails[f'{i}_unit']]
+            mc = [f'{i}_MC', loadDetails[f'{i}_MC']]
+            temp = [label, value, unit, mc]
+            TestDetailRow(self.loadFrame2, temp, self.details, i)
+
+        for i in items3:
+            label = [i]
+            value = [i,loadDetails[i]]
+            unit = [f'{i}_unit', loadDetails[f'{i}_unit']]
+            mc = [f'{i}_MC', loadDetails[f'{i}_MC']]
+            temp = [label, value, unit, mc]
+            TestDetailRow(self.loadFrame3, temp, self.details, i) """
+
         # Iterate through load details and print to Details module
         for key, value in self.details.getWorkLoadDetails().items():
             if i == 3:
@@ -345,7 +370,7 @@ class TestDetailRow(object):
                 ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row)
             
             #Value
-            self.valueVar = StringVar(value=self.value, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
+            self.valueVar = StringVar(value=self.value)#, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
                 
             self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
             self.valueEntry.grid(column=1, row=row)
@@ -369,7 +394,7 @@ class TestDetailRow(object):
 
             if self.flag != 1:
                 # Measured/Calculated
-                self.mcVar = IntVar(value=self.radio, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
+                self.mcVar = IntVar(value=self.radio)#, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
 
                 self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
                 self.radio1.grid(column=3, row=row)
@@ -379,32 +404,32 @@ class TestDetailRow(object):
                 self.mcVar.trace('w', self.updateMC)
         
     def updateValue(self, name, index, mode):
-        name = name.split('-')[0]
-        self.workLoadObject.setValue(name, self.valueVar.get())
+        # name = name.split('-')[0]
+        self.workLoadObject.setValue(self.label, self.valueVar.get())
         # setattr(self.workLoadObject, name, self.valueVar.get())
 
     def updateUnit(self, name, index, mode):
-        name = name.split('-')[0]
+        # name = name.split('-')[0]
         # Update unit change to every load
         for l in app.getActiveTest().getWorkLoads():
             #print(l)
-            l.setUnit(name, self.unitVar.get())
+            l.setUnit(self.label, self.unitVar.get())
         # self.workLoadObject.setUnit(name, self.unitVar.get())
         # setattr(self.workLoadObject, name, self.unitVar.get())
     
     def updateMC(self, name, index, mode):
-        name = name.split('-')[0]
-        self.workLoadObject.setMC(name, self.mcVar.get())
+        # name = name.split('-')[0]
+        self.workLoadObject.setMC(self.label, self.mcVar.get())
 
         # Update every load
         for l in app.getActiveTest().getWorkLoads():
-            l.getDetails().setMC(name, self.mcVar.get())
+            l.getDetails().setMC(self.label, self.mcVar.get())
             # print(l.getDetails().getWorkLoadDetails())
 
         loadTabs = app.testDetailModule.loadNotebook.loadTabs
 
         for l in loadTabs:
-            l.updateMCs(name, self.mcVar.get())
+            l.updateMCs(self.label, self.mcVar.get())
 
         # setattr(self.workLoadObject, name, self.mcVar.get())
 

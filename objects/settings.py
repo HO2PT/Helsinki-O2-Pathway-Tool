@@ -574,9 +574,9 @@ class SettingsRow(object):
             ttk.Label(parent, text=settings.units[f"{label}_units"][0]).grid(column=2, row=row)
 
         # Measured/Calculated
-        self.intVar = IntVar(value=settings.mcDefaults[f'{label}_mc'], name=f'{label}_mc')
-        if self.intVar not in app.intVars:
-            app.intVars.append(self.intVar)
+        self.intVar = IntVar(value=settings.mcDefaults[f'{label}_mc'])#, name=f'{label}_mc')
+        # if self.intVar not in app.intVars:
+        #     app.intVars.append(self.intVar)
         self.radio1 = ttk.Radiobutton(parent, value=0, variable=self.intVar)
         self.radio1.grid(column=3, row=row)
 

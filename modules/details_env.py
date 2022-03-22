@@ -75,7 +75,7 @@ class envDetailRow(object):
         
         if label == 'elevation':
             # Value
-            self.elevVar = StringVar(value=self.envDetails.elevation, name=f'{self.label}-{id}')
+            self.elevVar = StringVar(value=self.envDetails.elevation)#, name=f'{self.label}-{id}')
             self.elevVar.trace('w', self.updateElev)
             self.elevEntry = ttk.Entry(self.container, width=7, textvariable=self.elevVar)
             self.elevEntry.grid(column=1, row=0)
@@ -94,7 +94,7 @@ class envDetailRow(object):
 
         if label == 'atm':
             # Value
-            self.atmVar = StringVar(value=self.envDetails.atm, name=f'{self.label}-{app.getActiveTest().id}')
+            self.atmVar = StringVar(value=self.envDetails.atm)#, name=f'{self.label}-{app.getActiveTest().id}')
             self.atmVar.trace('w', self.updateAtm)
             self.atmEntry = ttk.Entry(self.container, width=7, textvariable=self.atmVar)
             self.atmEntry.grid(column=1, row=1)
@@ -113,7 +113,7 @@ class envDetailRow(object):
 
         if label == 'fio2':
             # Value
-            self.fio2Var = StringVar(value=self.envDetails.fio2, name=f'{self.label}-{app.getActiveTest().id}')
+            self.fio2Var = StringVar(value=self.envDetails.fio2)#, name=f'{self.label}-{app.getActiveTest().id}')
             self.fio2Var.trace('w', self.updateFio2)
             self.fio2Entry = ttk.Entry(self.container, width=7, textvariable=self.fio2Var)
             self.fio2Entry.grid(column=1, row=2)
@@ -123,7 +123,7 @@ class envDetailRow(object):
 
         if label == 'temp':
             # Value
-            self.tempVar = StringVar(value=self.envDetails.temp, name=f'{self.label}-{app.getActiveTest().id}')
+            self.tempVar = StringVar(value=self.envDetails.temp)#, name=f'{self.label}-{app.getActiveTest().id}')
             self.tempVar.trace('w', self.updateTemp)
             self.tempEntry = ttk.Entry(self.container, width=7, textvariable=self.tempVar)
             self.tempEntry.grid(column=1, row=3)
@@ -142,7 +142,7 @@ class envDetailRow(object):
         
         if label == 'rh':
             # Value
-            self.rhVar = StringVar(value=self.envDetails.rh, name=f'{self.label}-{app.getActiveTest().id}')
+            self.rhVar = StringVar(value=self.envDetails.rh)#, name=f'{self.label}-{app.getActiveTest().id}')
             self.rhVar.trace('w', self.updateRh)
             self.rhEntry = ttk.Entry(self.container, width=7, textvariable=self.rhVar)
             self.rhEntry.grid(column=1, row=4)
@@ -151,7 +151,7 @@ class envDetailRow(object):
             ttk.Label(self.container, text='%').grid(column=2, row=4)
 
         if label == 'pio2Method':
-            self.methodVar = IntVar(value=self.envDetails.pio2Method, name=f'{self.label}-{app.getActiveTest().id}') 
+            self.methodVar = IntVar(value=self.envDetails.pio2Method)#, name=f'{self.label}-{app.getActiveTest().id}') 
                     
             self.radio1 = ttk.Radiobutton(self.container, text='U.S SA', value=0, variable=self.methodVar)
             self.radio1.pack(anchor='w')
@@ -162,27 +162,27 @@ class envDetailRow(object):
 
     def updateElev(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.envDetails, name, self.elevVar.get())
+        setattr(self.envDetails, self.label, self.elevVar.get())
 
     def updateAtm(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.envDetails, name, self.atmVar.get())
+        setattr(self.envDetails, self.label, self.atmVar.get())
 
     def updateFio2(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.envDetails, name, self.fio2Var.get())
+        setattr(self.envDetails, self.label, self.fio2Var.get())
 
     def updateTemp(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.envDetails, name, self.tempVar.get())
+        setattr(self.envDetails, self.label, self.tempVar.get())
 
     def updateRh(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.envDetails, name, self.rhVar.get())
+        setattr(self.envDetails, self.label, self.rhVar.get())
     
     def updatePio2Method(self, name, index, mode):
         name = name.split('-')[0]
-        setattr(self.envDetails, name, self.methodVar.get())
+        setattr(self.envDetails, self.label, self.methodVar.get())
 
 
 class EnvMenuElem(object):

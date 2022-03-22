@@ -16,8 +16,8 @@ root.geometry("1000x750")
 root.pack_propagate(1)
 
 app.root = root
-app.strVars = []
-app.intVars = []
+# app.strVars = []
+# app.intVars = []
 
 # Load settings
 settings = Settings()

@@ -40,8 +40,14 @@ class ScrollableNotebook(ttk.Frame):
 
         if self.notebookTab.identify(e.x, e.y) == 'close':
             if askokcancel("Confirm", "Do you want to remove the tab?"):
+                tab_id = self.notebookTab.tabs()[clickedTabIndex]
                 self.notebookTab.forget(clickedTabIndex)
                 self.notebookContent.forget(clickedTabIndex)
+                
+                for c in self.notebookTab.winfo_children():
+                    if str(tab_id) == str(c):
+                        c.destroy()
+                        del c
 
                 if self.parentObj == 'testDetailsModule':
                     del workLoads[clickedTabIndex]
@@ -93,6 +99,11 @@ class ScrollableNotebook(ttk.Frame):
         self.notebookContent.forget(self.__ContentTabID(tab_id))
         self.notebookTab.forget(tab_id)
 
+        for c in self.notebookTab.winfo_children():
+            if str(tab_id) == str(c):
+                c.destroy()
+                del c
+                
     def hide(self,tab_id):
         self.notebookContent.hide(self.__ContentTabID(tab_id))
         self.notebookTab.hide(tab_id)
