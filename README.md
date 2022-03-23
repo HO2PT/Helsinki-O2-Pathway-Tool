@@ -30,12 +30,6 @@ How to get started?
 3. Happy modeling!
  
 How to download?
-1. Click "dist"-folder in the directory view above.                       
-2. Click "O2PathwayTool.exe"                                           
-3. Click "Download"-button
-
-OR                      
-
 1. Click "Releases" on the right side of this page
 2. Click "Assets"-dropdownmenu on the first version
 3. Click "O2PathwayTool.exe"
