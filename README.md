@@ -31,7 +31,7 @@ How to get started?
  
 How to download?
 1. Click "Releases" on the right side of this page
-2. Click "Assets"-dropdownmenu on the first version
+2. Click "Assets"-dropdownmenu on the latest version
 3. Click "O2PathwayTool.exe"
 
 
