@@ -1,7 +1,4 @@
-import ctypes
 import gc
-import sys
-import threading
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
@@ -34,7 +31,6 @@ class TestDetailModule(object):
         # Refresh details
         self.testId.config(text=f'Id: {app.getActiveTest().id}')
         self.loadNotebook.refresh()
-        # app.x.start()
 
 class LoadNotebook(object):
     def __init__(self, parent):
@@ -97,43 +93,33 @@ class LoadNotebook(object):
         self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())
         self.editButton = ttk.Button(parent, text='Edit', command=lambda: self.editLoad())
 
-    def addLoad(self):
-        # Add load to active test
+    def updatePhAndTemp(self):
         activeTest = app.getActiveTest()
-        workLoadObject = activeTest.createLoad()
-        i = len(self.loadTabs)
-        details = workLoadObject.getDetails()
 
         # Add linear change in pH and T
         pHrest = float(app.settings.testDefaults['pH @ rest'])
         Trest = float(app.settings.testDefaults['Tc @ rest'])
-        # print(f'settings pHrest: {pHrest}')
         pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
         Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
-        # print(f'settings pHpeak: {pHpeak}')
         pHDif = float(pHrest) - float(pHpeak)
         Tdif = float(Tpeak) - float(Trest)
-        # print(pHDif)
 
-        if pHrest != pHpeak:
-            details.setValue('pH', pHpeak)
+        if len(activeTest.getWorkLoads()) > 0:
+            if pHrest != pHpeak:
+                activeTest.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
 
-        if Trest != Tpeak:
-            details.setValue('T', Tpeak)
+            if Trest != Tpeak:
+                activeTest.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
 
-        details = workLoadObject.getDetails()
+            pHstep = pHDif / (len(activeTest.getWorkLoads())-1)
+            pHvalues = []
 
-        newLoad = LoadTab(i, workLoadObject, details, self.loadbook)
-        
-        pHstep = pHDif / (len(activeTest.getWorkLoads())-1)
-        pHvalues = []
-
-        Tstep = Tdif / (len(activeTest.getWorkLoads())-1)
-        Tvalues = []
-        nLoads = len(activeTest.getWorkLoads())
+            Tstep = Tdif / (len(activeTest.getWorkLoads())-1)
+            Tvalues = []
 
         # Add linear change
         for i, w in enumerate(activeTest.getWorkLoads()):
+            details = w.getDetails()
             pHValue = pHrest - (i * pHstep)
             pHvalues.append(f'{"{0:.2f}".format(pHValue)}')
             details.setValue('pH', pHValue)
@@ -141,6 +127,18 @@ class LoadNotebook(object):
             Tvalue = Trest + (i * Tstep)
             Tvalues.append(f'{"{0:.1f}".format(Tvalue)}')
             details.setValue('T', Tvalue)
+
+        return pHvalues, Tvalues
+
+    def addLoad(self):
+        # Add load to active test
+        activeTest = app.getActiveTest()
+        workLoadObject = activeTest.createLoad()
+        i = len(self.loadTabs)
+        pHvalues, Tvalues = self.updatePhAndTemp()
+        details = workLoadObject.getDetails()
+
+        newLoad = LoadTab(i, workLoadObject, details, self.loadbook)
 
         # Append tab
         self.loadTabs.append(newLoad)
@@ -161,8 +159,6 @@ class LoadNotebook(object):
             self.loadbook.forget(t)
 
         for tab in self.loadTabs: # Delete loadtab objects
-            # print(tab.detailRows)
-            # tab.loadFrame.destroy()
             for r in tab.detailRows:
                 if len(r.objects) != 0:
                     for o in r.objects:
@@ -172,15 +168,12 @@ class LoadNotebook(object):
                     del v
                 asd = id(r)
                 r.destroy()
-                
-                print(sys.getrefcount(r))
                 del r
+            tab.loadFrame.destroy()
             del tab
-            # print( ctypes.cast(asd, ctypes.py_object) )
         gc.collect()
         
         self.loadTabs = []
-
         activeTest = app.getActiveTest()
         
         # Fetch list of load objects

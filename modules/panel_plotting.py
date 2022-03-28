@@ -15,7 +15,6 @@ from matplotlib.backends.backend_tkagg import (
 #
 # BUG: Figure puskee toolbarit piiloon -> figure pitää saada kehystettyä paremmin
 # SVO2 - kumpaa arvoa käytetään, todennäköisesti ph/temp korjauksen jälkeistä?
-# BUG: Mitä jos poistaa pari kuormaa ja tulostaa jäljellä olevat ? -> plot vain näkyvillä olevista tabeista
 #
 
 class PlottingPanel(object):
@@ -31,7 +30,7 @@ class PlottingPanel(object):
         self.container.pack(fill=BOTH, expand=TRUE)
 
         # Plots notebook
-        self.plotNotebook = ScrollableNotebook(self.container, parentObj='plottingPanel', style="loadNotebook.TNotebook", wheelscroll=True)
+        self.plotNotebook = ScrollableNotebook(self.container, parentObj=self, style="loadNotebook.TNotebook", wheelscroll=True)
 
         try:
             #print(f'PACKINFO: {self.plotNotebook.pack_info()}')
@@ -42,10 +41,11 @@ class PlottingPanel(object):
     def plot(self):
         self.origLoadObjects = []
         visibleLoadTabs = app.testDetailModule.loadNotebook.loadTabs
-        print(f'LENGTH: {len(visibleLoadTabs)}')
+        # print(f'LENGTH: {len(visibleLoadTabs)}')
         for t in visibleLoadTabs:
             tabLoadDetails = t.details
             self.origLoadObjects.append(tabLoadDetails)
+            print(tabLoadDetails.getWorkLoadDetails())
         # self.origWorkLoads = app.getActiveTest().getWorkLoads()
         self.workLoadDetailsObjects = copy.deepcopy(self.origLoadObjects) # Workload objects
         # print(f'DETAILS BEFORE BEFORE {self.workLoads[-1].getDetails().getWorkLoadDetails()}')
@@ -79,6 +79,25 @@ class PlottingPanel(object):
             #print('VALIDATION ERROR')
             notification.create('error', f'Invalid values. Please check the values of {i+1}. load and try again.', 5000)
     
+    def plotDemo(self):
+        workLoadDetailsObjects = []
+        workLoadDetailsObjects.append(app.getActiveTest().getWorkLoads()[0].getDetails())
+        details = workLoadDetailsObjects[0].getWorkLoadDetails()
+        self.calc(workLoadDetailsObjects[0], details)
+
+        try:
+            self.plotNotebook.pack_info()
+        except TclError:
+            self.plotNotebook.pack(expand=TRUE, fill=BOTH)
+
+        # Create tab for the plot
+        plotTabObject = PlotTab(self.plotNotebook, workLoadDetailsObjects)
+        plotTab = plotTabObject.createPlotTab()
+
+        # Add plot to the notebook and objects list of plots
+        self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
+        self.plots.append(plotTabObject)
+
     ## TESTAA!!
     def plotProject(self):
         self.workLoads = app.getActiveTest().getWorkLoads()
@@ -294,7 +313,7 @@ class PlottingPanel(object):
             # SvO2 = (CaO2 - C(a-v)O2) x 100 / 1,34 / [Hb]
             return (CaO2 - CavO2) / 1.34 / Hb
         else:
-            return SvO2
+            return SvO2 / 100
 
         """ if SvO2 == 0:
             w.getDetails().setMC('SvO2_MC', 1)
@@ -397,7 +416,7 @@ class PlottingPanel(object):
         Hb = self.formatHb(details)
         SaO2 = float(details['SaO2'])
 
-        print(f'Q {Q} - VO2 {VO2} - Hb {Hb} - SaO2 {SaO2}')
+        # print(f'Q {Q} - VO2 {VO2} - Hb {Hb} - SaO2 {SaO2}')
 
         CaO2 = self.formatCaO2(w, details, Hb, SaO2/100)
         CavO2 = self.formatCavO2(w, details, VO2, Q)
@@ -405,16 +424,16 @@ class PlottingPanel(object):
         CvO2 = self.formatCvO2(w, details, Hb, CaO2, CavO2, SvO2_calc)
         QaO2 = self.formatQaO2(w, details, Q, CaO2)
 
-        print(f'CavO2 {CavO2} - CaO2 {CaO2} - CvO2 {CvO2} - SvO2_calc {SvO2_calc} - QaO2 {QaO2}')
+        # print(f'CavO2 {CavO2} - CaO2 {CaO2} - CvO2 {CvO2} - SvO2_calc {SvO2_calc} - QaO2 {QaO2}')
 
         # Calculate diffusion DO2
         a = 11700 * np.float_power( ( np.float_power(SvO2_calc,-1) - 1 ), -1 )
         b = np.float_power( 50**3 + np.float_power(a,2), 0.5 )
         PvO2_calc = self.formatPvO2(w, details, a, b) # mmHg
-        #print(f'WTF2: {a}, {b}, {PvO2_calc}')
+        # print(f'WTF2: {a}, {b}, {PvO2_calc}')
 
         if PvO2_calc < 0:
-            #print('PvO2 negative')
+            # print('PvO2 negative')
             validValues = False
 
         # pH + temp correction
@@ -485,8 +504,10 @@ class PlottingPanel(object):
         #print(f'UPDATED DETAILS: {w.getDetails().getWorkLoadDetails()}')
         return validValues
 
-class PlotTab(object):
-    def __init__(self, parentFrame, workLoadDetailsObjects):
+class PlotTab():
+    def __init__(self, parentFrame, workLoadDetailsObjects, *args, **kwargs):
+        # ttk.Frame.__init__(self, parentFrame, *args, **kwargs)
+        # self.pack()
         self.plot = None
         self.loadTabs = []
         self.parentFrame = parentFrame
@@ -572,7 +593,7 @@ class PlotTab(object):
         self.loadNotebookFrame = ttk.Frame(self.tabFrame)
         self.loadNotebookFrame.pack(side=RIGHT, fill=Y)
 
-        self.loadNotebook = ScrollableNotebook(self.loadNotebookFrame, parentObj='plotTab', wheelscroll=True)
+        self.loadNotebook = ScrollableNotebook(self.loadNotebookFrame, wheelscroll=True)
         self.loadNotebook.pack(expand=TRUE, fill=BOTH)
 
         # Create tabs for loads
@@ -1134,8 +1155,10 @@ class PlotOptions(object):
         self.plotObject[1].set_ylim(top=float(limit))
         self.plotObject[0].canvas.draw()
 
-class LoadTabRow(object):
-    def __init__(self, parenObject, parentFrame, label, value, index, id, row, scale, details):
+class LoadTabRow(ttk.Frame):
+    def __init__(self, parenObject, parentFrame, label, value, index, id, row, scale, details, *args, **kwargs):
+        ttk.Frame.__init__(self, parentFrame, *args, **kwargs)
+        self.grid()
         self.parentObject = parenObject
         self.parent = parentFrame
         self.label = label

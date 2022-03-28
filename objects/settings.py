@@ -508,6 +508,8 @@ class Settings(object):
                                         l.getDetails().setUnit(key, val)
                                     for key, val in self.testDefaults.items():
                                         l.getDetails().setValue(key, val)
+                                self.updatePhAndTemp(t)
+                    
                     app.testDetailModule.refreshTestDetails()
 
                 settingsFile = open('settings.pkl', 'wb')
@@ -516,6 +518,35 @@ class Settings(object):
 
                 self.createNotification('info', 'Settings saved', 5000)
 
+    def updatePhAndTemp(self, test):
+        # Add linear change in pH and T
+        pHrest = float(app.settings.testDefaults['pH @ rest'])
+        Trest = float(app.settings.testDefaults['Tc @ rest'])
+        pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
+        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
+        pHDif = float(pHrest) - float(pHpeak)
+        Tdif = float(Tpeak) - float(Trest)
+
+        if len(test.getWorkLoads()) > 0:
+            if pHrest != pHpeak:
+                test.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
+
+            if Trest != Tpeak:
+                test.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
+
+            pHstep = pHDif / (len(test.getWorkLoads())-1)
+
+            Tstep = Tdif / (len(test.getWorkLoads())-1)
+
+        # Add linear change
+        for i, w in enumerate(test.getWorkLoads()):
+            details = w.getDetails()
+            pHValue = pHrest - (i * pHstep)
+            details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')
+
+            Tvalue = Trest + (i * Tstep)
+            details.setValue('T', f'{"{0:.1f}".format(Tvalue)}')
+        
     def createNotification(self, type, text, timeout):
         style = ttk.Style()
         

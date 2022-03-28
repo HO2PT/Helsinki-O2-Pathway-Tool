@@ -1,3 +1,4 @@
+from time import sleep
 from tkinter import *
 from tkinter import ttk
 from objects.project import Project
@@ -15,7 +16,7 @@ class TestList(object):
 
         self.testList = Listbox(self.container, exportselection=FALSE)
         self.testList.pack(fill = BOTH, expand=TRUE)
-        self.testList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
+        self.testList.bind( '<1>', lambda e: self.handleListboxSelect(e) )
         self.testList.bind('<Control-Button-1>', lambda e: self.handleMultiSelect(e))
         self.testList.bind('<Shift-Button-1>', lambda e: self.handleShiftSelect(e))
 
@@ -221,17 +222,25 @@ class TestList(object):
         for t in tests:
             self.testList.insert('end', t.id)
 
-    def handleListboxSelect(self):
+    def handleListboxSelect(self, e):
         # Set selected subject as active subject by index
-        index = self.testList.curselection()[0]
-        self.startSel = index
-        test = app.getActiveSubject().tests[index]
+        try:
+            lastIndex = self.testList.curselection()[0]
+        except:
+            lastIndex = -1
+        self.startSel = lastIndex
+        self.testList.selection_clear(0, 'end')
+
+        newIndex= f'@{e.x},{e.y}'
+        self.testList.selection_set(newIndex)
 
         # Prevent updating test details when multiple tests selected
         if len(self.testList.curselection()) < 2:
-            # Refresh app state
-            app.setActiveTest(test)
+            if self.testList.curselection()[0] != lastIndex: # Update only when clicked new test
+                # Refresh app state
+                test = app.getActiveSubject().tests[self.testList.curselection()[0]]
+                app.setActiveTest(test)
 
-            # Refresh views
-            app.testDetailModule.refreshTestDetails()
-            app.envDetailModule.refresh()
+                # Refresh views
+                app.testDetailModule.refreshTestDetails()
+                app.envDetailModule.refresh()

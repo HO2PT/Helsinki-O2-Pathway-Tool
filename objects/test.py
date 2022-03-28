@@ -1,6 +1,7 @@
 import uuid
 from objects.envDetails import EnvDetails
 from objects.workLoadDetails import WorkLoadDetails
+from objects.app import app
 
 class Test(object):
     def __init__(self, id = None):
@@ -26,7 +27,7 @@ class Test(object):
         self.workLoads.append(load)
 
     def createLoad(self):
-        newLoad = Load()
+        newLoad = Load(self)
         # newLoad = Load(self)
         self.workLoads.append( newLoad )
         return newLoad
@@ -63,9 +64,8 @@ class Test(object):
 
 class Load(object):
     def __init__(self, parentTest=None):
-        # self.name = None
-        self.name = 'Load'
         self.parentTest = parentTest
+        self.name = f'Load{len(self.parentTest.workLoads)+1}'
         self.details = WorkLoadDetails(name=self.name)
     
     def getDetails(self):
@@ -76,17 +76,26 @@ class Load(object):
 
     def setName(self, name):
         self.name = name
+        self.details.name = name
     
     def setDemoDetails(self):
         #print('Setting demo details')
-        self.details.setValue('VO2', 2)
-        self.details.setUnit('VO2_unit', 'l/min')
+        units = app.settings.getUnitDef()
 
-        self.details.setValue('Q', 13)
-        self.details.setUnit('Q_unit', 'l/min')
+        if units['VO2_unit'] == 'l/min':
+            self.details.setValue('VO2', 2)
+        else:
+            self.details.setValue('VO2', 2000)
 
-        self.details.setValue('Hb', 13)
-        self.details.setUnit('Hb_unit', 'g/dl')
+        if units['Q_unit'] == 'l/min':
+            self.details.setValue('Q', 13)
+        else:
+            self.details.setValue('Q', 13000)
+
+        if units['Hb_unit'] == 'g/dl':
+            self.details.setValue('Hb', 13)
+        else: 
+            self.details.setValue('Hb', 130)
 
         self.details.setValue('SaO2', 99)
         self.name = 'Demo'

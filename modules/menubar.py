@@ -441,8 +441,10 @@ Test-settings contain default values and units for the test parameters. The defa
         demoTest = Test()
         demoTest.workLoads[0].setDemoDetails()
         app.setActiveTest(demoTest)
+        app.sidepanel_testList.refreshList()
         #print( app.getActiveTest().getWorkLoads()[0].getDetails().getWorkLoadDetails() )
-        app.plottingPanel.plot()
+        app.testDetailModule.refreshTestDetails()
+        app.plottingPanel.plotDemo()
 
     def hideAllDetails(self):
         text = self.view.entrycget(4, 'label')

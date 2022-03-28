@@ -7,7 +7,8 @@ class Subject(object):
 
     def addTest(self, test=None):
         if test == None:
-            test = Test()
+            testId = f'{self.id}-Test-{len(self.tests)+1}'
+            test = Test(id=testId)
             self.tests.append(test)
         else:
             self.tests.append(test)

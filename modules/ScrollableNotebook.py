@@ -3,6 +3,7 @@
 
 from tkinter import *
 from tkinter import ttk
+import sys
 from objects.app import app
 from tkinter.messagebox import askokcancel
 
@@ -36,24 +37,63 @@ class ScrollableNotebook(ttk.Frame):
     def handleTabClick(self, e):
         clickedTabIndex = self.notebookTab.index(f'@{e.x},{e.y}')
 
+        # print(sys.getsizeof(self), sys.getsizeof(self.__weakref__))
+
         if self.notebookTab.identify(e.x, e.y) == 'close':
             if askokcancel("Confirm", "Do you want to remove the tab?"):
                 tab_id = self.notebookTab.tabs()[clickedTabIndex]
+                content_id = self.notebookContent.tabs()[clickedTabIndex]
+
+                # print(self.winfo_children()) 
+
                 self.notebookTab.forget(clickedTabIndex)
                 self.notebookContent.forget(clickedTabIndex)
-                
+
                 for c in self.notebookTab.winfo_children():
                     if str(tab_id) == str(c):
+                        # print(f'deleting tab {c}')
+                        c.destroy()
+                        del c
+                
+                for c in self.winfo_children():
+                    if str(content_id) == str(c):
+                        # print(f'deleting content {c}')
                         c.destroy()
                         del c
 
-                try:
+                try: # Test details tab
+                    tab = self.parentObj.loadTabs[clickedTabIndex]
+                    for r in tab.detailRows:
+                        if len(r.objects) != 0:
+                            for o in r.objects:
+                                del o
+                        for i, v in enumerate(r.vars):
+                            v.trace_vdelete('w', r.traceids[i] )
+                            del v
+                        r.destroy()
+                        del r
+                    tab.loadFrame.destroy()
                     del self.parentObj.loadTabs[clickedTabIndex]
-                except:
-                    pass
+                    del app.getActiveTest().workLoads[clickedTabIndex]
 
-                if self.parentObj == 'plottingPanel':
-                    del app.getPlottingPanel().plots[clickedTabIndex]
+                except: # Plotting panel
+                    plots = self.parentObj.plots # PlotTab objects
+                    plot = plots[clickedTabIndex]
+                    loadTabs = plot.loadTabs # PlotLoadTab objects
+                    for t in loadTabs: # PlotLoadTab object
+                        for r in t.rowElements:
+                            r.destroy()
+                            del r
+                        t.loadtab.destroy()
+                        del t
+
+                    plot.tabFrame.destroy()
+                    # plot.destroy()    
+                    del plot
+                    del plots[clickedTabIndex]
+
+        # print(self.winfo_children())
+
 
     def _wheelscroll(self, event):
         if event.delta > 0:
