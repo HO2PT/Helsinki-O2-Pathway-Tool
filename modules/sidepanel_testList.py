@@ -163,7 +163,8 @@ class TestList(object):
             project.addSubject(subject)
 
             # Add test to subject
-            test = Test()
+            testId = f'{subject.id}-Test-{len(subject.getTests())+1}'
+            test = Test(id=testId)
             subject.addTest(test)
 
             # Update app state
@@ -183,7 +184,8 @@ class TestList(object):
             subject = app.getActiveSubject()
             
             # Add test to subject
-            test = Test()
+            testId = f'{subject.id}-Test-{len(subject.getTests())+1}'
+            test = Test(testId)
             subject.addTest(test)
 
             # Make current selection

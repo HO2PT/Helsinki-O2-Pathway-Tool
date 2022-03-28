@@ -35,8 +35,6 @@ class ScrollableNotebook(ttk.Frame):
 
     def handleTabClick(self, e):
         clickedTabIndex = self.notebookTab.index(f'@{e.x},{e.y}')
-        activeTest = app.getActiveTest()
-        workLoads = activeTest.getWorkLoads()
 
         if self.notebookTab.identify(e.x, e.y) == 'close':
             if askokcancel("Confirm", "Do you want to remove the tab?"):
@@ -49,11 +47,13 @@ class ScrollableNotebook(ttk.Frame):
                         c.destroy()
                         del c
 
-                if self.parentObj == 'testDetailsModule':
-                    del workLoads[clickedTabIndex]
-                elif self.parentObj == 'plottingPanel':
+                try:
+                    del self.parentObj.loadTabs[clickedTabIndex]
+                except:
+                    pass
+
+                if self.parentObj == 'plottingPanel':
                     del app.getPlottingPanel().plots[clickedTabIndex]
-            
 
     def _wheelscroll(self, event):
         if event.delta > 0:

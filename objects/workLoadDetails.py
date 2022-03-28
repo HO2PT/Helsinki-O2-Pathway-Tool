@@ -2,10 +2,12 @@ from objects.app import app
 import uuid
 
 class WorkLoadDetails(object):
-    def __init__(self):
+    def __init__(self, name):
         testDefaults = app.settings.getTestDef()
 
-        self.id = uuid.uuid1()
+        # self.id = uuid.uuid1()
+        self.name = name
+        self.isImported = False
         self.Load = 0
         self.VO2 = 0
         self.HR = 0
@@ -236,7 +238,7 @@ class WorkLoadDetails(object):
 
     def getWorkLoadDetails(self):
         return {
-            'id': self.id,
+            'id': self.name,
             
             'Load': self.Load,
             'Load_unit': self.Load_unit,
@@ -347,6 +349,9 @@ class WorkLoadDetails(object):
         self.pH = pH
         self.PvO2 = PvO2
         self.DO2 = DO2
+
+    def setImported(self, bool):
+        self.isImported = bool
 
     def resetValues(self):
         self.Q = 0

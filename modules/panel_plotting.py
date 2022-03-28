@@ -14,6 +14,8 @@ from matplotlib.backends.backend_tkagg import (
 
 #
 # BUG: Figure puskee toolbarit piiloon -> figure pitää saada kehystettyä paremmin
+# SVO2 - kumpaa arvoa käytetään, todennäköisesti ph/temp korjauksen jälkeistä?
+# BUG: Mitä jos poistaa pari kuormaa ja tulostaa jäljellä olevat ? -> plot vain näkyvillä olevista tabeista
 #
 
 class PlottingPanel(object):
@@ -38,13 +40,21 @@ class PlottingPanel(object):
             return
 
     def plot(self):
-        self.origWorkLoads = app.getActiveTest().getWorkLoads()
-        self.workLoads = copy.deepcopy(self.origWorkLoads) # Workload objects
+        self.origLoadObjects = []
+        visibleLoadTabs = app.testDetailModule.loadNotebook.loadTabs
+        print(f'LENGTH: {len(visibleLoadTabs)}')
+        for t in visibleLoadTabs:
+            tabLoadDetails = t.details
+            self.origLoadObjects.append(tabLoadDetails)
+        # self.origWorkLoads = app.getActiveTest().getWorkLoads()
+        self.workLoadDetailsObjects = copy.deepcopy(self.origLoadObjects) # Workload objects
+        # print(f'DETAILS BEFORE BEFORE {self.workLoads[-1].getDetails().getWorkLoadDetails()}')
         validValues = True
 
         #print('VALIDATING VALUES')
-        for i, w in enumerate(self.workLoads):
-            details = w.getDetails().getWorkLoadDetails()
+        for i, w in enumerate(self.workLoadDetailsObjects):
+            details = w.getWorkLoadDetails()
+            # print(f'{i} DETAILS BEFORE CALC: {details}')
             validValues = self.calc(w, details)
             if validValues == False:
                 break
@@ -59,7 +69,7 @@ class PlottingPanel(object):
                 self.plotNotebook.pack(expand=TRUE, fill=BOTH)
 
             # Create tab for the plot
-            plotTabObject = PlotTab(self.plotNotebook, self.workLoads)
+            plotTabObject = PlotTab(self.plotNotebook, self.workLoadDetailsObjects)
             plotTab = plotTabObject.createPlotTab()
 
             # Add plot to the notebook and objects list of plots
@@ -69,6 +79,7 @@ class PlottingPanel(object):
             #print('VALIDATION ERROR')
             notification.create('error', f'Invalid values. Please check the values of {i+1}. load and try again.', 5000)
     
+    ## TESTAA!!
     def plotProject(self):
         self.workLoads = app.getActiveTest().getWorkLoads()
         try:
@@ -84,7 +95,7 @@ class PlottingPanel(object):
         self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
         self.plots.append(plotTabObject)
 
-    def formatQ(self, w, details, updatedVar):
+    def formatQ(self, w, details):
         Q = float(details["Q"])
         unit = details["Q_unit"]
 
@@ -92,7 +103,7 @@ class PlottingPanel(object):
             HR = float(details['HR'])
             Sv = float(details['Sv'])
             SvUnit = details['Sv_unit']
-            w.getDetails().setMC('Q_MC', 1)
+            w.setMC('Q_MC', 1)
 
             # If HR and Sv is given
             if HR != 0 and Sv != 0:
@@ -140,58 +151,9 @@ class PlottingPanel(object):
                 else:
                     return 0
         else:
-            #return Q
-            if updatedVar == 'HR' or updatedVar == 'Sv':
-                HR = float(details['HR'])
-                Sv = float(details['Sv'])
-                SvUnit = details['Sv_unit']
-                w.getDetails().setMC('Q_MC', 1)
+            return Q
 
-                # If HR and Sv is given
-                if HR != 0 and Sv != 0:
-                    if unit == 'l/min': # Convert Q to l/min
-                        if SvUnit == 'ml':
-                            Sv = Sv / 1000
-                        #return HR * Sv
-                    elif unit == 'ml/min': # Convert Q to ml/min
-                        if SvUnit == 'l':
-                            Sv = Sv * 1000
-                        
-                    return HR * Sv
-            elif updatedVar == 'VO2' or updatedVar == 'CavO2':
-                VO2 = float(details['VO2'])
-                VO2unit = details['VO2_unit']
-                CavO2 = float(details['CavO2'])
-                CavO2unit = details['CavO2_unit']
-
-                # If VO2 and CavO2 is given
-                if VO2 != 0 and CavO2 != 0:
-                    if unit == 'l/min': # Convert Q to l/min
-
-                        if VO2unit == 'ml/min':
-                            VO2 = VO2 / 1000
-
-                        if CavO2unit == 'ml/l': # -> l/l
-                            CavO2 = CavO2 / 1000
-                        elif CavO2unit == 'ml/dl':
-                            CavO2 = CavO2 / 100
-
-                        return VO2 / CavO2 # l/min
-
-                    elif unit == 'ml/min': # Convert Q to ml/min
-                        if VO2unit == 'l/min':
-                            VO2 = VO2 / 1000
-
-                        if CavO2unit == 'ml/l': # -> l/l
-                            CavO2 = CavO2 / 1000
-                        elif CavO2unit == 'ml/dl':
-                            CavO2 = CavO2 / 100
-
-                        return VO2 / CavO2 # l/min
-            else:
-                return Q
-
-    def formatVO2(self, w, details, Q, updatedVar):
+    def formatVO2(self, w, details, Q):
         VO2 = float(details['VO2'])
         unit = details['VO2_unit']
 
@@ -199,7 +161,7 @@ class PlottingPanel(object):
             CavO2 = float(details['CavO2'])
             CavO2Unit = details['CavO2_unit']
             QUnit = details['Q_unit']
-            w.getDetails().setMC('VO2_MC', 1)
+            w.setMC('VO2_MC', 1)
 
             if Q != 0 and CavO2 != 0:
                 if CavO2Unit == 'ml/dl': # -> l/l
@@ -218,13 +180,13 @@ class PlottingPanel(object):
         else:
             return VO2
     
-    def formatHb(self, details, updatedVar):
+    def formatHb(self, details):
         Hb = float(details['Hb'])
         unit = details['Hb_unit']
 
         return Hb
 
-    def formatCavO2(self, w, details, VO2, Q, updatedVar):
+    def formatCavO2(self, w, details, VO2, Q):
         CavO2 = float(details['CavO2'])
         unit = details['CavO2_unit']
         CaO2 = float(details['CaO2'])
@@ -233,7 +195,7 @@ class PlottingPanel(object):
         CvO2unit = details['CvO2_unit']
 
         if CavO2 == 0:
-            w.getDetails().setMC('CavO2_MC', 1)
+            w.setMC('CavO2_MC', 1)
 
             # If CaO2 and CvO2 is given
             if CaO2 != 0 and CvO2 != 0:
@@ -273,51 +235,14 @@ class PlottingPanel(object):
                     
                     return VO2 / Q
         else:
-            if updatedVar == 'CaO2' or updatedVar == 'CvO2':
-                if unit == 'ml/l':
-                    if CaO2unit == 'ml/dl': # -> ml/l
-                        CaO2 = CaO2 * 10
-                    if CvO2unit == 'ml/dl': # -> ml/l
-                        CvO2 = CvO2 * 10
-
-                    return CaO2 - CvO2 # ml/l
-                elif unit == 'ml/dl':
-                    if CaO2unit == 'ml/l': # -> ml/dl
-                        CaO2 = CaO2 / 10
-                    if CvO2unit == 'ml/l': # -> ml/dl
-                        CvO2 = CvO2 / 10
-
-                    return CaO2 - CvO2 # ml/dl
-            elif updatedVar == 'Q' or updatedVar == 'VO2':
-                VO2Unit = details['VO2_unit']
-                QUnit = details['Q_unit']
-                
-                if unit == 'ml/l':
-                    if VO2Unit == 'l/min': # -> ml/min
-                        VO2 = VO2 * 1000
-                    if QUnit == 'ml/min': # -> l/min
-                        Q = Q / 1000
-                    
-                    return VO2 / Q
-
-                elif unit == 'ml/dl':
-                    if VO2Unit == 'l/min': # -> ml/min
-                        VO2 = VO2 * 1000
-                    if QUnit == 'l/min': # -> dl/min
-                        Q = Q * 10
-                    elif QUnit == 'ml/min': # -> dl/min
-                        Q = Q / 100
-                    
-                    return VO2 / Q
-            else:
-                return CavO2
+            return CavO2
             
-    def formatCaO2(self, w, details, Hb, SaO2, updatedVar):
+    def formatCaO2(self, w, details, Hb, SaO2):
         CaO2 = float(details['CaO2'])
         unit = details['CaO2_unit']
 
         if CaO2 == 0:
-            w.getDetails().setMC('CaO2_MC', 1) # Mark as calculated
+            w.setMC('CaO2_MC', 1) # Mark as calculated
             HbUnit = details['Hb_unit']
 
             if unit == 'ml/l':
@@ -328,26 +253,14 @@ class PlottingPanel(object):
                     Hb = Hb / 10
             return 1.34 * Hb * SaO2
         else:
-            #if updatedVar == 'Hb' or updatedVar == 'SaO2':
-            if updatedVar:
-                HbUnit = details['Hb_unit']
+            return CaO2
 
-                if unit == 'ml/l':
-                    if HbUnit == 'g/dl': # -> g/l
-                        Hb = Hb * 10
-                elif unit == 'ml/dl':
-                    if HbUnit == 'g/l': # -> g/dl
-                        Hb = Hb / 10
-                return 1.34 * Hb * SaO2
-            else:
-                return CaO2
-
-    def formatCvO2(self, w, details, Hb, CaO2, CavO2, SvO2, updatedVar):
+    def formatCvO2(self, w, details, Hb, CaO2, CavO2, SvO2):
         CvO2 = float(details['CvO2'])
         unit = details['CvO2_unit']
 
         if CvO2 == 0:
-            w.getDetails().setMC('CvO2_MC', 1)
+            w.setMC('CvO2_MC', 1)
             HbUnit = details['Hb_unit']
             
             if unit == 'ml/l':
@@ -360,43 +273,13 @@ class PlottingPanel(object):
             # CvO2 = 1.34 x [Hb] x SvO2 / 100
             return 1.34 * Hb * SvO2
         else:
-            #if updatedVar == 'Hb' or updatedVar == 'SvO2' or updatedVar == 'CaO2' or updatedVar == 'CavO2':
-            if updatedVar:
-                Hb = details['Hb']
-                HbUnit = details['Hb_unit']
-
-                if unit == 'ml/l':
-                    if HbUnit == 'g/dl': # -> g/l
-                        Hb = Hb * 10
-                elif unit == 'ml/dl':
-                    if HbUnit == 'g/l': # -> g/dl
-                        Hb = Hb / 10
-                
-                return 1.34 * Hb * SvO2
-                """ elif updatedVar == 'CaO2' or updatedVar == 'CavO2':
-                CaO2Unit = details['CaO2_unit']
-                CavO2Unit = details['CavO2_unit']
-                
-                if unit == 'ml/l':
-                    if CaO2Unit == 'ml/dl': # -> ml/l
-                        CaO2 = CaO2 * 10
-                    if CavO2Unit == 'ml/dl': # -> ml/l
-                        CavO2 = CavO2 * 10
-                elif unit == 'ml/dl':
-                    if CaO2Unit == 'ml/l': # -> ml/dl
-                        CaO2 = CaO2 / 10
-                    if CavO2Unit == 'ml/l': # -> ml/dl
-                        CavO2 = CavO2 / 10
-
-                return CaO2-CavO2 """
-            else:
-                return CvO2 
+            return CvO2 
     
-    def formatSvO2(self, w, details, CavO2, CaO2, Hb, updatedVar):
+    def formatSvO2(self, w, details, CavO2, CaO2, Hb):
         SvO2 = float(details['SvO2'])
 
         if SvO2 == 0:
-            w.getDetails().setMC('SvO2_MC', 1)
+            w.setMC('SvO2_MC', 1)
             CaO2Unit = details['CaO2_unit']
             CavO2Unit = details['CavO2_unit']
             HbUnit = details['Hb_unit']
@@ -411,23 +294,7 @@ class PlottingPanel(object):
             # SvO2 = (CaO2 - C(a-v)O2) x 100 / 1,34 / [Hb]
             return (CaO2 - CavO2) / 1.34 / Hb
         else:
-            #if updatedVar == 'CaO2' or updatedVar == 'CavO2' or updatedVar == 'Hb':
-            if updatedVar:
-                CaO2Unit = details['CaO2_unit']
-                CavO2Unit = details['CavO2_unit']
-                HbUnit = details['Hb_unit']
-
-                if CaO2Unit == 'ml/l': # -> ml/dl
-                    CaO2 = CaO2 / 10
-                if CavO2Unit == 'ml/l': # -> ml/dl
-                    CavO2 = CavO2 / 10
-                if HbUnit == 'g/l': # -> g/dl
-                    Hb = Hb / 10
-                
-                # SvO2 = (CaO2 - C(a-v)O2) x 100 / 1,34 / [Hb]
-                return (CaO2 - CavO2) / 1.34 / Hb
-            else:
-                return SvO2
+            return SvO2
 
         """ if SvO2 == 0:
             w.getDetails().setMC('SvO2_MC', 1)
@@ -454,14 +321,14 @@ class PlottingPanel(object):
             else:
                 return SvO2 """
 
-    def formatQaO2(self, w, details, Q, CaO2, updatedVar):
+    def formatQaO2(self, w, details, Q, CaO2):
         QO2 = float(details['QaO2'])
         unit = details['QaO2_unit']
         QUnit = details['Q_unit']
         CaO2Unit = details['CaO2_unit']
 
         if QO2 == 0:
-            w.getDetails().setMC('QaO2_MC', 1)
+            w.setMC('QaO2_MC', 1)
         
             if CaO2Unit == 'ml/l': # l/l
                 CaO2 = CaO2 / 1000
@@ -482,7 +349,7 @@ class PlottingPanel(object):
     def formatPvO2(self, w, details, a, b):
         PvO2 = float(details['PvO2'])
 
-        w.getDetails().setMC('PvO2_MC', 1)
+        w.setMC('PvO2_MC', 1)
         return np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
 
         """ if PvO2 == 0:
@@ -493,7 +360,7 @@ class PlottingPanel(object):
 
     def phTempCorrection(self, pH0, pH, T0, T, PvO2_calc):
         lnPvO2 = np.log(PvO2_calc)
-        if pH != pH0:
+        if pH != pH0 or T != T0:
             lnPO2pH = (pH - pH0) * (-1.1)
             lnPO2Temp = (T-T0) * 0.058 * np.float_power(0.243 * np.float_power(PvO2_calc/100, 3.88) + 1, -1) + (T-T0) * 0.013
         else:
@@ -523,22 +390,22 @@ class PlottingPanel(object):
         
         return VO2 / 2 / PvO2_calc * 1000
 
-    def calc(self, w, details, updatedVar = None):
+    def calc(self, w, details):
         validValues = True
-        Q = self.formatQ(w, details, updatedVar)
-        VO2 = self.formatVO2(w, details, Q, updatedVar)
-        Hb = self.formatHb(details, updatedVar)
+        Q = self.formatQ(w, details)
+        VO2 = self.formatVO2(w, details, Q)
+        Hb = self.formatHb(details)
         SaO2 = float(details['SaO2'])
 
-        # print(f'Q {Q} - VO2 {VO2} - Hb {Hb} - SaO2 {SaO2}')
+        print(f'Q {Q} - VO2 {VO2} - Hb {Hb} - SaO2 {SaO2}')
 
-        CaO2 = self.formatCaO2(w, details, Hb, SaO2/100, updatedVar)
-        CavO2 = self.formatCavO2(w, details, VO2, Q, updatedVar)
-        SvO2_calc = self.formatSvO2(w, details, CavO2, CaO2, Hb, updatedVar)
-        CvO2 = self.formatCvO2(w, details, Hb, CaO2, CavO2, SvO2_calc, updatedVar)
-        QaO2 = self.formatQaO2(w, details, Q, CaO2, updatedVar)
+        CaO2 = self.formatCaO2(w, details, Hb, SaO2/100)
+        CavO2 = self.formatCavO2(w, details, VO2, Q)
+        SvO2_calc = self.formatSvO2(w, details, CavO2, CaO2, Hb)
+        CvO2 = self.formatCvO2(w, details, Hb, CaO2, CavO2, SvO2_calc)
+        QaO2 = self.formatQaO2(w, details, Q, CaO2)
 
-        # print(f'CavO2 {CavO2} - CaO2 {CaO2} - CvO2 {CvO2} - SvO2_calc {SvO2_calc} - QaO2 {QaO2}')
+        print(f'CavO2 {CavO2} - CaO2 {CaO2} - CvO2 {CvO2} - SvO2_calc {SvO2_calc} - QaO2 {QaO2}')
 
         # Calculate diffusion DO2
         a = 11700 * np.float_power( ( np.float_power(SvO2_calc,-1) - 1 ), -1 )
@@ -557,6 +424,7 @@ class PlottingPanel(object):
         # T = self.formatT(details, 'Tc\u209A\u2091\u2090\u2096')
         T = self.formatT(details, 'T')
         T0 = self.formatT(details, 'Tc @ rest')
+        # print(f'pHrest {pH0}, pH {pH}, Trest {T0}, T {T}')
         PvO2_calc = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 
         DO2 = self.solveDO2(w, details, VO2, PvO2_calc)
@@ -613,18 +481,18 @@ class PlottingPanel(object):
 
         SvO2_calc = SvO2_calc * 100
 
-        w.getDetails().setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2_calc, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_calc, DO2)
+        w.setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2_calc, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_calc, DO2)
         #print(f'UPDATED DETAILS: {w.getDetails().getWorkLoadDetails()}')
         return validValues
 
 class PlotTab(object):
-    def __init__(self, parentFrame, workLoads):
+    def __init__(self, parentFrame, workLoadDetailsObjects):
         self.plot = None
         self.loadTabs = []
         self.parentFrame = parentFrame
         self.activeTest = app.getActiveTest()
         self.activeTestId = self.activeTest.id
-        self.workLoads = workLoads # Workload objects
+        self.workLoadDetailsObjects = workLoadDetailsObjects # WorkloadDetails objects
         
     def createPlotTab(self):
         # Create tab for test
@@ -652,7 +520,7 @@ class PlotTab(object):
         self.canvas.draw()
 
         # Change y-axis unit based on used vo2 unit
-        vo2unit = self.workLoads[0].getDetails().VO2_unit
+        vo2unit = self.workLoadDetailsObjects[0].VO2_unit
         yfmt = ticker.FuncFormatter(self.numfmt)
         plt.gca().yaxis.set_major_formatter(yfmt)
         if vo2unit == 'l/min':
@@ -699,14 +567,6 @@ class PlotTab(object):
 
         # Hide legend button
         ttk.Button(self.toolbarWrapper, text='Hide legend', command=lambda: self.hideLegend()).grid(column=7, row=1)
-        ttk.Button(self.toolbarWrapper, text='DETAILS', command=lambda: getZeDetails()).grid(column=8, row=1)
-
-        ## DEBUG
-        def getZeDetails():
-            for l in self.workLoads:
-                #print(l.getDetails().getWorkLoadDetails())
-                pass
-        ##
 
         # Create loads notebook frame and loadnotebook
         self.loadNotebookFrame = ttk.Frame(self.tabFrame)
@@ -716,16 +576,16 @@ class PlotTab(object):
         self.loadNotebook.pack(expand=TRUE, fill=BOTH)
 
         # Create tabs for loads
-        for i, w in enumerate(self.workLoads):
-            loadTabObject = PlotLoadTab(self, i, self.activeTestId, w, self.loadNotebook, self.plot)
+        for i, details in enumerate(self.workLoadDetailsObjects):
+            loadTabObject = PlotLoadTab(self, i, self.activeTestId, details, self.loadNotebook, self.plot)
             loadTab = loadTabObject.createLoadTab()
-            self.loadNotebook.add(loadTab, text=w.getName())
+            self.loadNotebook.add(loadTab, text=details.name)
             self.loadTabs.append(loadTabObject)
 
         return self.tabFrame
     
     def numfmt(self, x, pos=None):
-            vo2unit = self.workLoads[0].getDetails().VO2_unit
+            vo2unit = self.workLoadDetailsObjects[0].VO2_unit
             if vo2unit == 'l/min':
                 s = '{0:.1f}'.format(x / 1000.0)
             elif vo2unit == 'ml/min':
@@ -769,7 +629,7 @@ class PlotTab(object):
     #     pass
     
     def setYLim(self):
-        vo2unit = self.workLoads[0].getDetails().VO2_unit
+        vo2unit = self.workLoadDetailsObjects[0].VO2_unit
         if vo2unit == 'ml/min':
             limit = float(self.yValue.get())
         elif vo2unit == 'l/min':
@@ -796,8 +656,8 @@ class PlotTab(object):
         self.handles = []
         ylim = []
 
-        for i, w in enumerate(self.workLoads):
-            coords = w.getDetails().getCoords()
+        for i, w in enumerate(self.workLoadDetailsObjects):
+            coords = w.getCoords()
             y = coords['y']
             y2 = coords['y2']
             xi = coords['xi']
@@ -912,12 +772,12 @@ class PlotTab(object):
         return self.activeTestId
 
 class PlotLoadTab(object):
-    def __init__(self, plotTab, index, testId, workLoad, parentNotebook, plot):
+    def __init__(self, plotTab, index, testId, workLoadDetails, parentNotebook, plot):
         self.parentPlotTab = plotTab
         self.index = index
         self.testId = testId
-        self.workLoad = workLoad # Load object
-        self.details = workLoad.getDetails().getWorkLoadDetails()
+        self.detailsObject = workLoadDetails # Workdetail object
+        self.details = workLoadDetails.getWorkLoadDetails() # Workload details dict
         self.parentNotebook = parentNotebook
         self.plot = plot
         self.rowElements = []
@@ -927,120 +787,120 @@ class PlotLoadTab(object):
         self.loadtab.pack()
 
         # Details frame
-        self.loadDetails = ttk.Frame(self.loadtab)
-        self.loadDetails.grid()
+        self.loadDetailsFrame = ttk.Frame(self.loadtab)
+        self.loadDetailsFrame.grid()
         
-        ttk.Label(self.loadDetails, text=f'Load: {self.details["Load"]}').grid(column=0, row=0)
-        ttk.Label(self.loadDetails, text='Value').grid(column=1, row=0)
-        ttk.Label(self.loadDetails, text='Unit').grid(column=2, row=0)
-        ttk.Label(self.loadDetails, text='Meas.').grid(column=3, row=0)
-        ttk.Label(self.loadDetails, text='Calc.').grid(column=4, row=0)
+        ttk.Label(self.loadDetailsFrame, text=f'Load: {self.details["Load"]}').grid(column=0, row=0)
+        ttk.Label(self.loadDetailsFrame, text='Value').grid(column=1, row=0)
+        ttk.Label(self.loadDetailsFrame, text='Unit').grid(column=2, row=0)
+        ttk.Label(self.loadDetailsFrame, text='Meas.').grid(column=3, row=0)
+        ttk.Label(self.loadDetailsFrame, text='Calc.').grid(column=4, row=0)
 
         """ # HR
         hrValue = self.details['HR']
-        self.hrRow = LoadTabRow(self, self.loadDetails, 'HR', hrValue, self.index, self.testId, 1, (40,220), self.workLoad)
+        self.hrRow = LoadTabRow(self, self.loadDetailsFrame, 'HR', hrValue, self.index, self.testId, 1, (40,220), self.workLoad)
         self.rowElements.append(self.hrRow)
 
         # SV
         svValue = float(self.details['Sv'])
         if self.details['Sv_unit'] == 'ml':
-            self.svRow = LoadTabRow(self, self.loadDetails, 'Sv', svValue, self.index, self.testId, 2, (0, 1000), self.workLoad)
+            self.svRow = LoadTabRow(self, self.loadDetailsFrame, 'Sv', svValue, self.index, self.testId, 2, (0, 1000), self.workLoad)
         else:
-            self.svRow = LoadTabRow(self, self.loadDetails, 'Sv', svValue, self.index, self.testId, 2, (0, 1), self.workLoad)
+            self.svRow = LoadTabRow(self, self.loadDetailsFrame, 'Sv', svValue, self.index, self.testId, 2, (0, 1), self.workLoad)
         self.rowElements.append(self.svRow) """
 
         # VO2
         vo2Value = float(self.details['VO2'])
         if self.details['VO2_unit'] == 'l/min':
-            self.vo2Row = LoadTabRow(self, self.loadDetails, 'VO2', vo2Value, self.index, self.testId, 3, (0,10), self.workLoad)
+            self.vo2Row = LoadTabRow(self, self.loadDetailsFrame, 'VO2', vo2Value, self.index, self.testId, 3, (0,10), self.details)
         else:
-            self.vo2Row = LoadTabRow(self, self.loadDetails, 'VO2', vo2Value, self.index, self.testId, 3, (0,10000), self.workLoad)
+            self.vo2Row = LoadTabRow(self, self.loadDetailsFrame, 'VO2', vo2Value, self.index, self.testId, 3, (0,10000), self.details)
         self.rowElements.append(self.vo2Row)
 
         # Q
         qValue = float(self.details['Q'])
         if self.details['Q_unit'] == 'l/min':
-            self.qRow = LoadTabRow(self, self.loadDetails, 'Q', qValue, self.index, self.testId, 4, (0,25), self.workLoad)
+            self.qRow = LoadTabRow(self, self.loadDetailsFrame, 'Q', qValue, self.index, self.testId, 4, (0,25), self.details)
         else:
-            self.qRow = LoadTabRow(self, self.loadDetails, 'Q', qValue, self.index, self.testId, 4, (0,25000), self.workLoad)
+            self.qRow = LoadTabRow(self, self.loadDetailsFrame, 'Q', qValue, self.index, self.testId, 4, (0,25000), self.details)
         self.rowElements.append(self.qRow)
 
         # Hb
         hbValue = float(self.details['Hb'])
         if self.details['Hb_unit'] == 'g/dl':
-            self.hbRow = LoadTabRow(self, self.loadDetails, 'Hb', hbValue, self.index, self.testId, 5, (0,20), self.workLoad)
+            self.hbRow = LoadTabRow(self, self.loadDetailsFrame, 'Hb', hbValue, self.index, self.testId, 5, (0,20), self.details)
         else:
             hbValue = hbValue
-            self.hbRow = LoadTabRow(self, self.loadDetails, 'Hb', hbValue, self.index, self.testId, 5, (0,200), self.workLoad)
+            self.hbRow = LoadTabRow(self, self.loadDetailsFrame, 'Hb', hbValue, self.index, self.testId, 5, (0,200), self.details)
         self.rowElements.append(self.hbRow)
 
         # SaO2
         sao2Value = float(self.details['SaO2'])
-        self.sao2Row = LoadTabRow(self, self.loadDetails, 'SaO2', sao2Value, self.index, self.testId, 6, (80,100), self.workLoad)
+        self.sao2Row = LoadTabRow(self, self.loadDetailsFrame, 'SaO2', sao2Value, self.index, self.testId, 6, (80,100), self.details)
         self.rowElements.append(self.sao2Row)
 
         # SvO2
         svo2Value = float(self.details['SvO2'])
-        self.svo2Row = LoadTabRow(self, self.loadDetails, 'SvO2', svo2Value, self.index, self.testId, 7, (0,20), self.workLoad)
+        self.svo2Row = LoadTabRow(self, self.loadDetailsFrame, 'SvO2', svo2Value, self.index, self.testId, 7, (0,20), self.details)
         self.rowElements.append(self.svo2Row)
 
         # CaO2
         cao2Value = float(self.details['CaO2'])
         if self.details['CaO2_unit'] == 'ml/dl':
-            self.cao2Row = LoadTabRow(self, self.loadDetails, 'CaO2', cao2Value, self.index, self.testId, 8, (0,100), self.workLoad)
+            self.cao2Row = LoadTabRow(self, self.loadDetailsFrame, 'CaO2', cao2Value, self.index, self.testId, 8, (0,100), self.details)
         else:
-            self.cao2Row = LoadTabRow(self, self.loadDetails, 'CaO2', cao2Value, self.index, self.testId, 8, (0,1000), self.workLoad)
+            self.cao2Row = LoadTabRow(self, self.loadDetailsFrame, 'CaO2', cao2Value, self.index, self.testId, 8, (0,1000), self.details)
         self.rowElements.append(self.cao2Row)
 
         # CvO2
         cvo2Value = float(self.details['CvO2'])
         if self.details['CvO2_unit'] == 'ml/dl':
-            self.cvo2Row = LoadTabRow(self, self.loadDetails, 'CvO2', cvo2Value, self.index, self.testId, 9, (0,100), self.workLoad)
+            self.cvo2Row = LoadTabRow(self, self.loadDetailsFrame, 'CvO2', cvo2Value, self.index, self.testId, 9, (0,100), self.details)
         else:
-            self.cvo2Row = LoadTabRow(self, self.loadDetails, 'CvO2', cvo2Value, self.index, self.testId, 9, (0,1000), self.workLoad)
+            self.cvo2Row = LoadTabRow(self, self.loadDetailsFrame, 'CvO2', cvo2Value, self.index, self.testId, 9, (0,1000), self.details)
         self.rowElements.append(self.cvo2Row)
         
         # CavO2
         cavo2Value = float(self.details['CavO2'])
         if self.details['CavO2_unit'] == 'ml/dl':
-            self.cavo2Row = LoadTabRow(self, self.loadDetails, 'CavO2', cavo2Value, self.index, self.testId, 10, (0,100), self.workLoad)
+            self.cavo2Row = LoadTabRow(self, self.loadDetailsFrame, 'CavO2', cavo2Value, self.index, self.testId, 10, (0,100), self.details)
         else:
-            self.cavo2Row = LoadTabRow(self, self.loadDetails, 'CavO2', cavo2Value, self.index, self.testId, 10, (0,1000), self.workLoad)
+            self.cavo2Row = LoadTabRow(self, self.loadDetailsFrame, 'CavO2', cavo2Value, self.index, self.testId, 10, (0,1000), self.details)
         self.rowElements.append(self.cavo2Row)
 
         # PvO2
         pvo2Value = self.details['PvO2']
-        self.pvo2Row = LoadTabRow(self, self.loadDetails, 'PvO2', pvo2Value, self.index, self.testId, 11, (0,100), self.workLoad)
+        self.pvo2Row = LoadTabRow(self, self.loadDetailsFrame, 'PvO2', pvo2Value, self.index, self.testId, 11, (0,100), self.details)
         self.rowElements.append(self.pvo2Row)
 
         # QaO2
         qao2Value = float(self.details['QaO2'])
         if self.details['QaO2_unit'] == 'ml/min':
-            self.qao2Row = LoadTabRow(self, self.loadDetails, 'QaO2', qao2Value, self.index, self.testId, 12, (0,10000), self.workLoad)
+            self.qao2Row = LoadTabRow(self, self.loadDetailsFrame, 'QaO2', qao2Value, self.index, self.testId, 12, (0,10000), self.details)
         else:
-            self.qao2Row = LoadTabRow(self, self.loadDetails, 'QaO2', qao2Value, self.index, self.testId, 12, (0,10), self.workLoad)
+            self.qao2Row = LoadTabRow(self, self.loadDetailsFrame, 'QaO2', qao2Value, self.index, self.testId, 12, (0,10), self.details)
         self.rowElements.append(self.qao2Row)
 
         # DO2
         do2Value = self.details['DO2']
-        self.do2Row = LoadTabRow(self, self.loadDetails, 'DO2', do2Value, self.index, self.testId, 13, (0,100), self.workLoad)
+        self.do2Row = LoadTabRow(self, self.loadDetailsFrame, 'DO2', do2Value, self.index, self.testId, 13, (0,100), self.details)
         self.rowElements.append(self.do2Row)
 
         # T
         tValue = float(self.details['Tc\u209A\u2091\u2090\u2096'])
         if self.details['Tc\u209A\u2091\u2090\u2096_unit'] == 'F':
             tValue = (tValue - 32) / 1.8
-            self.tRow = LoadTabRow(self, self.loadDetails, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (95,110), self.workLoad)
+            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (95,110), self.details)
         elif self.details['Tc\u209A\u2091\u2090\u2096_unit'] == 'K':
             tValue = tValue - 273.15
-            self.tRow = LoadTabRow(self, self.loadDetails, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (300,320), self.workLoad)
+            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (300,320), self.details)
         else:
-            self.tRow = LoadTabRow(self, self.loadDetails, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (35,42), self.workLoad)
+            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (35,42), self.details)
         self.rowElements.append(self.tRow)
 
         # pH
         phValue = self.details['pH\u209A\u2091\u2090\u2096']
-        self.phRow = LoadTabRow(self, self.loadDetails, 'pH\u209A\u2091\u2090\u2096', phValue, self.index, self.testId, 15, (0,14), self.workLoad)
+        self.phRow = LoadTabRow(self, self.loadDetailsFrame, 'pH\u209A\u2091\u2090\u2096', phValue, self.index, self.testId, 15, (0,14), self.details)
         self.rowElements.append(self.phRow)
 
         # Plot options
@@ -1103,7 +963,7 @@ class PlotLoadTab(object):
     """
 
     def updateDetails(self):
-        self.details = self.workLoad.getDetails().getWorkLoadDetails()
+        self.details = self.workLoad.getWorkLoadDetails()
         for r in self.rowElements:
             r.updateText(self.details)
 
@@ -1275,7 +1135,7 @@ class PlotOptions(object):
         self.plotObject[0].canvas.draw()
 
 class LoadTabRow(object):
-    def __init__(self, parenObject, parentFrame, label, value, index, id, row, scale, workLoad):
+    def __init__(self, parenObject, parentFrame, label, value, index, id, row, scale, details):
         self.parentObject = parenObject
         self.parent = parentFrame
         self.label = label
@@ -1284,8 +1144,7 @@ class LoadTabRow(object):
         self.id = id
         self.row = row
         self.scale = scale
-        self.workLoad = workLoad.getDetails()
-        self.details = self.workLoad.getWorkLoadDetails()
+        self.details = details
 
         #print(f'VALUE: {self.value}')
         self.var = DoubleVar(self.parent, value=f'{"{0:.1f}".format(float(self.value))}')
@@ -1349,7 +1208,7 @@ class LoadTabRow(object):
                 tempMenu = Menu(self.menuButton, tearoff=False)
 
                 for i, u in enumerate(units):
-                    LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}', self.workLoad)
+                    LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}')
                 
                 self.menuButton['menu']=tempMenu
                 self.menuButton.grid(column=2, row=row)
@@ -1367,75 +1226,75 @@ class LoadTabRow(object):
         self.mcVar.trace('w', self.updateMc)
 
     def updateMc(self, name, index, mode):
-        self.workLoad.setMC(f'{self.label}_MC', self.mcVar.get())
+        self.details.setMC(f'{self.label}_MC', self.mcVar.get())
 
     def updateEntryAndScale(self, unit, prevUnit):
         if unit != prevUnit:
             if unit == 'ml/min': # l/min -> ml/min
-                self.workLoad.setValue(self.label, self.var.get()*1000)
+                self.details.setValue(self.label, self.var.get()*1000)
                 self.var.set(self.var.get()*1000)
                 # self.slider.config(to=10000)
             
             elif unit == 'l/min': # ml/min -> l/min
-                self.workLoad.setValue(self.label, self.var.get()/1000)
+                self.details.setValue(self.label, self.var.get()/1000)
                 self.var.set(self.var.get()/1000)
                 # self.slider.config(to=10)
 
             elif unit == 'g/l': # g/dl -> g/l
-                self.workLoad.setValue(self.label, self.var.get()*10)
+                self.details.setValue(self.label, self.var.get()*10)
                 self.var.set(self.var.get()*10)
                 # self.slider.config(to=self.scale[1]*10)
 
             elif unit == 'g/dl': # g/l -> g/dl
-                self.workLoad.setValue(self.label, self.var.get()/10)
+                self.details.setValue(self.label, self.var.get()/10)
                 self.var.set(self.var.get()/10)
                 # self.slider.config(to=self.scale[1]/10)
 
             elif unit == 'ml/l': # ml/dl -> ml/l
-                self.workLoad.setValue(self.label, self.var.get()*10)
+                self.details.setValue(self.label, self.var.get()*10)
                 self.var.set(self.var.get()*10)
                 # self.slider.config(to=self.scale[1])
 
             elif unit == 'ml/dl': # ml/l -> ml/dl
-                self.workLoad.setValue(self.label, self.var.get()/10)
+                self.details.setValue(self.label, self.var.get()/10)
                 self.var.set(self.var.get()/10)
                 # self.slider.config(to=self.scale[1]/10)
             
             elif unit == 'l': #ml -> l
-                self.workLoad.setValue(self.label, self.var.get()/1000)
+                self.details.setValue(self.label, self.var.get()/1000)
                 self.var.set(self.var.get()/1000)
                 # self.slider.config(to=1)
 
             elif unit == 'ml': #l -> ml
-                self.workLoad.setValue(self.label, self.var.get()*1000)
+                self.details.setValue(self.label, self.var.get()*1000)
                 self.var.set(self.var.get()*1000)
                 # self.slider.config(to=1000)
 
             elif unit == 'F': 
                 if prevUnit == '\N{DEGREE SIGN}C': # C -> F
-                    self.workLoad.setValue(self.label, self.var.get() * 1.8 + 32)
+                    self.details.setValue(self.label, self.var.get() * 1.8 + 32)
                     self.var.set( f'{"{0:.1f}".format( float(( self.var.get() * 1.8 + 32 )) )}' )
                     # self.slider.config(from_=95, to=110)
                 else: # K -> F
-                    self.workLoad.setValue(self.label, 1.8 * (self.var.get() - 273) + 32)
+                    self.details.setValue(self.label, 1.8 * (self.var.get() - 273) + 32)
                     self.var.set( f'{"{0:.1f}".format( float(( 1.8 * (self.var.get() - 273) + 32)) )}' )
 
             elif unit == 'K':
                 if prevUnit == '\N{DEGREE SIGN}C': # C -> K
-                    self.workLoad.setValue(self.label, self.var.get() + 273.15)
+                    self.details.setValue(self.label, self.var.get() + 273.15)
                     self.var.set( f'{"{0:.1f}".format( float(( self.var.get() + 273.15)) )}' )
                     # self.slider.config(from_=300, to=320)
                 else: # F -> K
-                    self.workLoad.setValue(self.label, 5/9 * (self.var.get() + 459.67))
+                    self.details.setValue(self.label, 5/9 * (self.var.get() + 459.67))
                     self.var.set( f'{"{0:.1f}".format( float(( 5/9 * (self.var.get() + 459.67) )) )}' )
                     #5/9 * F + 459,67
             
             elif unit == '\N{DEGREE SIGN}C': # K/F -> C
                 if self.var.get() > 94 and self.var.get() < 111: # F
-                    self.workLoad.setValue(self.label, (self.var.get() - 32) / 1.8)
+                    self.details.setValue(self.label, (self.var.get() - 32) / 1.8)
                     self.var.set( f'{"{0:.1f}".format( float(( (self.var.get() - 32) / 1.8)) )}' )
                 else: # K
-                    self.workLoad.setValue(self.label, self.var.get() - 273.15)
+                    self.details.setValue(self.label, self.var.get() - 273.15)
                     self.var.set( f'{"{0:.1f}".format( float(( self.var.get() - 273.15)) ) }' )
                 
                 # self.slider.config(from_=35, to=42)
@@ -1451,7 +1310,7 @@ class LoadTabRow(object):
         self.entry.configure(text=f'{"{0:.1f}".format(float(details[self.label]))}')
 
 class LoadMenuElem(object):
-    def __init__(self, parentObject, menu, menuButton, var, label, index, unitElems, name, workload):
+    def __init__(self, parentObject, menu, menuButton, var, label, index, unitElems, name):
         self.parentObject = parentObject
         self.menu = menu
         self.menuButton = menuButton
@@ -1460,7 +1319,6 @@ class LoadMenuElem(object):
         self.index = index
         self.unitElems = unitElems
         self.name = name
-        self.workLoad = workload
 
         self.menu.add_command(label=f'{self.label}', command=lambda: self.updateValue())
 

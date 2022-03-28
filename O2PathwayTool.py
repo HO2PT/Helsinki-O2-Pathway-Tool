@@ -75,6 +75,12 @@ app.menu = menuObj
 
 root.config(menu=menu)
 
+def debug():
+    for d in app.getActiveTest().getWorkLoads():
+        print(d.getDetails().getWorkLoadDetails())
+
+root.bind('<Tab>', lambda e: debug())
+
 def on_closing():
     if askokcancel("Quit", "Do you want to quit?"):
         side = False

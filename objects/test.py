@@ -3,8 +3,11 @@ from objects.envDetails import EnvDetails
 from objects.workLoadDetails import WorkLoadDetails
 
 class Test(object):
-    def __init__(self):
-        self.id = uuid.uuid1()
+    def __init__(self, id = None):
+        if id == None:
+            self.id = uuid.uuid1()
+        else:
+            self.id = id
         self.date = None
         self.data = None
         self.subjectDetails = None
@@ -60,9 +63,10 @@ class Test(object):
 
 class Load(object):
     def __init__(self, parentTest=None):
-        self.name = None
+        # self.name = None
+        self.name = 'Load'
         self.parentTest = parentTest
-        self.details = WorkLoadDetails()
+        self.details = WorkLoadDetails(name=self.name)
     
     def getDetails(self):
         return self.details

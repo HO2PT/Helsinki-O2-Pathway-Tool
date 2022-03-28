@@ -1,5 +1,7 @@
+import ctypes
 import gc
-from re import A
+import sys
+import threading
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
@@ -32,6 +34,7 @@ class TestDetailModule(object):
         # Refresh details
         self.testId.config(text=f'Id: {app.getActiveTest().id}')
         self.loadNotebook.refresh()
+        # app.x.start()
 
 class LoadNotebook(object):
     def __init__(self, parent):
@@ -88,7 +91,7 @@ class LoadNotebook(object):
         ])
         
         ## Notebook
-        self.loadbook = ScrollableNotebook(parent, parentObj='testDetailsModule', style="loadNotebook.TNotebook", wheelscroll=True)
+        self.loadbook = ScrollableNotebook(parent, parentObj=self, style="loadNotebook.TNotebook", wheelscroll=True)
 
         # Add/edit button
         self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())
@@ -157,13 +160,29 @@ class LoadNotebook(object):
         for t in self.loadbook.tabs():
             self.loadbook.forget(t)
 
-        for tab in self.loadTabs:
-            tab.loadFrame.destroy()
+        for tab in self.loadTabs: # Delete loadtab objects
+            # print(tab.detailRows)
+            # tab.loadFrame.destroy()
+            for r in tab.detailRows:
+                if len(r.objects) != 0:
+                    for o in r.objects:
+                        del o
+                for i, v in enumerate(r.vars):
+                    v.trace_vdelete('w', r.traceids[i] )
+                    del v
+                asd = id(r)
+                r.destroy()
+                
+                print(sys.getrefcount(r))
+                del r
             del tab
+            # print( ctypes.cast(asd, ctypes.py_object) )
+        gc.collect()
+        
         self.loadTabs = []
 
         activeTest = app.getActiveTest()
-
+        
         # Fetch list of load objects
         loads = activeTest.getWorkLoads()
         
@@ -171,13 +190,26 @@ class LoadNotebook(object):
             # Get load details
             details = l.getDetails()
 
-            newLoad = LoadTab(i, l, details, self.loadbook)
+            if details.isImported == True:
+
+                if i == 0 or details.getWorkLoadDetails()['Load'] != 0:
+                    newLoad = LoadTab(i, l, details, self.loadbook)
+                
+                    # Append tab
+                    self.loadTabs.append(newLoad)
+                    tabCount = self.loadbook.index('end')
+                    self.loadbook.add(newLoad.loadFrame, text=l.getName())
+                    self.loadbook.select(tabCount)
+                else:
+                    continue
+            else:
+                newLoad = LoadTab(i, l, details, self.loadbook)
             
-            # Append tab
-            self.loadTabs.append(newLoad)
-            tabCount = self.loadbook.index('end')
-            self.loadbook.add(newLoad.loadFrame, text=l.getName())
-            self.loadbook.select(tabCount)
+                # Append tab
+                self.loadTabs.append(newLoad)
+                tabCount = self.loadbook.index('end')
+                self.loadbook.add(newLoad.loadFrame, text=l.getName())
+                self.loadbook.select(tabCount)
 
         try:
             self.loadbook.pack_info()
@@ -210,7 +242,7 @@ class LoadNotebook(object):
 
 class LoadTab(object):
     def __init__(self, index, load, details, notebook):
-        if load.getName() == None:
+        if 'Load' in load.getName():
             self.name = f'Load{index+1}'
             load.setName(self.name)
         else:
@@ -343,10 +375,15 @@ class LoadTab(object):
             if name == f'{mc}':
                 r.mcVar.set(value)
             
-class TestDetailRow(object):
-    def __init__(self, rowFrame, temp, workLoadObject, row):
+class TestDetailRow(ttk.Frame):
+    def __init__(self, rowFrame, temp, workLoadObject, row, *args, **kwargs):
+        ttk.Frame.__init__(self, rowFrame, *args, **kwargs)
+        self.grid()
         self.workLoadObject = workLoadObject
         self.flag = 0
+        self.vars = []
+        self.objects = []
+        self.traceids = []
 
         if temp[0][0] == 'id':
             self.label = temp[1][0]
@@ -362,6 +399,9 @@ class TestDetailRow(object):
             self.radioLabel = temp[2][0]
             self.radio = temp[2][1]
 
+        # self.container = ttk.Frame(self)
+        # self.container.grid()
+
         if self.label != 'Tc\u209A\u2091\u2090\u2096' and self.label != 'Tc @ rest' and self.label != 'pH\u209A\u2091\u2090\u2096' and self.label != 'pH @ rest':
             if '2' in self.label:
                 self.label_subscripted = self.label.replace('2', '\u2082')
@@ -371,10 +411,11 @@ class TestDetailRow(object):
             
             #Value
             self.valueVar = StringVar(value=self.value)#, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-                
+            self.vars.append(self.valueVar)
             self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
             self.valueEntry.grid(column=1, row=row)
-            self.valueVar.trace('w', self.updateValue)
+            valtraceid = self.valueVar.trace('w', self.updateValue)
+            self.traceids.append(valtraceid)
 
             # Unit
             units = app.settings.getUnits()[f'{self.label}_units']
@@ -386,7 +427,8 @@ class TestDetailRow(object):
 
                     tempMenu = Menu(self.tempMenuButton, tearoff=False)
                     for i, u in enumerate(units):
-                        TestDetailMenuElem(tempMenu, self.tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
+                        menuelem = TestDetailMenuElem(tempMenu, self.tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
+                        self.objects.append(menuelem)
                     self.tempMenuButton['menu']=tempMenu
                     self.tempMenuButton.grid(column=2, row=row)
             else:
@@ -395,13 +437,14 @@ class TestDetailRow(object):
             if self.flag != 1:
                 # Measured/Calculated
                 self.mcVar = IntVar(value=self.radio)#, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-
+                self.vars.append(self.mcVar)
                 self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
                 self.radio1.grid(column=3, row=row)
 
                 self.radio2 = ttk.Radiobutton(rowFrame, value=1, variable=self.mcVar)
                 self.radio2.grid(column=4, row=row)
-                self.mcVar.trace('w', self.updateMC)
+                mctraceid = self.mcVar.trace('w', self.updateMC)
+                self.traceids.append(mctraceid)
         
     def updateValue(self, name, index, mode):
         # name = name.split('-')[0]

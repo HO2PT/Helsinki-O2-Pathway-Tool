@@ -1,6 +1,8 @@
 from cmath import exp
 from csv import excel_tab
+import ctypes
 import math
+import sys
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
@@ -981,6 +983,7 @@ class DataImporter(object):
                             load.setName(columnName) # column name """
                         load.setName(columnName) # column name
                         load.getDetails().setValue('Load', value) # set value
+                        load.getDetails().setImported(True) # set as imported
                         success = True
 
                     elif self.stage == 2: # VO2
@@ -1039,6 +1042,7 @@ class DataImporter(object):
         if hasattr(self, 'test'):
             del self.test
         self.window.destroy()
+        del self
 
     def updateTable(self, table):
         self.dataTable.updateModel(TableModel(self.dfList[table]))
@@ -1062,11 +1066,16 @@ class DataImporter(object):
         model = self.dataTable.model
         lists = []
 
+        # print('CUSTOM')
+
         for c in cols:
             x=[]
             for r in rows:
                 val = model.getValueAt(r,c)
-                x.append(val)
+                if val == '' or val == None:
+                    x.append(0)
+                else:
+                    x.append(val)
             lists.append(x)
         return lists
 
@@ -1095,6 +1104,7 @@ class DataImporter(object):
                         details = l.getDetails()
                         colValues = self.colValues[j][1:]
                         details.setValue(label, colValues[i])
+                        # print(label, colValues[i])
                     flag = True
         return flag
         # self.tempLocData[label] = self.columnNames
@@ -1105,12 +1115,15 @@ class DataImporter(object):
             test.workLoads = [] # delete previous workloads, if re-fetching loads
             for j, l in enumerate(self.colValues):
                 l = l[1:]
+                # print(f'l: {l}')
                 if l[i] != '':
                     load = test.createLoad()
                     load.setName(self.columnNames[j]) # column name
                     load.getDetails().setValue('Load', l[i]) # set value
+                    load.getDetails().setImported(True)
         
         self.tempLocData['Load'] = self.columnNames
+        return True
 
     def getLoadsFromRows(self):
         for i, s in enumerate(self.subjects):
@@ -1121,6 +1134,7 @@ class DataImporter(object):
                     load = test.createLoad()
                     load.setName(self.rowNames[j]) # row name
                     load.getDetails().setValue('Load', l[i]) # set value
+                    load.getDetails().setImported(True)
         
         self.tempLocData['Load'] = self.rowNames
 
@@ -1171,6 +1185,7 @@ class DataImporter(object):
                     load = test.createLoad()
                     load.setName(columnName) # column name
                     load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+                    load.getDetails().setImported(True)
 
             self.tempLocData['Load'] = self.colValues
 
@@ -1184,6 +1199,7 @@ class DataImporter(object):
                     load = test.createLoad()
                     load.setName(rowName) # column name
                     load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+                    load.getDetails().setImported(True)
             
             self.tempLocData['Load'] = self.colValues
 
@@ -1198,15 +1214,15 @@ class DataImporter(object):
                 test = s.getTests()[0]
                 loads = test.getWorkLoads()
                     
-                if len(colList) < nLoads:
+                if len(rowList) < nLoads:
                     s = ttk.Style()
                     s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(colList)} values given')
+                    self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(rowList)} values given')
                     self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
                 else:
                     for li, l in enumerate(loads):
                         details = l.getDetails()
-                        if len(colList) == 1:
+                        if len(rowList) == 1:
                             value = self.dataTable.model.getValueAt(rowList[si], colList[0])
                         else:
                             value = self.dataTable.model.getValueAt(rowList[si], colList[li])
@@ -1423,13 +1439,14 @@ class DataImporter(object):
         app.sidepanel_testList.refreshList()
 
         app.projectDetailModule.refreshDetails()
-        app.testDetailModule
+        # app.testDetailModule
 
         # Update app state
         app.sidepanel_projectList.addToList(project.id)
         app.addProject(project)
 
         self.window.destroy()
+        del self
 
 class DataMenuElem(object):
     def __init__(self, importer, menu, menuButton, option, isExporter = False):
