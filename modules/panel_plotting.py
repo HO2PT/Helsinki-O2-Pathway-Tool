@@ -13,7 +13,6 @@ from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 #
-# BUG: Figure puskee toolbarit piiloon -> figure pitää saada kehystettyä paremmin
 # SVO2 - kumpaa arvoa käytetään, todennäköisesti ph/temp korjauksen jälkeistä?
 #
 
@@ -98,16 +97,19 @@ class PlottingPanel(object):
         self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
         self.plots.append(plotTabObject)
 
-    ## TESTAA!!
     def plotProject(self):
-        self.workLoads = app.getActiveTest().getWorkLoads()
+        workLoadDetailsObjects = []
+        for w in app.getActiveTest().getWorkLoads():
+            w = w.getDetails()
+            workLoadDetailsObjects.append(w)
+        # self.workLoads = app.getActiveTest().getWorkLoads()
         try:
             self.plotNotebook.pack_info()
         except TclError:
             self.plotNotebook.pack(expand=TRUE, fill=BOTH)
 
         # Create tab for the plot
-        plotTabObject = PlotTab(self.plotNotebook, self.workLoads)
+        plotTabObject = PlotTab(self.plotNotebook, workLoadDetailsObjects)
         plotTab = plotTabObject.createPlotTab()
 
         # Add plot to the notebook and objects list of plots
@@ -120,28 +122,28 @@ class PlottingPanel(object):
 
         if Q == 0:
             HR = float(details['HR'])
-            Sv = float(details['Sv'])
-            SvUnit = details['Sv_unit']
+            SV = float(details['SV'])
+            SvUnit = details['SV_unit']
             w.setMC('Q_MC', 1)
 
-            # If HR and Sv is given
-            if HR != 0 and Sv != 0:
+            # If HR and SV is given
+            if HR != 0 and SV != 0:
                 if unit == 'l/min': # Convert Q to l/min
                     if SvUnit == 'ml': # ml -> l
-                        Sv = Sv / 1000
+                        SV = SV / 1000
 
                 elif unit == 'ml/min': # Convert Q to ml/min
                     if SvUnit == 'l':
-                        Sv = Sv * 1000 # l -> ml
+                        SV = SV * 1000 # l -> ml
                     
-                return HR * Sv
+                return HR * SV
                 
-            # If HR and Sv not given, try with VO2 and CavO2
+            # If HR and SV not given, try with VO2 and CavO2
             else:
                 VO2 = float(details['VO2'])
                 VO2unit = details['VO2_unit']
-                CavO2 = float(details['CavO2'])
-                CavO2unit = details['CavO2_unit']
+                CavO2 = float(details['C(a-v)O2'])
+                CavO2unit = details['C(a-v)O2_unit']
 
                 # If VO2 and CavO2 is given
                 if VO2 != 0 and CavO2 != 0:
@@ -177,8 +179,8 @@ class PlottingPanel(object):
         unit = details['VO2_unit']
 
         if VO2 == 0:
-            CavO2 = float(details['CavO2'])
-            CavO2Unit = details['CavO2_unit']
+            CavO2 = float(details['C(a-v)O2'])
+            CavO2Unit = details['C(a-v)O2_unit']
             QUnit = details['Q_unit']
             w.setMC('VO2_MC', 1)
 
@@ -206,8 +208,8 @@ class PlottingPanel(object):
         return Hb
 
     def formatCavO2(self, w, details, VO2, Q):
-        CavO2 = float(details['CavO2'])
-        unit = details['CavO2_unit']
+        CavO2 = float(details['C(a-v)O2'])
+        unit = details['C(a-v)O2_unit']
         CaO2 = float(details['CaO2'])
         CaO2unit = details['CaO2_unit']
         CvO2 = float(details['CvO2'])
@@ -300,7 +302,7 @@ class PlottingPanel(object):
         if SvO2 == 0:
             w.setMC('SvO2_MC', 1)
             CaO2Unit = details['CaO2_unit']
-            CavO2Unit = details['CavO2_unit']
+            CavO2Unit = details['C(a-v)O2_unit']
             HbUnit = details['Hb_unit']
 
             if CaO2Unit == 'ml/l': # -> ml/dl
@@ -314,31 +316,6 @@ class PlottingPanel(object):
             return (CaO2 - CavO2) / 1.34 / Hb
         else:
             return SvO2 / 100
-
-        """ if SvO2 == 0:
-            w.getDetails().setMC('SvO2_MC', 1)
-            CvO2Unit = details['CvO2_unit']
-            HbUnit = details['Hb_unit']
-
-            if CvO2Unit == 'ml/l': # -> ml/dl
-                CvO2 = CvO2 / 10
-            if HbUnit == 'g/l': # -> g/dl
-                Hb = Hb / 10
-
-            return CvO2 / 1.34 / Hb
-        else:
-            if updatedVar == 'CvO2' or updatedVar == 'Hb':
-                CvO2Unit = details['CvO2_unit']
-                HbUnit = details['Hb_unit']
-
-                if CvO2Unit == 'ml/l': # -> ml/dl
-                    CvO2 = CvO2 / 10
-                if HbUnit == 'g/l': # -> g/dl
-                    Hb = Hb / 10
-
-                return CvO2 / 1.34 / Hb
-            else:
-                return SvO2 """
 
     def formatQaO2(self, w, details, Q, CaO2):
         QO2 = float(details['QaO2'])
@@ -452,7 +429,7 @@ class PlottingPanel(object):
         # VO2 = DO2 * 2 * PvO2
 
         PvO2 = np.arange(0,100,1)
-        y = 2* DO2 * PvO2
+        y = 2 * DO2 * PvO2
 
         # Fick's principle - Convection curve 
         # VO2 = CO * C(a-v)O2                           | CaO2 = 1.34 x Hb x SaO2 
@@ -514,20 +491,34 @@ class PlotTab():
         self.activeTest = app.getActiveTest()
         self.activeTestId = self.activeTest.id
         self.workLoadDetailsObjects = workLoadDetailsObjects # WorkloadDetails objects
+
+        sty = ttk.Style()
+        sty.configure(
+            'loadNoteBookFrame.TFrame', 
+            relief='raised'
+        )
+
+        sty.layout('loadNoteBookFrame.TFrame', [
+            ('Frame.border', {'sticky': 'nsw'})
+        ])
         
     def createPlotTab(self):
         # Create tab for test
         self.tabFrame = ttk.Frame(self.parentFrame)
         self.tabFrame.pack(expand=TRUE)
 
+        ##
+        ## LEFT SIDE
+        ##
+
         # Plot canvasframe
         self.canvasFrame = ttk.Frame(self.tabFrame)
         self.canvasFrame.pack(side=LEFT, expand=TRUE, fill=BOTH)
 
         # Figure instructions
-        instructions = ttk.Frame(self.canvasFrame)
-        instructions.pack()
-        wrap = ttk.Frame(instructions)
+        self.instructions = ttk.Frame(self.canvasFrame)
+        self.instructions.pack()
+        wrap = ttk.Frame(self.instructions)
         wrap.grid()
         ttk.Label(wrap, text='Left click - show/hide').grid(column=0, row=0, sticky=NSEW)
         wrap.grid_columnconfigure(1, weight=1, minsize=50)
@@ -535,9 +526,14 @@ class PlotTab():
         wrap.grid_columnconfigure(3, weight=1, minsize=50)
         ttk.Label(wrap, text='Right click - hide all').grid(column=4, row=0, sticky=NSEW)
 
+        self.testi = ttk.Frame(self.canvasFrame)
+        self.testi.pack(fill=BOTH, expand=1)
+        self.testi.pack_propagate(False)
+
         self.canvas = self.createPlot() # FigureCanvasTkAgg
         self.canvasTk = self.canvas.get_tk_widget() # Tkinter canvas
         self.canvasTk.pack(fill=BOTH, expand=1)
+        self.canvasTk.pack_propagate(False)
         self.canvas.draw()
 
         # Change y-axis unit based on used vo2 unit
@@ -553,7 +549,7 @@ class PlotTab():
 
         # Custom figure tools container
         self.toolbarContainer = ttk.Frame(self.canvasFrame)
-        self.toolbarContainer.pack(fill=BOTH, expand=1)
+        self.toolbarContainer.pack(side=BOTTOM, fill=BOTH)
 
         # Figure toolbar
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.toolbarContainer, pack_toolbar=False)
@@ -589,9 +585,16 @@ class PlotTab():
         # Hide legend button
         ttk.Button(self.toolbarWrapper, text='Hide legend', command=lambda: self.hideLegend()).grid(column=7, row=1)
 
+        ##
+        ## RIGHT SIDE
+        ##
+
         # Create loads notebook frame and loadnotebook
-        self.loadNotebookFrame = ttk.Frame(self.tabFrame)
+        self.loadNotebookFrame = ttk.Frame(self.tabFrame, style='loadNoteBookFrame.TFrame', borderwidth=10)
         self.loadNotebookFrame.pack(side=RIGHT, fill=Y)
+        self.loadNotebookFrame.bind('<B1-Motion>', self.resize)
+        self.loadNotebookFrame.bind('<ButtonRelease-1>', self.finishResize)
+        self.loadNotebookFrame.bind('<Double-Button-1>', self.defSize)
 
         self.loadNotebook = ScrollableNotebook(self.loadNotebookFrame, wheelscroll=True)
         self.loadNotebook.pack(expand=TRUE, fill=BOTH)
@@ -602,7 +605,7 @@ class PlotTab():
             loadTab = loadTabObject.createLoadTab()
             self.loadNotebook.add(loadTab, text=details.name)
             self.loadTabs.append(loadTabObject)
-
+        print(self.loadNotebookFrame.winfo_children())
         return self.tabFrame
     
     def numfmt(self, x, pos=None):
@@ -646,8 +649,28 @@ class PlotTab():
             self.plot[1].xaxis.set_major_locator(plt.LinearLocator(numticks=n))
             self.plot[0].canvas.draw()
 
-    # def updateY(self, name, index, mode):
-    #     pass
+    def finishResize(self, e):
+        self.loadNotebook.pack(expand=TRUE, fill=BOTH)
+        self.instructions.pack()
+        self.testi.pack(fill=BOTH, expand=1)
+        self.canvasTk.pack(fill=BOTH, expand=1)
+        self.canvas.draw()
+        self.toolbarContainer.pack(side=BOTTOM, fill=BOTH)
+
+    def resize(self, event):
+        # print(event)
+        self.loadNotebookFrame.pack_propagate(False)
+        self.testi.pack_forget()
+        self.loadNotebook.pack_forget()
+        self.canvasTk.pack_forget()
+        self.toolbarContainer.pack_forget()
+        self.instructions.pack_forget()
+        
+        self.loadNotebookFrame.configure(height=self.loadNotebookFrame.winfo_height(), width=event.x*(-1))
+        # print(self.loadNotebookFrame.winfo_width())
+
+    def defSize(self, event):
+        self.loadNotebookFrame.pack_propagate(True)
     
     def setYLim(self):
         vo2unit = self.workLoadDetailsObjects[0].VO2_unit
@@ -664,16 +687,10 @@ class PlotTab():
         self.plot = plt.subplots()
         self.fig, self.ax = self.plot
 
-        self.fig.set_figheight(3)
-        self.fig.set_figwidth(3)
-
-        #print(f'CANVAS: {self.canvasFrame.winfo_reqwidth()},{self.canvasFrame.winfo_reqheight()}')
-        #print(f'FIG: {self.fig.get_figwidth()},{self.fig.get_figheight()}')
-        #print(f'NOTEBOOK: {self.parentFrame.winfo_reqwidth()}, {self.parentFrame.winfo_reqheight()}')
-        #print(f'TOOLBAR: {self.toolbarContainer.winfo_reqwidth()},{self.toolbarContainer.winfo_reqheight()}')
         self.ax.set_title('O2 Pathway')
         self.ax.set_xlabel('PvO\u2082 (mmHg)')
         self.ax.set_xlim(left=0, right=100)
+        plt.subplots_adjust(bottom=0.175)
         self.handles = []
         ylim = []
 
@@ -720,30 +737,7 @@ class PlotTab():
         
         self.fig.canvas.mpl_connect('pick_event', self.onpick)
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
-        
-        def rescale(e):
-            #print(f'JEEP, {e}, {e.width}')
-            #print(f'CANVAS: {self.canvasFrame.winfo_reqwidth()},{self.canvasFrame.winfo_reqheight()}')
-            #print(f'FIG: {self.fig.get_figwidth()},{self.fig.get_figheight()}')
-            #print(f'NOTEBOOK: {self.parentFrame.winfo_reqwidth()}, {self.parentFrame.winfo_reqheight()}')
-            #print(f'TOOLBAR: {self.toolbarContainer.winfo_reqwidth()},{self.toolbarContainer.winfo_reqheight()}')
-            canvasHeight = e.height
-            toolbarHeight = self.toolbarContainer.winfo_reqheight()
-            newHeight = canvasHeight-toolbarHeight-10
-            self.canvas.get_tk_widget().configure(height=100)
-            evt = Event()
-            evt.width=e.width
-            evt.height=100 #newHeight
-            evt.state = 'rescaled'
-            evt.char = None
-            evt.delta = None
-            evt.type = 22
-            #print(evt)
-            self.canvas.resize(evt)
-            self.canvasFrame.configure(height=100)#self.fig.get_figheight())
-
-        self.canvas = FigureCanvasTkAgg(self.fig, self.canvasFrame)
-        #self.canvas.get_tk_widget().bind('<Configure>', rescale)
+        self.canvas = FigureCanvasTkAgg(self.fig, self.testi)
 
         return self.canvas
 
@@ -823,11 +817,11 @@ class PlotLoadTab(object):
         self.rowElements.append(self.hrRow)
 
         # SV
-        svValue = float(self.details['Sv'])
+        svValue = float(self.details['SV'])
         if self.details['Sv_unit'] == 'ml':
-            self.svRow = LoadTabRow(self, self.loadDetailsFrame, 'Sv', svValue, self.index, self.testId, 2, (0, 1000), self.workLoad)
+            self.svRow = LoadTabRow(self, self.loadDetailsFrame, 'SV', svValue, self.index, self.testId, 2, (0, 1000), self.workLoad)
         else:
-            self.svRow = LoadTabRow(self, self.loadDetailsFrame, 'Sv', svValue, self.index, self.testId, 2, (0, 1), self.workLoad)
+            self.svRow = LoadTabRow(self, self.loadDetailsFrame, 'SV', svValue, self.index, self.testId, 2, (0, 1), self.workLoad)
         self.rowElements.append(self.svRow) """
 
         # VO2
@@ -882,11 +876,11 @@ class PlotLoadTab(object):
         self.rowElements.append(self.cvo2Row)
         
         # CavO2
-        cavo2Value = float(self.details['CavO2'])
-        if self.details['CavO2_unit'] == 'ml/dl':
-            self.cavo2Row = LoadTabRow(self, self.loadDetailsFrame, 'CavO2', cavo2Value, self.index, self.testId, 10, (0,100), self.details)
+        cavo2Value = float(self.details['C(a-v)O2'])
+        if self.details['C(a-v)O2_unit'] == 'ml/dl':
+            self.cavo2Row = LoadTabRow(self, self.loadDetailsFrame, 'C(a-v)O2', cavo2Value, self.index, self.testId, 10, (0,100), self.details)
         else:
-            self.cavo2Row = LoadTabRow(self, self.loadDetailsFrame, 'CavO2', cavo2Value, self.index, self.testId, 10, (0,1000), self.details)
+            self.cavo2Row = LoadTabRow(self, self.loadDetailsFrame, 'C(a-v)O2', cavo2Value, self.index, self.testId, 10, (0,1000), self.details)
         self.rowElements.append(self.cavo2Row)
 
         # PvO2

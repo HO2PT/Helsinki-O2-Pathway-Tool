@@ -82,7 +82,7 @@ class DataImporter(object):
             self.progressionList.insert('end', 'Load')
             self.progressionList.insert('end', 'VO\u2082')
             self.progressionList.insert('end', 'HR')
-            self.progressionList.insert('end', 'Sv')
+            self.progressionList.insert('end', 'SV')
             self.progressionList.insert('end', 'Q')
             self.progressionList.insert('end', 'Hb')
             self.progressionList.insert('end', 'SaO\u2082')
@@ -551,9 +551,9 @@ class DataImporter(object):
                         #print('**HR**')
                         success = self.getRowValues('HR')
 
-                    elif self.stage == 4: #Sv
-                        #print('**Sv**')
-                        success = self.getRowValues('Sv')
+                    elif self.stage == 4: #SV
+                        #print('**SV**')
+                        success = self.getRowValues('SV')
 
                     elif self.stage == 5: #Q
                         #print('**Q**')
@@ -635,9 +635,9 @@ class DataImporter(object):
                         #print('**HR**')
                         success = self.getRowValues('HR')
 
-                    elif self.stage == 4: #Sv
-                        #print('**Sv**')
-                        success = self.getRowValues('Sv')
+                    elif self.stage == 4: #SV
+                        #print('**SV**')
+                        success = self.getRowValues('SV')
 
                     elif self.stage == 5: #Q
                         #print('**Q**')
@@ -724,7 +724,7 @@ class DataImporter(object):
                         success = self.getColumnValues('HR')
 
                     elif self.stage == 4: # SV
-                        success = self.getColumnValues('Sv')
+                        success = self.getColumnValues('SV')
 
                     elif self.stage == 5: # Q
                         success = self.getColumnValues('Q')
@@ -792,7 +792,7 @@ class DataImporter(object):
                         success = self.getColumnValues('HR')
 
                     elif self.stage == 4: # SV
-                        success = self.getColumnValues('Sv')
+                        success = self.getColumnValues('SV')
 
                     elif self.stage == 5: # Q
                         success = self.getColumnValues('Q')
@@ -885,10 +885,10 @@ class DataImporter(object):
                         #print(f'**DATA FORM** {self.dataMode}')
                         success = self.getMultiCellValues('HR')
                     
-                    elif self.stage == 4: # Sv
-                        #print('**Sv**')
+                    elif self.stage == 4: # SV
+                        #print('**SV**')
                         #print(f'**DATA FORM** {self.dataMode}')
-                        success = self.getMultiCellValues('Sv')
+                        success = self.getMultiCellValues('SV')
 
                     elif self.stage == 5: # Q
                         #print('**Q**')
@@ -993,7 +993,7 @@ class DataImporter(object):
                         success = self.getSingleCellValue('HR', value)
 
                     elif self.stage == 4: # SV
-                        success = self.getSingleCellValue('Sv', value)
+                        success = self.getSingleCellValue('SV', value)
 
                     elif self.stage == 5: # Q
                         success = self.getSingleCellValue('Q', value)
@@ -1387,7 +1387,7 @@ class DataImporter(object):
         project.loadLoc = self.tempLocData.get('Load', None)
         project.vo2Loc = self.tempLocData.get('VO2', None)
         project.hrLoc = self.tempLocData.get('HR', None)
-        project.svLoc = self.tempLocData.get('Sv', None)
+        project.svLoc = self.tempLocData.get('SV', None)
 
         project.qLoc = self.tempLocData.get('Q', None)
         project.hbLoc = self.tempLocData.get('Hb', None)

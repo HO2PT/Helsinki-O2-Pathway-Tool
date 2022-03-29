@@ -11,7 +11,7 @@ class WorkLoadDetails(object):
         self.Load = 0
         self.VO2 = 0
         self.HR = 0
-        self.Sv = 0
+        self.SV = 0
         self.Q = 0
         self.Hb = 0
         self.SaO2 = 0
@@ -39,14 +39,14 @@ class WorkLoadDetails(object):
         self.Load_unit = defUnits['Load_unit']
         self.VO2_unit = defUnits['VO2_unit']
         self.HR_unit = defUnits['HR_unit']
-        self.Sv_unit = defUnits['Sv_unit']
+        self.Sv_unit = defUnits['SV_unit']
         self.Q_unit = defUnits['Q_unit']
         self.Hb_unit = defUnits['Hb_unit']
         self.SaO2_unit = defUnits['SaO2_unit']
         self.CaO2_unit = defUnits['CaO2_unit']
         self.SvO2_unit = defUnits['SvO2_unit']
         self.CvO2_unit = defUnits['CvO2_unit']
-        self.CavO2_unit = defUnits['CavO2_unit']
+        self.CavO2_unit = defUnits['C(a-v)O2_unit']
         self.QaO2_unit = defUnits['QaO2_unit']
         self.T0_unit = defUnits['Tc @ rest_unit']
         self.T_unit = defUnits['Tc\u209A\u2091\u2090\u2096_unit']
@@ -61,14 +61,14 @@ class WorkLoadDetails(object):
         # 1 = Calculated
         self.VO2_MC = defMc['VO2_mc']
         self.HR_MC = defMc['HR_mc']
-        self.Sv_MC = defMc['Sv_mc']
+        self.Sv_MC = defMc['SV_mc']
         self.Q_MC = defMc['Q_mc']
         self.Hb_MC = defMc['Hb_mc']
         self.SaO2_MC = defMc['SaO2_mc']
         self.CaO2_MC = defMc['CaO2_mc']
         self.SvO2_MC = defMc['SvO2_mc']
         self.CvO2_MC = defMc['CvO2_mc']
-        self.CavO2_MC = defMc['CavO2_mc']
+        self.CavO2_MC = defMc['C(a-v)O2_mc']
         self.QaO2_MC = defMc['QaO2_mc']
         self.T0_MC = defMc['Tc @ rest_mc']
         self.T_MC = defMc['Tc\u209A\u2091\u2090\u2096_mc']
@@ -88,7 +88,7 @@ class WorkLoadDetails(object):
         if label == 'HR_unit': 
             self.HR_unit = unit
 
-        if label == 'Sv_unit':
+        if label == 'SV_unit':
             self.Sv_unit = unit
         
         if label == 'Q_unit': 
@@ -109,7 +109,7 @@ class WorkLoadDetails(object):
         if label == 'CvO2_unit': 
             self.CvO2_unit = unit
         
-        if label == 'CavO2_unit': 
+        if label == 'C(a-v)O2_unit': 
             self.CavO2_unit = unit
 
         if label == 'QaO2_unit': 
@@ -135,7 +135,7 @@ class WorkLoadDetails(object):
         if label == 'HR_MC': 
             self.HR_MC = value
 
-        if label == 'Sv_MC':
+        if label == 'SV_MC':
             self.Sv_MC = value
         
         if label == 'Q_MC': 
@@ -156,7 +156,7 @@ class WorkLoadDetails(object):
         if label == 'CvO2_MC': 
             self.CvO2_MC = value
         
-        if label == 'CavO2_MC': 
+        if label == 'C(a-v)O2_MC': 
             self.CavO2_MC = value
 
         if label == 'QaO2_MC': 
@@ -185,8 +185,8 @@ class WorkLoadDetails(object):
         if label == 'HR': 
             self.HR = value
 
-        if label == 'Sv':
-            self.Sv = value
+        if label == 'SV':
+            self.SV = value
         
         if label == 'Q': 
             self.Q = value
@@ -206,7 +206,7 @@ class WorkLoadDetails(object):
         if label == 'CvO2': 
             self.CvO2 = value
         
-        if label == 'CavO2': 
+        if label == 'C(a-v)O2': 
             self.CavO2 = value
 
         if label == 'QaO2': 
@@ -251,9 +251,9 @@ class WorkLoadDetails(object):
             'HR_unit': self.HR_unit,
             'HR_MC': self.HR_MC,
 
-            'Sv': self.Sv,
-            'Sv_unit': self.Sv_unit,
-            'Sv_MC': self.Sv_MC,
+            'SV': self.SV,
+            'SV_unit': self.Sv_unit,
+            'SV_MC': self.Sv_MC,
 
             'Q': self.Q,
             'Q_unit': self.Q_unit,
@@ -275,9 +275,9 @@ class WorkLoadDetails(object):
             'CvO2_unit': self.CvO2_unit,
             'CvO2_MC': self.CvO2_MC,
 
-            'CavO2': self.CavO2,
-            'CavO2_unit': self.CavO2_unit,
-            'CavO2_MC': self.CavO2_MC,
+            'C(a-v)O2': self.CavO2,
+            'C(a-v)O2_unit': self.CavO2_unit,
+            'C(a-v)O2_MC': self.CavO2_MC,
 
             'QaO2': self.QaO2,
             'QaO2_unit': self.QaO2_unit,
@@ -334,7 +334,7 @@ class WorkLoadDetails(object):
         self.xi = xi
         self.yi = yi
         self.VO2 = VO2
-        #self.Sv = Sv
+        #self.SV = SV
         self.Q = Q
         self.Hb = Hb
         self.SaO2 = SaO2

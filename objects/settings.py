@@ -40,14 +40,14 @@ class Settings(object):
                     "Load": 'W',
                     "VO2": 'ml/min',
                     "HR": 'bpm',
-                    "Sv": 'ml',
+                    "SV": 'ml',
                     "Q": 'l/min',
                     "Hb": 'g/l',
                     "SaO2": '%',
                     "CaO2": 'ml/l',
                     "SvO2": '%',
                     "CvO2": 'ml/l',
-                    "CavO2": 'ml/l',
+                    "C(a-v)O2": 'ml/l',
                     "QaO2": 'ml/min',
                     "T": '\N{DEGREE SIGN}C',
                     "Tc @ rest": '\N{DEGREE SIGN}C',
@@ -66,14 +66,14 @@ class Settings(object):
                     "Load": ['W', 'kJ'],
                     "VO2": ['ml/min', 'l/min'],
                     "HR": ["bpm"],
-                    "Sv": ['ml', 'l'],
+                    "SV": ['ml', 'l'],
                     "Q": ['l/min', 'ml/min'],
                     "Hb": ["g/l", "g/dl"],
                     "SaO2": ["%"],
                     "CaO2": ["ml/l", "ml/dl"],
                     "SvO2": ["%"],
                     "CvO2": ["ml/l", "ml/dl"],
-                    "CavO2": ["ml/l", "ml/dl"],
+                    "C(a-v)O2": ["ml/l", "ml/dl"],
                     "QaO2": ["ml/min", "l/min"],
                     "T": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "Tc @ rest": ['\N{DEGREE SIGN}C', 'F', 'K'],
@@ -92,14 +92,14 @@ class Settings(object):
                 "mcDefaults":{
                     "VO2": 0,
                     "HR": 0,
-                    "Sv": 0,
+                    "SV": 0,
                     "Q": 0,
                     "Hb": 0,
                     "SaO2": 0,
                     "CaO2": 0,
                     "SvO2": 0,
                     "CvO2": 0,
-                    "CavO2": 0,
+                    "C(a-v)O2": 0,
                     "QaO2": 0,
                     "T": 0,
                     "Tc @ rest": 0,
@@ -153,14 +153,14 @@ class Settings(object):
             "Load_unit": self.data['unitDefaults']['Load'],
             "VO2_unit": self.data['unitDefaults']['VO2'],
             "HR_unit": self.data['unitDefaults']['HR'],
-            "Sv_unit": self.data['unitDefaults']['Sv'],
+            "SV_unit": self.data['unitDefaults']['SV'],
             "Q_unit": self.data['unitDefaults']['Q'],
             "Hb_unit": self.data['unitDefaults']['Hb'],
             "SaO2_unit": self.data['unitDefaults']['SaO2'],
             "CaO2_unit": self.data['unitDefaults']['CaO2'],
             "SvO2_unit": self.data['unitDefaults']['SvO2'],
             "CvO2_unit": self.data['unitDefaults']['CvO2'],
-            "CavO2_unit": self.data['unitDefaults']['CavO2'],
+            "C(a-v)O2_unit": self.data['unitDefaults']['C(a-v)O2'],
             "QaO2_unit": self.data['unitDefaults']['QaO2'],
             "T_unit": self.data['unitDefaults']['T'],
             "Tc @ rest_unit": self.data['unitDefaults']['Tc @ rest'],
@@ -180,14 +180,14 @@ class Settings(object):
             "Load_units": self.data['units']['Load'],
             "VO2_units": self.data['units']['VO2'],
             "HR_units": self.data['units']['HR'],
-            "Sv_units": self.data['units']['Sv'],
+            "SV_units": self.data['units']['SV'],
             "Q_units": self.data['units']['Q'],
             "Hb_units": self.data['units']['Hb'],
             "SaO2_units": self.data['units']['SaO2'],
             "CaO2_units": self.data['units']['CaO2'],
             "SvO2_units": self.data['units']['SvO2'],
             "CvO2_units": self.data['units']['CvO2'],
-            "CavO2_units": self.data['units']['CavO2'],
+            "C(a-v)O2_units": self.data['units']['C(a-v)O2'],
             "QaO2_units": self.data['units']['QaO2'],
             "T_units": self.data['units']['T'],
             "Tc @ rest_units": self.data['units']['Tc @ rest'],
@@ -206,14 +206,14 @@ class Settings(object):
         self.mcDefaults = {
             "VO2_mc": self.data['mcDefaults']['VO2'],
             "HR_mc": self.data['mcDefaults']['HR'],
-            "Sv_mc": self.data['mcDefaults']['Sv'],
+            "SV_mc": self.data['mcDefaults']['SV'],
             "Q_mc": self.data['mcDefaults']['Q'],
             "Hb_mc": self.data['mcDefaults']['Hb'],
             "SaO2_mc": self.data['mcDefaults']['SaO2'],
             "CaO2_mc": self.data['mcDefaults']['CaO2'],
             "SvO2_mc": self.data['mcDefaults']['SvO2'],
             "CvO2_mc": self.data['mcDefaults']['CvO2'],
-            "CavO2_mc": self.data['mcDefaults']['CavO2'],
+            "C(a-v)O2_mc": self.data['mcDefaults']['C(a-v)O2'],
             "QaO2_mc": self.data['mcDefaults']['QaO2'],
             "Tc @ rest_mc": self.data['mcDefaults']['Tc @ rest'],
             "Tc\u209A\u2091\u2090\u2096_mc": self.data['mcDefaults']['Tc\u209A\u2091\u2090\u2096'],
@@ -438,7 +438,7 @@ class Settings(object):
             SettingsRow(self, container, 'HR', 0, 3)
 
             #### SV
-            SettingsRow(self, container, 'Sv', 0, 4)
+            SettingsRow(self, container, 'SV', 0, 4)
 
             #### Q
             SettingsRow(self, container, 'Q', 0, 5)
@@ -459,7 +459,7 @@ class Settings(object):
             SettingsRow(self, container, 'CvO2', 0, 10)
 
             #### CavO2
-            SettingsRow(self, container, 'CavO2', 0, 11)
+            SettingsRow(self, container, 'C(a-v)O2', 0, 11)
 
             #### QaO2
             SettingsRow(self, container, 'QaO2', 0, 12)

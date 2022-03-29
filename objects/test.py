@@ -56,7 +56,7 @@ class Test(object):
             return{
                 "VO2": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['VO2']),
                 "HR": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['HR']),
-                "Sv": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['Sv']),
+                "SV": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['SV']),
                 "Q": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['Q']),
                 "Hb": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['Hb']),
                 "SaO2": float(self.workLoads[-1].getDetails().getWorkLoadDetails()['SaO2'])

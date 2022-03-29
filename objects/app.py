@@ -103,16 +103,17 @@ class App(object):
                 # details = t.getMaxLoad()
                 wOrig = t.getWorkLoads()[-1] # Last workload object
                 w = deepcopy(wOrig)
+                workLoadObject = w.getDetails()
                 details = w.getDetails().getWorkLoadDetails()
 
-                validValues = app.getPlottingPanel().calc(w, details)
+                validValues = app.getPlottingPanel().calc(workLoadObject, details)
                 if validValues == False:
                     notification.create('error', f"Couldn't calculate project metrics. Check values of subject: {s.id} test: {t.id}", '5000')
                 details = w.getDetails().getWorkLoadDetails()
 
                 self.vo2List.append(float(details['VO2']))
                 self.hrList.append(float(details['HR']))
-                self.svList.append(float(details['Sv']))
+                self.svList.append(float(details['SV']))
                 self.qList.append(float(details['Q']))
                 self.hbList.append(float(details['Hb']))
                 self.sao2List.append(float(details['SaO2']))
@@ -120,36 +121,49 @@ class App(object):
                 self.cao2List.append(float(details['CaO2']))
                 self.svo2List.append(float(details['SvO2']))
                 self.cvo2List.append(float(details['CvO2']))
-                self.cavo2List.append(float(details['CavO2']))
+                self.cavo2List.append(float(details['C(a-v)O2']))
                 self.pvo2List.append(float(details['PvO2']))
                 self.do2List.append(float(details['DO2']))
                 self.qao2List.append(float(details['QaO2']))
     
-        # self.avgVO2 = np.median(self.vo2List)
+        self.VO2mean = np.mean(self.vo2List)
         self.VO2q75, self.VO2q50, self.VO2q25 = np.percentile(self.vo2List, [75, 50, 25])
-        # self.avgHR = np.median(self.hrList)
+        print(f'mean {self.VO2mean}, avg {np.average(self.vo2List)}, median {np.median(self.vo2List)}, q50 {self.VO2q50}')
+        
+        self.HRmean = np.mean(self.hrList)
         self.HRq75, self.HRq50, self.HRq25 = np.percentile(self.hrList, [75, 50, 25])
-        # self.avgSv= np.median(self.svList)
+        
+        self.SVmean = np.mean(self.svList)
         self.SVq75, self.SVq50, self.SVq25 = np.percentile(self.svList, [75, 50, 25])
-        # self.avgQ = np.median(self.qList)
+        
+        self.Qmean = np.mean(self.qList)
         self.Qq75, self.Qq50, self.Qq25 = np.percentile(self.qList, [75, 50, 25])
-        # self.avgHb = np.median(self.hbList)
+        
+        self.HBmean = np.mean(self.hbList)
         self.HBq75, self.HBq50, self.HBq25 = np.percentile(self.hbList, [75, 50, 25])
-        # self.avgSaO2 = np.median(self.sao2List)
+        
+        self.SAO2mean = np.mean(self.sao2List)
         self.SAO2q75, self.SAO2q50, self.SAO2q25 = np.percentile(self.sao2List, [75, 50, 25])
-        # self.avgDO2 = np.median(self.do2List)
+        
+        self.DO2mean = np.mean(self.do2List)
         self.DO2q75, self.DO2q50, self.DO2q25 = np.percentile(self.do2List, [75, 50, 25])
-        # self.avgQaO2 = np.median(self.qao2List)
+        
+        self.QAO2mean = np.mean(self.qao2List)
         self.QAO2q75, self.QAO2q50, self.QAO2q25 = np.percentile(self.qao2List, [75, 50, 25])
-        # self.avgCaO2 = np.median(self.cao2List)
+        
+        self.CAO2mean = np.mean(self.cao2List)
         self.CAO2q75, self.CAO2q50, self.CAO2q25 = np.percentile(self.cao2List, [75, 50, 25])
-        # self.avgSvO2 = np.median(self.svo2List)
+        
+        self.SVO2mean = np.mean(self.svo2List)
         self.SVO2q75, self.SVO2q50, self.SVO2q25 = np.percentile(self.svo2List, [75, 50, 25])
-        # self.avgCvO2 = np.median(self.cvo2List)
+        
+        self.CVO2mean = np.mean(self.cvo2List)
         self.CVO2q75, self.CVO2q50, self.CVO2q25 = np.percentile(self.cvo2List, [75, 50, 25])
-        # self.avgCavO2 = np.median(self.cavo2List)
+        
+        self.CAVO2mean = np.mean(self.cavo2List)
         self.CAVO2q75, self.CAVO2q50, self.CAVO2q25 = np.percentile(self.cavo2List, [75, 50, 25])
-        # self.avgPvO2 = np.median(self.pvo2List)
+        
+        self.PVO2mean = np.mean(self.pvo2List)
         self.PVO2q75, self.PVO2q50, self.PVO2q25 = np.percentile(self.pvo2List, [75, 50, 25])
 
         self.HRstd = np.std(self.hrList)
@@ -157,36 +171,28 @@ class App(object):
         self.Qstd = np.std(self.qList)
         self.HBstd = np.std(self.hbList)
         self.SAO2std = np.std(self.sao2List)
+        self.VO2std = np.std(self.vo2List)
+        self.DO2std = np.std(self.do2List)
+        self.QAO2std = np.std(self.qao2List)
+        self.CAO2std = np.std(self.cao2List)
+        self.SVO2std = np.std(self.svo2List)
+        self.CVO2std = np.std(self.cvo2List)
+        self.CAVO2std = np.std(self.cavo2List)
+        self.PVO2std = np.std(self.pvo2List)
 
         if plotProject == True:
             activeProject.VO2max = max(self.vo2List)
             activeProject.VO2min = min(self.vo2List)
-            activeProject.VO2mean = self.VO2q50
+            activeProject.VO2mean = self.VO2mean
 
             activeProject.DO2max = max(self.do2List)
             activeProject.DO2min = min(self.do2List)
-            activeProject.DO2mean = self.DO2q50
+            activeProject.DO2mean = self.DO2mean
 
             activeProject.QaO2max = max(self.qao2List)
             activeProject.QaO2min = min(self.qao2List)
-            activeProject.QaO2mean = self.QAO2q50
-        self.VO2std = np.std(self.vo2List)
-        # print(f'SD VO2: {self.VO2std}')
-        self.DO2std = np.std(self.do2List)
-        # print(f'SD DO2: {np.std(self.do2List)}')
-        self.QAO2std = np.std(self.qao2List)
-        # print(f'SD QaO2: {np.std(self.qao2List)}')
-        self.CAO2std = np.std(self.cao2List)
-        # print(f'SD CaO2: {np.std(self.cao2List)}')
-        self.SVO2std = np.std(self.svo2List)
-        # print(f'SD SvO2: {np.std(self.svo2List)}')
-        self.CVO2std = np.std(self.cvo2List)
-        # print(f'SD CvO2: {np.std(self.cvo2List)}')
-        self.CAVO2std = np.std(self.cavo2List)
-        # print(f'SD CavO2: {np.std(self.cavo2List)}')
-        self.PVO2std = np.std(self.pvo2List)
-        # print(f'SD PvO2: {np.std(self.pvo2List)}')
-
+            activeProject.QaO2mean = self.QAO2mean
+        
         # self.QAO2q75, self.QAO2q50, self.QAO2q25 = np.percentile(self.qao2List, [75, 50, 25])
         # self.QAO2iqr = self.QAO2q75 - self.QAO2q25
 
@@ -202,18 +208,18 @@ class App(object):
             if iqr == False:
                 self.meanTestObject.setId('Project mean-SD')
             else:
-                self.meanTestObject.setId('Project mean-IQR')
+                self.meanTestObject.setId('Project median-IQR')
         else:
             if len(subjects) > 1:
                 if iqr == False:
-                    self.meanTestObject.setId('Subjects mean-SD')
+                    self.meanTestObject.setId('Mean-SD (Chosen subjects)')
                 else:
-                    self.meanTestObject.setId('Subjects mean-IQR')
+                    self.meanTestObject.setId('Median-IQR (Chosen subjects)')
             else:
                 if iqr == False:
                     self.meanTestObject.setId(f'{subjects[0].id} mean-SD')
                 else:
-                    self.meanTestObject.setId(f'{subjects[0].id} mean-IQR')
+                    self.meanTestObject.setId(f'{subjects[0].id} median-IQR')
 
         self.minLoad = self.meanTestObject.getWorkLoads()[0]
         if iqr == False:
@@ -225,7 +231,7 @@ class App(object):
         else:
             self.minLoad.setName('Q1')
             self.avgLoad = self.meanTestObject.createLoad()
-            self.avgLoad.setName('Mean')
+            self.avgLoad.setName('Median')
             self.maxLoad = self.meanTestObject.createLoad()
             self.maxLoad.setName('Q3')
 
@@ -268,7 +274,7 @@ class App(object):
         load.getDetails().setMC('CaO2_MC', 1)
         load.getDetails().setMC('SvO2_MC', 1)
         load.getDetails().setMC('CvO2_MC', 1)
-        load.getDetails().setMC('CavO2_MC', 1)
+        load.getDetails().setMC('C(a-v)O2_MC', 1)
         load.getDetails().setMC('PvO2_MC', 1)
         load.getDetails().setMC('QaO2_MC', 1)
 
@@ -276,73 +282,88 @@ class App(object):
 
         if mode == 'min':
             if iqr == False:
-                load.getDetails().setValue('VO2', self.VO2q50-self.VO2std)
-                load.getDetails().setValue('HR', self.HRq50-self.HRstd)
-                load.getDetails().setValue('Sv', self.SVq50-self.SVstd)
-                load.getDetails().setValue('Q', self.Qq50-self.Qstd)
-                load.getDetails().setValue('Hb', self.HBq50-self.HBstd)
-                load.getDetails().setValue('SaO2', self.SAO2q50-self.SAO2std)
-                load.getDetails().setValue('CaO2', self.CAO2q50-self.CAO2std)
-                load.getDetails().setValue('SvO2', self.SVO2q50-self.SVO2std)
-                load.getDetails().setValue('CvO2', self.CVO2q50-self.CVO2std)
-                load.getDetails().setValue('CavO2', self.CAVO2q50-self.CAVO2std)
-                load.getDetails().setValue('PvO2', self.PVO2q50-self.PVO2std)
-                load.getDetails().setValue('QaO2', self.QAO2q50-self.QAO2std)
-                load.getDetails().setValue('DO2', self.DO2q50-self.DO2std)
+                load.getDetails().setValue('VO2', self.VO2mean-self.VO2std)
+                load.getDetails().setValue('HR', self.HRmean-self.HRstd)
+                load.getDetails().setValue('SV', self.SVmean-self.SVstd)
+                load.getDetails().setValue('Q', self.Qmean-self.Qstd)
+                load.getDetails().setValue('Hb', self.HBmean-self.HBstd)
+                load.getDetails().setValue('SaO2', self.SAO2mean-self.SAO2std)
+                load.getDetails().setValue('CaO2', self.CAO2mean-self.CAO2std)
+                load.getDetails().setValue('SvO2', self.SVO2mean-self.SVO2std)
+                load.getDetails().setValue('CvO2', self.CVO2mean-self.CVO2std)
+                load.getDetails().setValue('C(a-v)O2', self.CAVO2mean-self.CAVO2std)
+                load.getDetails().setValue('PvO2', self.PVO2mean-self.PVO2std)
+                load.getDetails().setValue('QaO2', self.QAO2mean-self.QAO2std)
+                load.getDetails().setValue('DO2', self.DO2mean-self.DO2std)
             else:
                 load.getDetails().setValue('VO2', self.VO2q25)
                 load.getDetails().setValue('HR', self.HRq25)
-                load.getDetails().setValue('Sv', self.SVq25)
+                load.getDetails().setValue('SV', self.SVq25)
                 load.getDetails().setValue('Q', self.Qq25)
                 load.getDetails().setValue('Hb', self.HBq25)
                 load.getDetails().setValue('SaO2', self.SAO2q25)
                 load.getDetails().setValue('CaO2', self.CAO2q25)
                 load.getDetails().setValue('SvO2', self.SVO2q25)
                 load.getDetails().setValue('CvO2', self.CVO2q25)
-                load.getDetails().setValue('CavO2', self.CAVO2q25)
+                load.getDetails().setValue('C(a-v)O2', self.CAVO2q25)
                 load.getDetails().setValue('PvO2', self.PVO2q25)
                 load.getDetails().setValue('QaO2', self.QAO2q25)
                 load.getDetails().setValue('DO2', self.DO2q25)
         elif mode == 'avg':
-            load.getDetails().setValue('VO2', self.VO2q50)
-            load.getDetails().setValue('HR', self.HRq50)
-            load.getDetails().setValue('Sv', self.SVq50)
-            load.getDetails().setValue('Q', self.Qq50)
-            load.getDetails().setValue('Hb', self.HBq50)
-            load.getDetails().setValue('SaO2', self.SAO2q50)
-            load.getDetails().setValue('CaO2', self.CAO2q50)
-            load.getDetails().setValue('SvO2', self.SVO2q50)
-            load.getDetails().setValue('CvO2', self.CVO2q50)
-            load.getDetails().setValue('CavO2', self.CAVO2q50)
-            load.getDetails().setValue('PvO2', self.PVO2q50)
-            load.getDetails().setValue('QaO2', self.QAO2q50)
-            load.getDetails().setValue('DO2', self.DO2q50)
+            if iqr == False:
+                load.getDetails().setValue('VO2', self.VO2mean)
+                load.getDetails().setValue('HR', self.HRmean)
+                load.getDetails().setValue('SV', self.SVmean)
+                load.getDetails().setValue('Q', self.Qmean)
+                load.getDetails().setValue('Hb', self.HBmean)
+                load.getDetails().setValue('SaO2', self.SAO2mean)
+                load.getDetails().setValue('CaO2', self.CAO2mean)
+                load.getDetails().setValue('SvO2', self.SVO2mean)
+                load.getDetails().setValue('CvO2', self.CVO2mean)
+                load.getDetails().setValue('C(a-v)O2', self.CAVO2mean)
+                load.getDetails().setValue('PvO2', self.PVO2mean)
+                load.getDetails().setValue('QaO2', self.QAO2mean)
+                load.getDetails().setValue('DO2', self.DO2mean)
+            else:
+                load.getDetails().setValue('VO2', self.VO2q50)
+                load.getDetails().setValue('HR', self.HRq50)
+                load.getDetails().setValue('SV', self.SVq50)
+                load.getDetails().setValue('Q', self.Qq50)
+                load.getDetails().setValue('Hb', self.HBq50)
+                load.getDetails().setValue('SaO2', self.SAO2q50)
+                load.getDetails().setValue('CaO2', self.CAO2q50)
+                load.getDetails().setValue('SvO2', self.SVO2q50)
+                load.getDetails().setValue('CvO2', self.CVO2q50)
+                load.getDetails().setValue('C(a-v)O2', self.CAVO2q50)
+                load.getDetails().setValue('PvO2', self.PVO2q50)
+                load.getDetails().setValue('QaO2', self.QAO2q50)
+                load.getDetails().setValue('DO2', self.DO2q50)
         elif mode == 'max':
             if iqr == False:
-                load.getDetails().setValue('VO2', self.VO2q50 + self.VO2std)
-                load.getDetails().setValue('HR', self.HRq50 + self.HRstd)
-                load.getDetails().setValue('Sv', self.SVq50 + self.SVstd)
-                load.getDetails().setValue('Q', self.Qq50 + self.Qstd)
-                load.getDetails().setValue('Hb', self.HBq50 + self.HBstd)
-                load.getDetails().setValue('SaO2', self.SAO2q50 + self.SAO2std)
-                load.getDetails().setValue('CaO2', self.CAO2q50 + self.CAO2std)
-                load.getDetails().setValue('SvO2', self.SVO2q50 + self.SVO2std)
-                load.getDetails().setValue('CvO2', self.CVO2q50 + self.CVO2std)
-                load.getDetails().setValue('CavO2', self.CAVO2q50 + self.CAVO2std)
-                load.getDetails().setValue('PvO2', self.PVO2q50 + self.PVO2std)
-                load.getDetails().setValue('QaO2', self.QAO2q50 + self.QAO2std)
-                load.getDetails().setValue('DO2', self.DO2q50 + self.DO2std)
+                load.getDetails().setValue('VO2', self.VO2mean + self.VO2std)
+                load.getDetails().setValue('HR', self.HRmean + self.HRstd)
+                load.getDetails().setValue('SV', self.SVmean + self.SVstd)
+                load.getDetails().setValue('Q', self.Qmean + self.Qstd)
+                load.getDetails().setValue('Hb', self.HBmean + self.HBstd)
+                load.getDetails().setValue('SaO2', self.SAO2mean + self.SAO2std)
+                load.getDetails().setValue('CaO2', self.CAO2mean + self.CAO2std)
+                load.getDetails().setValue('SvO2', self.SVO2mean + self.SVO2std)
+                load.getDetails().setValue('CvO2', self.CVO2mean + self.CVO2std)
+                load.getDetails().setValue('C(a-v)O2', self.CAVO2mean + self.CAVO2std)
+                load.getDetails().setValue('PvO2', self.PVO2mean + self.PVO2std)
+                load.getDetails().setValue('QaO2', self.QAO2mean + self.QAO2std)
+                load.getDetails().setValue('DO2', self.DO2mean + self.DO2std)
             else:
                 load.getDetails().setValue('VO2', self.VO2q75)
                 load.getDetails().setValue('HR', self.HRq75)
-                load.getDetails().setValue('Sv', self.SVq75)
+                load.getDetails().setValue('SV', self.SVq75)
                 load.getDetails().setValue('Q', self.Qq75)
                 load.getDetails().setValue('Hb', self.HBq75)
                 load.getDetails().setValue('SaO2', self.SAO2q75)
                 load.getDetails().setValue('CaO2', self.CAO2q75)
                 load.getDetails().setValue('SvO2', self.SVO2q75)
                 load.getDetails().setValue('CvO2', self.CVO2q75)
-                load.getDetails().setValue('CavO2', self.CAVO2q75)
+                load.getDetails().setValue('C(a-v)O2', self.CAVO2q75)
                 load.getDetails().setValue('PvO2', self.PVO2q75)
                 load.getDetails().setValue('QaO2', self.QAO2q75)
                 load.getDetails().setValue('DO2', self.DO2q75)
@@ -350,7 +371,7 @@ class App(object):
     def calcCoords(self, load):
         temp = load.getDetails().getWorkLoadDetails()
         PvO2 = np.arange(0,100,1)
-        y = 2* temp['DO2'] * PvO2
+        y = 2 * temp['DO2'] * PvO2
 
         with np.errstate(divide='ignore'):
             SvO2 = np.float_power( ( 23400 * np.float_power( (PvO2)**3 + 150*PvO2, -1 ) ) + 1, -1 )

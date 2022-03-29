@@ -14,7 +14,7 @@ class TestList(object):
         self.container.pack(fill = BOTH, expand=TRUE)
         self.startSel = None
 
-        self.testList = Listbox(self.container, exportselection=FALSE)
+        self.testList = Listbox(self.container, exportselection=FALSE, height=1)
         self.testList.pack(fill = BOTH, expand=TRUE)
         self.testList.bind( '<1>', lambda e: self.handleListboxSelect(e) )
         self.testList.bind('<Control-Button-1>', lambda e: self.handleMultiSelect(e))

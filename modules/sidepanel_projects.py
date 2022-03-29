@@ -13,7 +13,7 @@ class ProjectList(object):
         self.container = LabelFrame(sidePanel, text="Projects")
         self.container.pack(fill = BOTH, expand=TRUE)
 
-        self.projectList = Listbox(self.container, exportselection=FALSE)
+        self.projectList = Listbox(self.container, exportselection=FALSE, height=1)
         self.projectList.pack(fill = BOTH, expand=TRUE)
 
         self.projectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )

@@ -357,8 +357,8 @@ Test-settings contain default values and units for the test parameters. The defa
             wx.text(-0.1, 1.1, "$VO_{2}$ (Fick's equation):", fontsize = 10)
             wx.text(0.3, 1.1, '$VO_{2}=Q\\times C_{(a-v)}O_{2}$', fontsize = 10)
 
-            wx.text(-0.1, 1, "Sv (Fick's equation):", fontsize = 10)
-            wx.text(0.3, 1, '$Sv=VO_{2}\div HR\div C_{(a-v)}O_{2}$', fontsize = 10)
+            wx.text(-0.1, 1, "SV (Fick's equation):", fontsize = 10)
+            wx.text(0.3, 1, '$SV=VO_{2}\div HR\div C_{(a-v)}O_{2}$', fontsize = 10)
 
             wx.text(-0.1, 0.9, "Q (Fick's equation):", fontsize = 10)
             wx.text(0.3, 0.9, '$Q=VO_{2}\div C_{(a-v)}O_{2}$', fontsize = 10)
@@ -428,13 +428,6 @@ Test-settings contain default values and units for the test parameters. The defa
 
     def getMenubar(self):
         return self.menuBar
-
-    """ def setMode(self, var):
-        app.setActiveMode(var.get())
-        if var.get() == 0:
-            self.showBasicLayout()
-        else:
-            self.showAdvLayout() """
 
     def createDemoGraph(self):
         #print('Creating demograph')
@@ -570,32 +563,3 @@ Test-settings contain default values and units for the test parameters. The defa
             text = self.view.entrycget(3, 'label')
             if text == 'Hide environment details':
                 envContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
-
-    """ def showAdvLayout(self):
-        testContainer = app.testDetailModule.container
-        envContainer = app.envDetailModule.frame
-        projectContainer = app.projectDetailModule.container
-
-        projectContainer.pack_forget()
-        testContainer.pack_forget()
-        envContainer.pack_forget()
-
-        self.view.entryconfigure(1, label='Hide project menu')
-        projectContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
-        self.view.entryconfigure(2, label='Hide test menu')
-        testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
-        self.view.entryconfigure(3, label='Hide environment menu')
-        envContainer.pack(side = LEFT, fill = BOTH, expand=TRUE)
-
-    def showBasicLayout(self):
-        testContainer = app.testDetailModule.container
-        envContainer = app.envDetailModule.frame
-        projectContainer = app.projectDetailModule.container
-
-        self.view.entryconfigure(1, label='Show project menu')
-        projectContainer.pack_forget()
-        testContainer.pack_forget()
-        self.view.entryconfigure(3, label='Show environment menu')
-        envContainer.pack_forget()
-
-        testContainer.pack(side = LEFT, fill = BOTH, expand=TRUE) """

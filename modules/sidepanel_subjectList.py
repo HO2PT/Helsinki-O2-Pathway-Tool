@@ -13,7 +13,7 @@ class SubjectList(object):
         self.container.pack(fill = BOTH, expand=TRUE)
         self.startSel = None
 
-        self.subjectList = Listbox(self.container, exportselection=FALSE)
+        self.subjectList = Listbox(self.container, exportselection=FALSE, height=1)
         self.subjectList.pack(fill = BOTH, expand=TRUE)
         self.subjectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
         self.subjectList.bind('<Control-Button-1>', lambda e: self.handleCtrlSelect(e))

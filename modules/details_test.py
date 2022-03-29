@@ -4,11 +4,15 @@ from tkinter import ttk
 from objects.app import app
 from modules.ScrollableNotebook import ScrollableNotebook
 
-class TestDetailModule(object):    
-    def __init__(self, detailsPanel):
-        self.container = ttk.Labelframe(detailsPanel, text="Test details")
+class TestDetailModule(ttk.Frame):    
+    def __init__(self, detailsPanel, *args, **kwargs):
+        ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
+        
         if app.settings.visDefaults['testDetails']:
-            self.container.pack(side = LEFT, fill = BOTH, expand=TRUE)
+            self.pack(side = LEFT, fill = Y)#, expand=TRUE)
+
+        self.configure(borderwidth=5)
+        self.container = ttk.Labelframe(self, text="Test details", borderwidth=5)
 
         ## Details frame
         details = ttk.Frame(self.container)
@@ -21,7 +25,7 @@ class TestDetailModule(object):
 
         ## Load notebook
         self.loadsContainer = ttk.Frame(self.container)
-        self.loadsContainer.pack(side=LEFT, fill=BOTH, expand=TRUE)
+        self.loadsContainer.pack(side=LEFT, fill=Y)#, expand=TRUE)
         self.loadNotebook = LoadNotebook(self.loadsContainer)
 
     def addLoad(self):
@@ -288,7 +292,7 @@ class LoadTab(object):
         row = 1
         n = 1
 
-        """ items1 = ['VO2','HR','Sv','Q','Hb','SaO2']
+        """ items1 = ['VO2','HR','SV','Q','Hb','SaO2']
         items2 = ['CaO2', 'CvO2','CavO2','QaO2','SvO2','PvO2']
         items3 = ['T', 'pH']
 

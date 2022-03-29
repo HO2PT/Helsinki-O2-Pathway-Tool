@@ -9,7 +9,7 @@ with exercise physiologists in Helsingin Urheilulääkäriasema in Helsinki, Fin
 The O2PathwayTool uses information about (at least): 
 - oxygen consumption (VO2)
 - heart rate (HR)
-- stroke volume (Sv)
+- stroke volume (SV)
 - cardiac output (Q)
 - hemoglobin concentration ([Hb])
 - oxygen saturation of arterial blood (SaO2). 

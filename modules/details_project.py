@@ -2,11 +2,16 @@ from tkinter import *
 from tkinter import ttk
 from objects.app import app
 
-class ProjectDetailsModule(object):
-    def __init__(self, detailsPanel):
-        self.container = ttk.Labelframe(detailsPanel, text="Project details")
+class ProjectDetailsModule(ttk.Frame):
+    def __init__(self, detailsPanel, *args, **kwargs):
+        ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
+        
         if app.settings.visDefaults['projectDetails']:
-            self.container.pack(side = LEFT, fill=Y)
+            self.pack(side = LEFT, fill=Y)
+
+        self.configure(borderwidth=5)
+
+        self.container = ttk.Labelframe(self, text="Project details", borderwidth=5)
 
         self.subjectCount = ttk.Label(self.container, text=None)
         self.subjectCount.pack(expand=False)

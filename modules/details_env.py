@@ -2,12 +2,16 @@ from tkinter import *
 from tkinter import ttk
 from objects.app import app
 
-class EnvDetailModule(object):
-    def __init__(self, detailsPanel):
-        self.frame = ttk.Labelframe(detailsPanel, text="Environment details")
+class EnvDetailModule(ttk.Frame):
+    def __init__(self, detailsPanel, *args, **kwargs):
+        ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
+
+        self.frame = ttk.Labelframe(detailsPanel, text="Environment details", borderwidth=5)
         if app.settings.visDefaults['envDetails']:
             self.frame.pack(side = LEFT, fill = Y)
         
+        self.configure(borderwidth=5)
+        self.frame = ttk.Labelframe(self, text="Environment details", borderwidth=5)
         #print(self.frame.pack_info())
 
         self.create()
