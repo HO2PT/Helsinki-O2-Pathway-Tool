@@ -22,11 +22,8 @@ class TestDetailModule(ttk.Frame):
         self.testId = ttk.Label(details, text=None)
         self.testId.pack()
 
-        #ttk.Button(details, text="Calculate", command=lambda: app.getActiveTest().getMaxLoad()).pack(side=BOTTOM)
-
         ## Load notebook
         self.loadsContainer = ttk.Frame(self.container)
-        self.loadsContainer.pack(side=LEFT, fill=Y)#, expand=TRUE)
         self.loadNotebook = LoadNotebook(self.loadsContainer)
 
     def addLoad(self):
@@ -35,6 +32,7 @@ class TestDetailModule(ttk.Frame):
     def refreshTestDetails(self):
         # Refresh details
         self.testId.config(text=f'Id: {app.getActiveTest().id}')
+        self.loadsContainer.pack(side=LEFT, fill=Y)#, expand=TRUE)
         self.loadNotebook.refresh()
 
 class LoadNotebook(object):
@@ -245,11 +243,11 @@ class LoadTab(object):
             load.setName(self.name)
         else:
             self.name = load.getName()
-        self.details = details
-        self.notebook = notebook
+        # self.details = details
+        # self.notebook = notebook
         self.detailRows = []
         
-        self.loadFrame = ttk.Frame(self.notebook)
+        self.loadFrame = ttk.Frame(notebook)
         self.loadFrame.pack(fill=BOTH, expand=TRUE)
 
         self.container = ttk.Frame(self.loadFrame)
@@ -324,18 +322,18 @@ class LoadTab(object):
             TestDetailRow(self.loadFrame3, temp, self.details, i) """
 
         # Iterate through load details and print to Details module
-        for key, value in self.details.getWorkLoadDetails().items():
+        for key, value in details.getWorkLoadDetails().items():
             if i == 3:
                 if n == 1:
-                    self.detailRows.append( TestDetailRow(self.loadFrame1, temp, self.details, row) )
+                    self.detailRows.append( TestDetailRow(self.loadFrame1, temp, details, row) )
                     temp=[]
                     i = 0
                 elif n == 2:
-                    self.detailRows.append( TestDetailRow(self.loadFrame2, temp, self.details, row) )
+                    self.detailRows.append( TestDetailRow(self.loadFrame2, temp, details, row) )
                     temp=[]
                     i = 0
                 else:
-                    self.detailRows.append( TestDetailRow(self.loadFrame3, temp, self.details, row) )
+                    self.detailRows.append( TestDetailRow(self.loadFrame3, temp, details, row) )
                     temp=[]
                     i = 0
                         
@@ -476,15 +474,16 @@ class TestDetailRow(ttk.Frame):
 
 class TestDetailMenuElem(object):
     def __init__(self, menu, menuButton, label, index, elems, name, workload):
-        self.menu = menu
+        # self.menu = menu
         self.menuButton = menuButton
-        self.label = label
+        # self.label = label
         self.index = index
         self.elems = elems
         self.name = name
-        self.workLoad = workload
+        # self.workLoad = workload
 
-        self.menu.add_command(label=self.label, command=lambda: self.updateValue())
+        # self.menu.add_command(label=self.label, command=lambda: self.updateValue())
+        menu.add_command(label=label, command=lambda: self.updateValue())
 
     def updateValue(self):
         self.menuButton.config(text=self.elems[self.index])

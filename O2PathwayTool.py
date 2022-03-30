@@ -78,7 +78,8 @@ def debug():
     # for d in app.getActiveTest().getWorkLoads():
     #     print(d.getDetails().getWorkLoadDetails())
 
-    print(app.getActiveTest().envDetails.getDetails())
+    # print(app.getActiveTest().envDetails.getDetails())
+    print(root.winfo_children())
     # print( app.plottingPanel.plots[0].loadNotebookFrame.winfo_width())
 
 root.bind('<Tab>', lambda e: debug())

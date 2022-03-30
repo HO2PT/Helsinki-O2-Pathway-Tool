@@ -7,30 +7,32 @@ from modules.details_project import *
 from modules.details_test import *
 from objects.app import app
 
-class DetailsPanel(object):
-    def __init__(self, mainFrame):
+class DetailsPanel(ttk.Frame):
+    def __init__(self, mainFrame, *args, **kwargs):
+        ttk.Frame.__init__(self, mainFrame, *args, **kwargs)
+        self.pack(side=TOP, fill=X)
+
         sty = ttk.Style()
         sty.configure(
             'details.TFrame', 
             relief='raised'
         )
 
-        self.frame_thickness = 10
+        self.frame_thickness = 20
         self.defHeight = 50
 
-        self.detailsPanel = ttk.Frame(mainFrame, height=self.defHeight, style="details.TFrame", borderwidth=self.frame_thickness)
+        self.upPart = ttk.Frame(self)
+        self.upPart.pack(fill=X)
+
+        self.detailsPanel = ttk.Frame(self.upPart, height=self.defHeight, style="details.TFrame", borderwidth=self.frame_thickness)
         if app.settings.visDefaults['allDetails']:
-            self.detailsPanel.pack(side=TOP, fill=X)
+            self.detailsPanel.pack(side=LEFT, fill=X, expand=True)
             # self.detailsPanel.pack_propagate(False)
 
         
         sty.layout('details.TFrame', [
             ('Frame.border', {'sticky': 'swe'})
             ])
-
-        self.detailsPanel.bind('<Motion>', self.changeCursor)
-        self.detailsPanel.bind('<B1-Motion>', self.resize)
-        self.detailsPanel.bind('<Double-Button-1>', self.defSize)
 
         self.projectDetails = ProjectDetailsModule(self.detailsPanel)
         app.projectDetailModule = self.projectDetails
@@ -41,7 +43,16 @@ class DetailsPanel(object):
         self.envDetails = EnvDetailModule(self.detailsPanel)
         app.envDetailModule = self.envDetails
 
-        ttk.Button(self.detailsPanel, text='Plot', command=lambda: self.plotData()).pack(side=RIGHT)#, fill=Y)
+        ttk.Button(self.upPart, text='Plot', command=lambda: self.plotData()).pack(side=RIGHT, fill=Y)
+
+        self.indicator = ttk.Label(self, text='', anchor='center')
+        self.indicator.pack(side=BOTTOM, fill=X)
+
+        self.detailsPanel.bind('<Motion>', self.changeCursor)
+        self.detailsPanel.bind('<B1-Motion>', self.resize)
+        self.detailsPanel.bind('<Double-Button-1>', self.defSize)
+
+        print(self.testDetails.winfo_width(), self.projectDetails.winfo_width(), self.envDetails.winfo_width())
 
     def plotData(self):
         app.getPlottingPanel().plot()
@@ -50,8 +61,15 @@ class DetailsPanel(object):
 
     def resize(self, event):
         self.detailsPanel.pack_propagate(False)
-        if event.y > 10:
+        minHeight = self.testDetails.winfo_reqheight()
+        containerHeight = self.detailsPanel.winfo_height()
+        if event.y > 20:
             self.detailsPanel.configure(height=event.y, width=self.detailsPanel.winfo_reqwidth())
+        
+        if containerHeight < minHeight:
+            self.indicator.configure(text='\u25BC', foreground='white', background='#4eb1ff')
+        else:
+            self.indicator.configure(text='', background=app.root.cget('bg'))
 
     def changeCursor(self, e):
         if self.detailsPanel.identify(e.x, e.y) == 'border':
@@ -60,4 +78,5 @@ class DetailsPanel(object):
             self.detailsPanel.configure(cursor='arrow')
 
     def defSize(self, event):
-        self.detailsPanel.pack_propagate(True) 
+        self.indicator.configure(text='', background=app.root.cget('bg'))
+        self.detailsPanel.pack_propagate(True)

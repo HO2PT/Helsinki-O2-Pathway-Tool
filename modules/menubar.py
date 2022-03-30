@@ -2,6 +2,11 @@ from tkinter import *
 from tkinter import ttk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from modules.Help import Help
+
+from PIL import Image, ImageTk
+import fitz
+import math
 
 from tkinter.scrolledtext import ScrolledText
 from objects.app import app
@@ -71,7 +76,7 @@ class MenuBar(object):
         # About
         options = Menu(self.menuBar, tearoff = 0)
         self.menuBar.add_cascade(label ='Help', menu = options)
-        options.add_command(label ='Help...', command = lambda: self.showHelp())
+        options.add_command(label ='Help...', command = lambda: Help())
         options.add_command(label ='About O2 Pathway Tool', command = None)
 
     def showHelp(self):
@@ -98,6 +103,7 @@ class MenuBar(object):
         self.progressionList.insert('end', 'Data export')
         self.progressionList.insert('end', 'Settings')
         self.progressionList.insert('end', 'Equations')
+        self.progressionList.insert('end', 'PDF test')
 
         self.progressionList.pack(expand=1, fill=BOTH)
         self.progressionList.bind( '<<ListboxSelect>>', lambda e: self.handleListBoxSelect(e) )
@@ -388,6 +394,33 @@ Test-settings contain default values and units for the test parameters. The defa
 
             wx.text(0.3, -0.15, "$\Delta lnPO_{2}(pH)\div\Delta pH_{rest} = -1.1$", fontsize = 10)
             wx.text(0.3, -0.2, '$\Delta lnPO_{2}(pH)=(pH-pH_{rest})\\times (-1.1)=0.22$', fontsize = 10)
+        if index == 10:
+            doc = fitz.open(r"C:/Koulu/Harjoittelu/HULA/SporttiaStadiin/Kutsu/SporttiaStadiinkutsu.pdf")
+            currentPage = 0
+            canvas = Canvas(self.content, width=800, height=600)
+            canvas.grid(column=0, row=0)
+
+            pix = doc[currentPage].get_pixmap()
+            shrinkFactor = int(canvas.cget("height")) / pix.height
+            mode = "RGBA" if pix.alpha else "RGB"
+            img = Image.frombytes(mode, [pix.width, pix.height], pix.samples)
+            img = img.resize( (math.floor(pix.width * shrinkFactor), math.floor(pix.height * shrinkFactor)) )
+
+            tkimg = ImageTk.PhotoImage(img)
+            canvas.create_image(0, 0, anchor=NW, image=tkimg)
+
+            def scale(e):
+                print('scaling')
+                print(pix.height, pix.width)
+                print(canvas.winfo_height(), canvas.winfo_width())
+                # scaledImg = img.resize((math.floor(pix.width*2), math.floor(pix.height*2)))
+                canvas.scale('all', 0, 0, 2, 2)
+                # canvas.itemconfig(imgContainer, image=scaledImg)
+                
+                
+            canvas.bind('<1>', lambda e: scale(e) )
+
+            self.window.mainloop()
 
     def checkVisibility(self, object):
         if object == 'side':

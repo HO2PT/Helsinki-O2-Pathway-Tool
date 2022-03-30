@@ -19,31 +19,31 @@ class ProjectDetailsModule(ttk.Frame):
 
         # VO2 details
         self.VO2max = ttk.Label(self.container, text=None)
-        self.VO2max.pack(expand=False)
         self.VO2min = ttk.Label(self.container, text=None)
-        self.VO2min.pack(expand=False)
         self.VO2mean = ttk.Label(self.container, text=None)
-        self.VO2mean.pack(expand=False)
 
         # QaO2 details
         self.QaO2max = ttk.Label(self.container, text=None)
-        self.QaO2max.pack(expand=False)
         self.QaO2min = ttk.Label(self.container, text=None)
-        self.QaO2min.pack(expand=False)
         self.QaO2mean = ttk.Label(self.container, text=None)
-        self.QaO2mean.pack(expand=False)
 
         # DO2 details
         self.DO2max = ttk.Label(self.container, text=None)
-        self.DO2max.pack(expand=False)
         self.DO2min = ttk.Label(self.container, text=None)
-        self.DO2min.pack(expand=False)
         self.DO2mean = ttk.Label(self.container, text=None)
-        self.DO2mean.pack(expand=False)
 
         self.calculateButton = ttk.Button(self.container, text="Calculate", command=lambda: app.getMaxMinAvg(plotProject=True))
 
     def refreshDetails(self):
+        self.VO2max.pack(expand=False)
+        self.VO2min.pack(expand=False)
+        self.VO2mean.pack(expand=False)
+        self.QaO2max.pack(expand=False)
+        self.QaO2min.pack(expand=False)
+        self.QaO2mean.pack(expand=False)
+        self.DO2max.pack(expand=False)
+        self.DO2min.pack(expand=False)
+        self.DO2mean.pack(expand=False)
         # Show buttons
         try:
             self.calculateButton.pack_info()

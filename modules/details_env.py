@@ -17,6 +17,9 @@ class EnvDetailModule(ttk.Frame):
         self.frame = ttk.Labelframe(self, text="Environment details", borderwidth=5)
         self.frame.pack()
 
+        self.dummy = ttk.Label(self.frame, text='')
+        self.dummy.pack()
+
         self.container = ttk.Frame(self.frame, height=10)        
 
         self.elevLabel = ttk.Label(self.container, text='')
@@ -48,6 +51,7 @@ class EnvDetailModule(ttk.Frame):
         self.calcMetodRow = envDetailRow(self.calcMethod, 'PiO2Method', 1, 5)
 
     def refresh(self):
+        self.dummy.destroy()
         self.container.grid()
         self.elevLabel.grid(column=0, row=0)
         self.atmLabel.grid(column=0, row=1)
