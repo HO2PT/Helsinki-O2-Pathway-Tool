@@ -76,8 +76,10 @@ def resize(e):
 
 def debug():
     # for d in app.getActiveTest().getWorkLoads():
-        # print(d.getDetails().getWorkLoadDetails())
-    print( app.plottingPanel.plots[0].loadNotebookFrame.winfo_width())
+    #     print(d.getDetails().getWorkLoadDetails())
+
+    print(app.getActiveTest().envDetails.getDetails())
+    # print( app.plottingPanel.plots[0].loadNotebookFrame.winfo_width())
 
 root.bind('<Tab>', lambda e: debug())
 
@@ -100,17 +102,17 @@ def on_closing():
         except:
             pass
         try:
-            detailsPanel.projectDetails.container.pack_info()
+            detailsPanel.projectDetails.pack_info()
             project = True
         except:
             pass
         try:
-            detailsPanel.testDetails.container.pack_info()
+            detailsPanel.testDetails.pack_info()
             test = True
         except:
             pass
         try:
-            detailsPanel.envDetails.frame.pack_info()
+            detailsPanel.envDetails.pack_info()
             env = True
         except:
             pass

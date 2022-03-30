@@ -4,8 +4,6 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 from tkinter.scrolledtext import ScrolledText
-
-from matplotlib.pyplot import fill
 from objects.app import app
 from modules.notification import notification
 from objects.test import Test
@@ -400,19 +398,21 @@ Test-settings contain default values and units for the test parameters. The defa
                 return 'Show'
         elif object == 'project':
             try:
-                app.projectDetailModule.container.pack_info()
+                app.projectDetailModule.pack_info()
+                # app.projectDetailModule.container.pack_info()
                 return 'Hide'
             except TclError:
                 return 'Show'
         elif object == 'test':
             try:
-                app.testDetailModule.container.pack_info()
+                app.testDetailModule.pack_info()
+                # app.testDetailModule.container.pack_info()
                 return 'Hide'
             except TclError:
                 return 'Show'
         elif object == 'environment':
             try:
-                app.envDetailModule.frame.pack_info()
+                app.envDetailModule.pack_info()
                 return 'Hide'
             except TclError:
                 return 'Show'
@@ -490,9 +490,9 @@ Test-settings contain default values and units for the test parameters. The defa
             self.view.entryconfigure(1, label='Show project details')
         else:
             self.view.entryconfigure(1, label='Hide project details')
-        testContainer = app.testDetailModule.container
-        envContainer = app.envDetailModule.frame
-        projectContainer = app.projectDetailModule.container
+        testContainer = app.testDetailModule #app.testDetailModule.container
+        envContainer = app.envDetailModule
+        projectContainer = app.projectDetailModule #app.projectDetailModule.container
         
         if projectContainer.winfo_manager():
             projectContainer.pack_forget()
@@ -519,9 +519,9 @@ Test-settings contain default values and units for the test parameters. The defa
             self.view.entryconfigure(2, label='Show test details')
         else:
             self.view.entryconfigure(2, label='Hide test details')
-        testContainer = app.testDetailModule.container
-        envContainer = app.envDetailModule.frame
-        projectContainer = app.projectDetailModule.container
+        testContainer = app.testDetailModule #app.testDetailModule.container
+        envContainer = app.envDetailModule
+        projectContainer = app.projectDetailModule #app.projectDetailModule.container
         
         if testContainer.winfo_manager():
             testContainer.pack_forget()
@@ -540,14 +540,13 @@ Test-settings contain default values and units for the test parameters. The defa
 
     def hideEnvDetails(self):
         text = self.view.entrycget(3, 'label')
-        #print(self.view.entrycget(3, 'label'))
         if text == 'Hide environment details':
             self.view.entryconfigure(3, label='Show environment details')
         else:
             self.view.entryconfigure(3, label='Hide environment details')
-        testContainer = app.testDetailModule.container
-        envContainer = app.envDetailModule.frame
-        projectContainer = app.projectDetailModule.container
+        testContainer = app.testDetailModule
+        envContainer = app.envDetailModule
+        projectContainer = app.projectDetailModule
         
         if envContainer.winfo_manager():
             envContainer.pack_forget()

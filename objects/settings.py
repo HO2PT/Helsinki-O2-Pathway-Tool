@@ -24,11 +24,11 @@ class Settings(object):
                     'envDetails': False,
                 },
                 "envDefaults": {
-                    "elevation": 1000,
-                    "atm": 101,
-                    "fio2": 21,
-                    "temp": 20,
-                    "rh": 40
+                    "Elevation": 1000,
+                    "Atm": 101,
+                    "FiO2": 21,
+                    "Temp": 20,
+                    "Rh": 40
                 },
                 "testDefaults":{
                     "Tc @ rest": 37,
@@ -135,11 +135,11 @@ class Settings(object):
         }
 
         self.envDefaults = {
-            'elevation': self.data['envDefaults']['elevation'],
-            'atm': self.data['envDefaults']['atm'],
-            'fio2': self.data['envDefaults']['fio2'],
-            'temp': self.data['envDefaults']['temp'],
-            'rh': self.data['envDefaults']['rh']
+            'Elevation': self.data['envDefaults']['Elevation'],
+            'Atm': self.data['envDefaults']['Atm'],
+            'FiO2': self.data['envDefaults']['FiO2'],
+            'Temp': self.data['envDefaults']['Temp'],
+            'Rh': self.data['envDefaults']['Rh']
         }
 
         self.testDefaults = {
@@ -200,7 +200,8 @@ class Settings(object):
             "Elevation_units": self.data['units']['Elevation'],
             "ATM_units": self.data['units']['ATM'],
             "FiO2_units": self.data['units']['FiO2'],
-            "Temperature_units": self.data['units']['Temperature']
+            "Temperature_units": self.data['units']['Temperature'],
+            "Rh_units": '%'
         }
 
         self.mcDefaults = {
@@ -306,7 +307,7 @@ class Settings(object):
             #### Elevation
             ttk.Label(container, text='Elevation').grid(column=0, row=0)
             elevEntry = ttk.Entry(container, width=7)
-            elevEntry.insert(0, self.envDefaults['elevation'])
+            elevEntry.insert(0, self.envDefaults['Elevation'])
             elevEntry.grid(column=1, row=0)
 
             # Elevation unit
@@ -324,7 +325,7 @@ class Settings(object):
             #### Atmosphere pressure
             ttk.Label(container, text='ATM').grid(column=0, row=1)
             atmEntry = ttk.Entry(container, width=7)
-            atmEntry.insert(0, self.envDefaults['atm'])
+            atmEntry.insert(0, self.envDefaults['Atm'])
             atmEntry.grid(column=1, row=1)
 
             # Atmosphere pressure unit
@@ -342,14 +343,14 @@ class Settings(object):
             # FiO2
             ttk.Label(container, text='FiO\u2082').grid(column=0, row=2)
             fio2Entry = ttk.Entry(container, width=7)
-            fio2Entry.insert(0, self.envDefaults['fio2'])
+            fio2Entry.insert(0, self.envDefaults['FiO2'])
             fio2Entry.grid(column=1, row=2)
             ttk.Label(container, text='%').grid(column=2, row=2)
 
             #### Temperature
             ttk.Label(container, text='Temperature').grid(column=0, row=3)
             tempEntry = ttk.Entry(container, width=7)
-            tempEntry.insert(0, self.envDefaults['temp'])
+            tempEntry.insert(0, self.envDefaults['Temp'])
             tempEntry.grid(column=1, row=3)
 
             # Temperature unit
@@ -358,28 +359,28 @@ class Settings(object):
             self.menuButtons['Temperature'] = tempMenuButton
             tempMenuButton.config(text=self.unitDefaults['Temperature_unit'])
 
-            #### RH%
-            ttk.Label(container, text='RH%').grid(column=0, row=4)
-            rhEntry = ttk.Entry(container, width=7)
-            rhEntry.insert(0, self.envDefaults['rh'])
-            rhEntry.grid(column=1, row=4)
-            ttk.Label(container, text='%').grid(column=2, row=4)
-
             tempMenu = Menu(tempMenuButton, tearoff=False)
             for i, u in enumerate(units):
                 MenuElem(tempMenu, tempMenuButton, u, i, units)
             tempMenuButton['menu']=tempMenu
-            tempMenuButton.grid(column=2, row=5)
+            tempMenuButton.grid(column=2, row=3)
+
+            #### RH%
+            ttk.Label(container, text='RH%').grid(column=0, row=4)
+            rhEntry = ttk.Entry(container, width=7)
+            rhEntry.insert(0, self.envDefaults['Rh'])
+            rhEntry.grid(column=1, row=4)
+            ttk.Label(container, text='%').grid(column=2, row=4)
 
             ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=2, row=5, sticky='E')
 
             def saveSettings():
                 # Values
-                self.envDefaults['elevation'] = elevEntry.get()
-                self.envDefaults['atm'] = atmEntry.get()
-                self.envDefaults['fio2'] = fio2Entry.get()
-                self.envDefaults['temp'] = tempEntry.get()
-                self.envDefaults['rh'] = rhEntry.get()
+                self.envDefaults['Elevation'] = elevEntry.get()
+                self.envDefaults['Atm'] = atmEntry.get()
+                self.envDefaults['FiO2'] = fio2Entry.get()
+                self.envDefaults['Temp'] = tempEntry.get()
+                self.envDefaults['Rh'] = rhEntry.get()
 
                 # Units
                 for key, val in self.menuButtons.items():
@@ -389,11 +390,11 @@ class Settings(object):
                     self.data['unitDefaults'][key] = val.cget('text')
 
                 # Save changes to settings.pkl-file
-                self.data['envDefaults']['elevation'] = elevEntry.get()
-                self.data['envDefaults']['atm'] = atmEntry.get()
-                self.data['envDefaults']['fio2'] = fio2Entry.get()
-                self.data['envDefaults']['temp'] = tempEntry.get()
-                self.data['envDefaults']['rh'] = rhEntry.get()
+                self.data['envDefaults']['Elevation'] = elevEntry.get()
+                self.data['envDefaults']['Atm'] = atmEntry.get()
+                self.data['envDefaults']['FiO2'] = fio2Entry.get()
+                self.data['envDefaults']['Temp'] = tempEntry.get()
+                self.data['envDefaults']['Rh'] = rhEntry.get()
 
                 settingsFile = open('settings.pkl', 'wb')
                 pickle.dump(self.data, settingsFile)

@@ -592,6 +592,8 @@ class PlotTab():
         # Create loads notebook frame and loadnotebook
         self.loadNotebookFrame = ttk.Frame(self.tabFrame, style='loadNoteBookFrame.TFrame', borderwidth=10)
         self.loadNotebookFrame.pack(side=RIGHT, fill=Y)
+
+        self.loadNotebookFrame.bind('<Motion>', self.changeCursor)
         self.loadNotebookFrame.bind('<B1-Motion>', self.resize)
         self.loadNotebookFrame.bind('<ButtonRelease-1>', self.finishResize)
         self.loadNotebookFrame.bind('<Double-Button-1>', self.defSize)
@@ -607,6 +609,12 @@ class PlotTab():
             self.loadTabs.append(loadTabObject)
         print(self.loadNotebookFrame.winfo_children())
         return self.tabFrame
+
+    def changeCursor(self, e):
+        if self.loadNotebookFrame.identify(e.x, e.y) == 'border':
+            self.loadNotebookFrame.configure(cursor='sb_h_double_arrow')
+        else:
+            self.loadNotebookFrame.configure(cursor='arrow')
     
     def numfmt(self, x, pos=None):
             vo2unit = self.workLoadDetailsObjects[0].VO2_unit
@@ -666,8 +674,9 @@ class PlotTab():
         self.toolbarContainer.pack_forget()
         self.instructions.pack_forget()
         
+        # if event.x > 10:
         self.loadNotebookFrame.configure(height=self.loadNotebookFrame.winfo_height(), width=event.x*(-1))
-        # print(self.loadNotebookFrame.winfo_width())
+            # print(self.loadNotebookFrame.winfo_width())
 
     def defSize(self, event):
         self.loadNotebookFrame.pack_propagate(True)

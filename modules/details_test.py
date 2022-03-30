@@ -13,6 +13,7 @@ class TestDetailModule(ttk.Frame):
 
         self.configure(borderwidth=5)
         self.container = ttk.Labelframe(self, text="Test details", borderwidth=5)
+        self.container.pack()
 
         ## Details frame
         details = ttk.Frame(self.container)

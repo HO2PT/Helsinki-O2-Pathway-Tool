@@ -45,7 +45,8 @@ class SidePanel(object):
 
     def resize(self, event):
         self.sidePanel.pack_propagate(False)
-        self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=event.x)
+        if event.x > 10:
+            self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=event.x)
 
     def defSize(self, event):
         self.sidePanel.pack_propagate(True)

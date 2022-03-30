@@ -5,16 +5,17 @@ class EnvDetails(object):
 
         envDefaults = app.settings.getEnvDef()
 
-        self.elevation = envDefaults['elevation']
-        self.atm = envDefaults['atm']
-        self.fio2 = envDefaults['fio2']
-        self.temp = envDefaults['temp']
-        self.rh = envDefaults['rh']
+        self.elevation = envDefaults['Elevation']
+        self.atm = envDefaults['Atm']
+        self.fio2 = envDefaults['FiO2']
+        self.temp = envDefaults['Temp']
+        self.rh = envDefaults['Rh']
 
         self.elevationUnit = app.settings.getUnitDef()['Elevation_unit']
         self.atmUnit = app.settings.getUnitDef()['ATM_unit']
-        self.fio2Unit = app.settings.getUnitDef()['Elevation_unit']
+        self.fio2Unit = '%'
         self.tempUnit = app.settings.getUnitDef()['Temperature_unit']
+        self.rhUnit = '%'
 
         # 0 = US SA
         # 1 = MAE
@@ -22,22 +23,35 @@ class EnvDetails(object):
 
     def getDetails(self):
         return {
-            'elevation': self.elevation,
-            'atm': self.atm,
-            'fio2': self.fio2,
-            'temp': self.temp,
-            'rh': self.rh,
-            'pio2Method': self.pio2Method,
+            'Elevation': self.elevation,
+            'ATM': self.atm,
+            'FiO2': self.fio2,
+            'Temp': self.temp,
+            'Rh': self.rh,
+            'PiO2Method': self.pio2Method,
             'Elevation_unit': self.elevationUnit,
             'ATM_unit': self.atmUnit,
             'FiO2_unit': self.fio2Unit,
             'Temp_unit': self.tempUnit,
+            'Rh_unit': self.rhUnit
         }
 
     def setDetail(self, detail, value):
-        if detail == 'Elevation_unit':
+        if detail == 'Elevation':
+            self.elevation = value
+        elif detail == 'Elevation_unit':
             self.elevationUnit = value
+        elif detail == 'ATM':
+            self.atm = value
         elif detail == 'ATM_unit':
             self.atmUnit = value
+        elif detail == 'FiO2':
+            self.fio2 = value
+        elif detail == 'Temperature':
+            self.temp = value
         elif detail == 'Temperature_unit':
             self.tempUnit = value
+        elif detail == 'Rh':
+            self.rh = value
+        elif detail == 'PiO2Method':
+            self.pio2Method = value

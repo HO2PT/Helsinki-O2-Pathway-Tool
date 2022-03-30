@@ -9,9 +9,6 @@ from objects.app import app
 
 class DetailsPanel(object):
     def __init__(self, mainFrame):
-        # s = ttk.Style()
-        # s.configure('detailsPanel.TFrame', background='red')
-
         sty = ttk.Style()
         sty.configure(
             'details.TFrame', 
@@ -31,11 +28,9 @@ class DetailsPanel(object):
             ('Frame.border', {'sticky': 'swe'})
             ])
 
+        self.detailsPanel.bind('<Motion>', self.changeCursor)
         self.detailsPanel.bind('<B1-Motion>', self.resize)
         self.detailsPanel.bind('<Double-Button-1>', self.defSize)
-
-        # self.detailsFrame = ttk.Frame(self.detailsPanel)
-        # self.detailsFrame.pack(fill=X)
 
         self.projectDetails = ProjectDetailsModule(self.detailsPanel)
         app.projectDetailModule = self.projectDetails
@@ -47,13 +42,6 @@ class DetailsPanel(object):
         app.envDetailModule = self.envDetails
 
         ttk.Button(self.detailsPanel, text='Plot', command=lambda: self.plotData()).pack(side=RIGHT)#, fill=Y)
-        
-        # Resize frame
-        # resizeFrame = ttk.Label(self.detailsPanel, style='detailsPanel.TFrame')
-        # resizeFrame.pack(fill=X)
-        # resizeFrame.bind('<1>', lambda e: print('jou'))
-        # print(self.detailsPanel.winfo_height())
-
 
     def plotData(self):
         app.getPlottingPanel().plot()
@@ -62,7 +50,14 @@ class DetailsPanel(object):
 
     def resize(self, event):
         self.detailsPanel.pack_propagate(False)
-        self.detailsPanel.configure(height=event.y, width=self.detailsPanel.winfo_reqwidth())
+        if event.y > 10:
+            self.detailsPanel.configure(height=event.y, width=self.detailsPanel.winfo_reqwidth())
+
+    def changeCursor(self, e):
+        if self.detailsPanel.identify(e.x, e.y) == 'border':
+            self.detailsPanel.configure(cursor='sb_v_double_arrow')
+        else:
+            self.detailsPanel.configure(cursor='arrow')
 
     def defSize(self, event):
         self.detailsPanel.pack_propagate(True) 
