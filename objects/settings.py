@@ -40,7 +40,7 @@ class Settings(object):
                 "unitDefaults":{
                     "Load": 'W',
                     "Velocity": 'km/h',
-                    "Inclination": "\N{DEGREE SIGN}",
+                    "Incline": "\N{DEGREE SIGN}",
                     "VO2": 'ml/min',
                     "HR": 'bpm',
                     "SV": 'ml',
@@ -68,7 +68,7 @@ class Settings(object):
                 "units": {
                     "Load": ['W', 'kJ'],
                     "Velocity": ['km/h', 'm/s', 'mph'],
-                    "Inclination": ["\N{DEGREE SIGN}", "%"],
+                    "Incline": ["\N{DEGREE SIGN}", "%"],
                     "VO2": ['ml/min', 'l/min'],
                     "HR": ["bpm"],
                     "SV": ['ml', 'l'],
@@ -158,7 +158,7 @@ class Settings(object):
         self.unitDefaults = {
             "Load_unit": self.data['unitDefaults']['Load'],
             "Velocity_unit": self.data['unitDefaults']['Velocity'],
-            "Inclination_unit": self.data['unitDefaults']['Inclination'],
+            "Incline_unit": self.data['unitDefaults']['Incline'],
             "VO2_unit": self.data['unitDefaults']['VO2'],
             "HR_unit": self.data['unitDefaults']['HR'],
             "SV_unit": self.data['unitDefaults']['SV'],
@@ -187,7 +187,7 @@ class Settings(object):
         self.units = {
             "Load_units": self.data['units']['Load'],
             "Velocity_units": self.data['units']['Velocity'],
-            "Inclination_units": self.data['units']['Inclination'],
+            "Incline_units": self.data['units']['Incline'],
             "VO2_units": self.data['units']['VO2'],
             "HR_units": self.data['units']['HR'],
             "SV_units": self.data['units']['SV'],
@@ -418,7 +418,7 @@ class Settings(object):
             selectionFrame = ttk.Labelframe(self.settingsContainer, text='Use')
             selectionFrame.pack(fill=X, pady=(5,5), padx=(5,5), anchor='nw')
             ttk.Label(selectionFrame, text='Load').grid(column=1, row=0, sticky='w')
-            ttk.Label(selectionFrame, text='Velocity / Inclination').grid(column=1, row=1, sticky='w')
+            ttk.Label(selectionFrame, text='Velocity / Incline').grid(column=1, row=1, sticky='w')
             self.selVar = IntVar(value=self.testDefaults['loadMode'])
             ttk.Radiobutton(selectionFrame, variable=self.selVar, value=0).grid(column=0, row=0)
             ttk.Radiobutton(selectionFrame, variable=self.selVar, value=1).grid(column=0, row=1)
@@ -443,7 +443,7 @@ class Settings(object):
             vars = [
                 'Load', 
                 'Velocity',
-                'Inclination',
+                'Incline',
                 'VO2',
                 'HR',
                 'SV',

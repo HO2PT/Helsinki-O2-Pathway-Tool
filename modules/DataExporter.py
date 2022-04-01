@@ -57,11 +57,11 @@ class DataExporter(object):
             for i, key in enumerate(temp.getWorkLoadDetails().keys()):
                 if '_unit' not in key and '_MC' not in key and key != 'id' and key != 'Tc\u209A\u2091\u2090\u2096' and key != 'pH\u209A\u2091\u2090\u2096' and key != 'Tc @ rest' and key != 'pH @ rest':
                     if loadMode == 0: # Loads
-                        if key != 'Velocity' and key != 'Inclination':
+                        if key != 'Velocity' and key != 'Incline':
                             var = IntVar(value=1, name=key)
                             self.vars.append(var)
                             ttk.Checkbutton(container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
-                    else: # Velocity&Inclination
+                    else: # Velocity&Incline
                         if key != 'Load':
                             var = IntVar(value=1, name=key)
                             self.vars.append(var)

@@ -10,7 +10,7 @@ class WorkLoadDetails(object):
         self.isImported = False
         self.Load = 0
         self.Velocity = 0
-        self.Inclination = 0
+        self.Incline = 0
         self.VO2 = 0
         self.HR = 0
         self.SV = 0
@@ -40,7 +40,7 @@ class WorkLoadDetails(object):
 
         self.Load_unit = defUnits['Load_unit']
         self.Velocity_unit = defUnits['Velocity_unit']
-        self.Inclination_unit = defUnits['Inclination_unit']
+        self.Incline_unit = defUnits['Incline_unit']
         self.VO2_unit = defUnits['VO2_unit']
         self.HR_unit = defUnits['HR_unit']
         self.Sv_unit = defUnits['SV_unit']
@@ -89,8 +89,8 @@ class WorkLoadDetails(object):
         if label == 'Velocity_unit':
             self.Velocity_unit = unit
 
-        if label == 'Inclination_unit':
-            self.Inclination_unit = unit
+        if label == 'Incline_unit':
+            self.Incline_unit = unit
 
         if label == 'VO2_unit':
             self.VO2_unit = unit
@@ -195,8 +195,8 @@ class WorkLoadDetails(object):
         if label == 'Velocity':
             self.Velocity = value
 
-        if label == 'Inclination':
-            self.Inclination = value
+        if label == 'Incline':
+            self.Incline = value
 
         if label == 'VO2':
             self.VO2 = value
@@ -265,8 +265,8 @@ class WorkLoadDetails(object):
             'Velocity': self.Velocity,
             'Velocity_unit': self.Velocity_unit,
 
-            'Inclination': self.Inclination,
-            'Inclination_unit': self.Inclination_unit,
+            'Incline': self.Incline,
+            'Incline_unit': self.Incline_unit,
 
             'VO2': self.VO2,
             'VO2_unit': self.VO2_unit,

@@ -321,7 +321,7 @@ class LoadTab(object):
             self.detailRows.append( TestDetailRow(self.loadFrame3, temp, self.details, row+1) )
 
         # HR/SV or Q
-        extra = ttk.Labelframe(self.loadFrame1, text='One of following')
+        extra = ttk.Labelframe(self.loadFrame1, text='Either')
         extra.grid(column=0, row=4, columnspan=5, sticky='we', pady=(10,0), padx=5)
         extra.columnconfigure(0, weight=1)
         extra.columnconfigure(1, weight=1)
@@ -333,7 +333,16 @@ class LoadTab(object):
         self.detailRows.append( TestDetailRow(extra, temp, self.details, 0) )
         temp = ['SV', loadDetails['SV'], loadDetails['SV_unit'], loadDetails['SV_MC']]
         self.detailRows.append( TestDetailRow(extra, temp, self.details, 1) )
-        ttk.Label(extra, text='- OR -').grid(column=0, row=2, columnspan=5)
+
+        a = ttk.Frame(extra)
+        a.grid(column=0, row=2, sticky='we', columnspan=5)
+        a.columnconfigure(0, minsize=5)
+        a.columnconfigure(1, weight=0)
+        a.columnconfigure(2, weight=3)
+        ttk.Separator(a).grid(column=0, row=0, sticky='we')
+        ttk.Label(a, text='OR').grid(column=1, row=0)#, columnspan=5)
+        ttk.Separator(a).grid(column=2, row=0, sticky='we')
+        
         temp = ['Q', loadDetails['Q'], loadDetails['Q_unit'], loadDetails['Q_MC']]
         self.detailRows.append( TestDetailRow(extra, temp, self.details, 3) )
 
@@ -347,7 +356,7 @@ class LoadTab(object):
         else:
             temp = ['Velocity', loadDetails['Velocity']]
             self.detailRows.append( TestDetailRow(extra2, temp, self.details, 3) )
-            temp = ['Inclination', loadDetails['Inclination']]
+            temp = ['Incline', loadDetails['Incline']]
             self.detailRows.append( TestDetailRow(extra2, temp, self.details, 4) )
     
     def getName(self):

@@ -77,7 +77,7 @@ class PlottingPanel(object):
             self.plots.append(plotTabObject)
         else:
             #print('VALIDATION ERROR')
-            notification.create('error', f'Invalid values. Please check the values of {i+1}. load and try again.', 5000)
+            notification.create('error', f'Invalid values. Please check the units and values of {i+1}. load and try again.', 5000)
     
     def plotDemo(self):
         workLoadDetailsObjects = []
@@ -700,7 +700,7 @@ class PlotTab():
         self.plot = plt.subplots()
         self.fig, self.ax = self.plot
 
-        self.ax.set_title('O2 Pathway')
+        self.ax.set_title('O\u2082 Pathway')
         self.ax.set_xlabel('PvO\u2082 (mmHg)')
         self.ax.set_xlim(left=0, right=100)
         plt.subplots_adjust(bottom=0.175)
@@ -719,6 +719,10 @@ class PlotTab():
             line, = self.ax.plot(PvO2, y, lw=2, color=f'C{i}', label=w.name)
             curve, = self.ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=w.name)
             dot, = self.ax.plot(xi, yi, 'o', color='red', label=w.name)
+
+            line.set_picker(5)
+            curve.set_picker(5)
+            dot.set_picker(5)
 
             self.handles.insert(i, line)
 
@@ -755,11 +759,21 @@ class PlotTab():
         return self.canvas
 
     def onpick(self, event):
-
         # on the pick event, find the orig line corresponding to the
         # legend proxy line, and toggle the visibility
+        origline = []
         legline = event.artist
-        origline = self.lined[legline]
+        index = None
+        # Detect click on legend or plot itself
+        try:
+            origline = self.lined[legline]
+        except:
+            for l in plt.gca().get_legend_handles_labels()[0]:
+                for i, (key, value) in enumerate(self.lined.items()):
+                    if legline in value:
+                        index = i
+                        origline.append(value)
+            origline = origline[0]
 
         for line in origline:
             vis = not line.get_visible()
@@ -769,8 +783,12 @@ class PlotTab():
             # have been toggled
             if vis:
                 legline.set_alpha(1.0)
+                if index != None:
+                    self.leg.get_lines()[index].set_alpha(1.0)
             else:
                 legline.set_alpha(0.2)
+                if index != None:
+                    self.leg.get_lines()[index].set_alpha(0.2)
         self.fig.canvas.draw()
 
     def on_click(self, event):
@@ -832,9 +850,9 @@ class PlotLoadTab(object):
             ttk.Label(self.loadDetailsFrame, text=self.details["Velocity"]).grid(column=1, row=1)
             ttk.Label(self.loadDetailsFrame, text=self.details["Velocity_unit"]).grid(column=2, row=1)
 
-            ttk.Label(self.loadDetailsFrame, text='Inclination').grid(column=0, row=2)
-            ttk.Label(self.loadDetailsFrame, text=self.details["Inclination"]).grid(column=1, row=2)
-            ttk.Label(self.loadDetailsFrame, text=self.details["Inclination_unit"]).grid(column=2, row=2)
+            ttk.Label(self.loadDetailsFrame, text='Incline').grid(column=0, row=2)
+            ttk.Label(self.loadDetailsFrame, text=self.details["Incline"]).grid(column=1, row=2)
+            ttk.Label(self.loadDetailsFrame, text=self.details["Incline_unit"]).grid(column=2, row=2)
 
         # VO2
         vo2Value = float(self.details['VO2'])
