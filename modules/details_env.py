@@ -15,7 +15,7 @@ class EnvDetailModule(ttk.Frame):
         
         self.configure(borderwidth=5)
         self.frame = ttk.Labelframe(self, text="Environment details", borderwidth=5)
-        self.frame.pack()
+        self.frame.pack(fill=Y, expand=True)
 
         self.dummy = ttk.Label(self.frame, text='')
         self.dummy.pack()
@@ -58,7 +58,7 @@ class EnvDetailModule(ttk.Frame):
         self.fio2Label.grid(column=0, row=2)
         self.tempLabel.grid(column=0, row=3)
         self.rhLabel.grid(column=0, row=4)
-        self.calcMethod.grid(column=0, row=5, columnspan=2)
+        self.calcMethod.grid(column=0, row=5, columnspan=3)
 
         self.envDetails = app.getActiveTest().getEnvDetails().getDetails()
 

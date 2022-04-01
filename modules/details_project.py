@@ -7,12 +7,12 @@ class ProjectDetailsModule(ttk.Frame):
         ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
         
         if app.settings.visDefaults['projectDetails']:
-            self.pack(side = LEFT, fill=Y)
+            self.pack(side = LEFT, fill=BOTH)
 
         self.configure(borderwidth=5)
 
         self.container = ttk.Labelframe(self, text="Project details", borderwidth=5)
-        self.container.pack()
+        self.container.pack(fill=BOTH, expand=True)
 
         self.subjectCount = ttk.Label(self.container, text=None)
         self.subjectCount.pack(expand=False)

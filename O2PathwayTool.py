@@ -9,6 +9,7 @@ from modules.notification import notification
 from modules.panel_side import SidePanel
 from modules.panel_details import DetailsPanel
 from modules.panel_plotting import PlottingPanel
+# from objects.workLoadDetails import WorkLoadDetails
 
 root = Tk()
 root.title("O2 Pathway Tool")
@@ -75,11 +76,19 @@ def resize(e):
 # root.bind('<Configure>', lambda e: resize(e))
 
 def debug():
-    # for d in app.getActiveTest().getWorkLoads():
-    #     print(d.getDetails().getWorkLoadDetails())
+    for d in app.getActiveTest().getWorkLoads():
+        print(d.getDetails().getWorkLoadDetails())
+    
+    # print(app.getActiveProject().data)
+    
+    # a = WorkLoadDetails(name='dummy')
+    # for key in a.getWorkLoadDetails().keys():
+    #     print(key)
 
     # print(app.getActiveTest().envDetails.getDetails())
-    print(root.winfo_children())
+    # print(root.winfo_children())
+    # print(f'button visible? {app.detailsPanel.plotButton.winfo_ismapped()}')
+    # print(app.detailsPanel.winfo_reqwidth(), app.detailsPanel.winfo_width())
     # print( app.plottingPanel.plots[0].loadNotebookFrame.winfo_width())
 
 root.bind('<Tab>', lambda e: debug())

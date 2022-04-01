@@ -9,15 +9,17 @@ class TestDetailModule(ttk.Frame):
         ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
         
         if app.settings.visDefaults['testDetails']:
-            self.pack(side = LEFT, fill = Y)#, expand=TRUE)
+            self.pack(side = LEFT, fill = BOTH, expand=TRUE)
 
         self.configure(borderwidth=5)
         self.container = ttk.Labelframe(self, text="Test details", borderwidth=5)
-        self.container.pack()
+        self.container.pack(fill = BOTH, expand=TRUE)
 
         ## Details frame
         details = ttk.Frame(self.container)
-        details.pack(side=LEFT, fill = Y)
+        details.pack(side=LEFT, fill = BOTH)#, expand=TRUE)
+        
+        details.pack_configure(padx=5)
 
         self.testId = ttk.Label(details, text=None)
         self.testId.pack()
@@ -32,13 +34,13 @@ class TestDetailModule(ttk.Frame):
     def refreshTestDetails(self):
         # Refresh details
         self.testId.config(text=f'Id: {app.getActiveTest().id}')
-        self.loadsContainer.pack(side=LEFT, fill=Y)#, expand=TRUE)
+        self.loadsContainer.pack(side=LEFT, fill=BOTH)#, expand=TRUE)
         self.loadNotebook.refresh()
-
+        
 class LoadNotebook(object):
     def __init__(self, parent):
         self.loadTabs = []
-        self.parent = parent
+        # self.parent = parent
 
         # Add 'x'-button to tabs
         style = ttk.Style()
@@ -169,7 +171,7 @@ class LoadNotebook(object):
                 for i, v in enumerate(r.vars):
                     v.trace_vdelete('w', r.traceids[i] )
                     del v
-                asd = id(r)
+                # asd = id(r)
                 r.destroy()
                 del r
             tab.loadFrame.destroy()
@@ -186,6 +188,7 @@ class LoadNotebook(object):
             # Get load details
             details = l.getDetails()
 
+            # Skip possible empty loads
             if details.isImported == True:
 
                 if i == 0 or details.getWorkLoadDetails()['Load'] != 0:
@@ -243,7 +246,7 @@ class LoadTab(object):
             load.setName(self.name)
         else:
             self.name = load.getName()
-        # self.details = details
+        self.details = details
         # self.notebook = notebook
         self.detailRows = []
         
@@ -287,65 +290,65 @@ class LoadTab(object):
         ttk.Label(self.loadFrame3, text='Calc.').grid(column=4, row=0)
 
         temp = []
-        i = 0
-        row = 1
-        n = 1
-
-        """ items1 = ['VO2','HR','SV','Q','Hb','SaO2']
-        items2 = ['CaO2', 'CvO2','CavO2','QaO2','SvO2','PvO2']
+        items1 = ['VO2','Hb','SaO2']
+        items2 = ['CaO2', 'CvO2','C(a-v)O2','QaO2','SvO2','PvO2']
         items3 = ['T', 'pH']
 
         loadDetails = self.details.getWorkLoadDetails()
 
-        for i in items1:
-            label = [i]
-            value = [i,loadDetails[i]]
-            unit = [f'{i}_unit', loadDetails[f'{i}_unit']]
-            mc = [f'{i}_MC', loadDetails[f'{i}_MC']]
+        for row, i in enumerate(items1):
+            label = i
+            value = loadDetails[i]
+            unit = loadDetails[f'{i}_unit']
+            mc = loadDetails[f'{i}_MC']
             temp = [label, value, unit, mc]
-            TestDetailRow(self.loadFrame1, temp, self.details, i)
+            self.detailRows.append( TestDetailRow(self.loadFrame1, temp, self.details, row+1) )
 
-        for i in items2:
-            label = [i]
-            value = [i,loadDetails[i]]
-            unit = [f'{i}_unit', loadDetails[f'{i}_unit']]
-            mc = [f'{i}_MC', loadDetails[f'{i}_MC']]
+        for row, i in enumerate(items2):
+            label = i
+            value = loadDetails[i]
+            unit = loadDetails[f'{i}_unit']
+            mc = loadDetails[f'{i}_MC']
             temp = [label, value, unit, mc]
-            TestDetailRow(self.loadFrame2, temp, self.details, i)
+            self.detailRows.append( TestDetailRow(self.loadFrame2, temp, self.details, row+1) )
 
-        for i in items3:
-            label = [i]
-            value = [i,loadDetails[i]]
-            unit = [f'{i}_unit', loadDetails[f'{i}_unit']]
-            mc = [f'{i}_MC', loadDetails[f'{i}_MC']]
+        for row, i in enumerate(items3):
+            label = i
+            value = loadDetails[i]
+            unit = loadDetails[f'{i}_unit']
+            mc = loadDetails[f'{i}_MC']
             temp = [label, value, unit, mc]
-            TestDetailRow(self.loadFrame3, temp, self.details, i) """
+            self.detailRows.append( TestDetailRow(self.loadFrame3, temp, self.details, row+1) )
 
-        # Iterate through load details and print to Details module
-        for key, value in details.getWorkLoadDetails().items():
-            if i == 3:
-                if n == 1:
-                    self.detailRows.append( TestDetailRow(self.loadFrame1, temp, details, row) )
-                    temp=[]
-                    i = 0
-                elif n == 2:
-                    self.detailRows.append( TestDetailRow(self.loadFrame2, temp, details, row) )
-                    temp=[]
-                    i = 0
-                else:
-                    self.detailRows.append( TestDetailRow(self.loadFrame3, temp, details, row) )
-                    temp=[]
-                    i = 0
-                        
-            temp.append([key, value])
-            i += 1
-            row += 1
+        # HR/SV or Q
+        extra = ttk.Labelframe(self.loadFrame1, text='One of following')
+        extra.grid(column=0, row=4, columnspan=5, sticky='we', pady=(10,0), padx=5)
+        extra.columnconfigure(0, weight=1)
+        extra.columnconfigure(1, weight=1)
+        extra.columnconfigure(2, weight=1)
+        extra.columnconfigure(3, weight=1)
+        extra.columnconfigure(4, weight=1)
+        
+        temp = ['HR', loadDetails['HR'], loadDetails['HR_unit'], loadDetails['HR_MC']]
+        self.detailRows.append( TestDetailRow(extra, temp, self.details, 0) )
+        temp = ['SV', loadDetails['SV'], loadDetails['SV_unit'], loadDetails['SV_MC']]
+        self.detailRows.append( TestDetailRow(extra, temp, self.details, 1) )
+        ttk.Label(extra, text='- OR -').grid(column=0, row=2, columnspan=5)
+        temp = ['Q', loadDetails['Q'], loadDetails['Q_unit'], loadDetails['Q_MC']]
+        self.detailRows.append( TestDetailRow(extra, temp, self.details, 3) )
 
-            if row == 24:
-                n = 2
-
-            if row == 42:
-                n = 3
+        # Details - Load/Speed/Incline
+        extra2 = ttk.Labelframe(self.loadFrame3, text='Details')
+        extra2.grid(column=0, row=4, columnspan=5, sticky='we', pady=(30,0), padx=5)
+        
+        if app.settings.getTestDef()['loadMode'] == 0:
+            temp = ['Load', loadDetails['Load']]
+            self.detailRows.append( TestDetailRow(extra2, temp, self.details, 3) )
+        else:
+            temp = ['Velocity', loadDetails['Velocity']]
+            self.detailRows.append( TestDetailRow(extra2, temp, self.details, 3) )
+            temp = ['Inclination', loadDetails['Inclination']]
+            self.detailRows.append( TestDetailRow(extra2, temp, self.details, 4) )
     
     def getName(self):
         return self.name
@@ -376,71 +379,64 @@ class TestDetailRow(ttk.Frame):
         ttk.Frame.__init__(self, rowFrame, *args, **kwargs)
         self.grid()
         self.workLoadObject = workLoadObject
-        self.flag = 0
         self.vars = []
         self.objects = []
         self.traceids = []
 
-        if temp[0][0] == 'id':
-            self.label = temp[1][0]
-            self.value = temp[1][1]
-            self.unitLabel = temp[2][0]
-            self.unit = temp[2][1]
-            self.flag = 1
+        self.label = temp[0]
+        self.value = temp[1]
+        try:
+            self.unit = temp[2]
+        except:
+            self.unit = 0
+        try:
+            self.radio = temp[3]
+        except:
+            self.radio = None
+
+
+        if '2' in self.label:
+            self.label_subscripted = self.label.replace('2', '\u2082')
+            ttk.Label(rowFrame, text=self.label_subscripted, anchor='w').grid(column=0, row=row, sticky='we')
         else:
-            self.label = temp[0][0]
-            self.value = temp[0][1]
-            self.unitLabel = temp[1][0]
-            self.unit = temp[1][1]
-            self.radioLabel = temp[2][0]
-            self.radio = temp[2][1]
-
-        # self.container = ttk.Frame(self)
-        # self.container.grid()
-
-        if self.label != 'Tc\u209A\u2091\u2090\u2096' and self.label != 'Tc @ rest' and self.label != 'pH\u209A\u2091\u2090\u2096' and self.label != 'pH @ rest':
-            if '2' in self.label:
-                self.label_subscripted = self.label.replace('2', '\u2082')
-                ttk.Label(rowFrame, text=self.label_subscripted, anchor='w').grid(column=0, row=row)
-            else:
-                ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row)
+            ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row, sticky='we')
             
-            #Value
-            self.valueVar = StringVar(value=self.value)#, name=f'{self.label}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-            self.vars.append(self.valueVar)
-            self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
-            self.valueEntry.grid(column=1, row=row)
-            valtraceid = self.valueVar.trace('w', self.updateValue)
-            self.traceids.append(valtraceid)
+        #Value
+        self.valueVar = StringVar(value=self.value)
+        self.vars.append(self.valueVar)
+        self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
+        self.valueEntry.grid(column=1, row=row, sticky='we')
+        valtraceid = self.valueVar.trace('w', self.updateValue)
+        self.traceids.append(valtraceid)
 
-            # Unit
-            units = app.settings.getUnits()[f'{self.label}_units']
-            if len(units) != 1:
-                if self.label != 'pH':
-                    units = app.settings.getUnits()[f'{self.label}_units']
-                    self.tempMenuButton = ttk.Menubutton(rowFrame)
-                    self.tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
+        # Unit
+        units = app.settings.getUnits()[f'{self.label}_units']
+        if len(units) != 1:
+            if self.label != 'pH':
+                units = app.settings.getUnits()[f'{self.label}_units']
+                self.tempMenuButton = ttk.Menubutton(rowFrame)
+                self.tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
 
-                    tempMenu = Menu(self.tempMenuButton, tearoff=False)
-                    for i, u in enumerate(units):
-                        menuelem = TestDetailMenuElem(tempMenu, self.tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
-                        self.objects.append(menuelem)
-                    self.tempMenuButton['menu']=tempMenu
-                    self.tempMenuButton.grid(column=2, row=row)
-            else:
-                ttk.Label(rowFrame, text=units[0]).grid(column=2, row=row)
+                tempMenu = Menu(self.tempMenuButton, tearoff=False)
+                for i, u in enumerate(units):
+                    menuelem = TestDetailMenuElem(tempMenu, self.tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
+                    self.objects.append(menuelem)
+                self.tempMenuButton['menu']=tempMenu
+                self.tempMenuButton.grid(column=2, row=row, sticky='we')
+        else:
+            ttk.Label(rowFrame, text=units[0]).grid(column=2, row=row)
 
-            if self.flag != 1:
-                # Measured/Calculated
-                self.mcVar = IntVar(value=self.radio)#, name=f'{self.radioLabel}-{app.getActiveTest().id}-{self.workLoadObject.id}')
-                self.vars.append(self.mcVar)
-                self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
-                self.radio1.grid(column=3, row=row)
+        if self.radio != None:
+            # Measured/Calculated
+            self.mcVar = IntVar(value=self.radio)
+            self.vars.append(self.mcVar)
+            self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
+            self.radio1.grid(column=3, row=row)
 
-                self.radio2 = ttk.Radiobutton(rowFrame, value=1, variable=self.mcVar)
-                self.radio2.grid(column=4, row=row)
-                mctraceid = self.mcVar.trace('w', self.updateMC)
-                self.traceids.append(mctraceid)
+            self.radio2 = ttk.Radiobutton(rowFrame, value=1, variable=self.mcVar)
+            self.radio2.grid(column=4, row=row)
+            mctraceid = self.mcVar.trace('w', self.updateMC)
+            self.traceids.append(mctraceid)
         
     def updateValue(self, name, index, mode):
         # name = name.split('-')[0]
@@ -458,17 +454,17 @@ class TestDetailRow(ttk.Frame):
     
     def updateMC(self, name, index, mode):
         # name = name.split('-')[0]
-        self.workLoadObject.setMC(self.label, self.mcVar.get())
+        self.workLoadObject.setMC(f'{self.label}_MC', self.mcVar.get())
 
         # Update every load
         for l in app.getActiveTest().getWorkLoads():
-            l.getDetails().setMC(self.label, self.mcVar.get())
+            l.getDetails().setMC(f'{self.label}_MC', self.mcVar.get())
             # print(l.getDetails().getWorkLoadDetails())
 
         loadTabs = app.testDetailModule.loadNotebook.loadTabs
 
         for l in loadTabs:
-            l.updateMCs(self.label, self.mcVar.get())
+            l.updateMCs(f'{self.label}_MC', self.mcVar.get())
 
         # setattr(self.workLoadObject, name, self.mcVar.get())
 

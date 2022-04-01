@@ -31,6 +31,7 @@ class Settings(object):
                     "Rh": 40
                 },
                 "testDefaults":{
+                    "loadMode": 0,
                     "Tc @ rest": 37,
                     "Tc\u209A\u2091\u2090\u2096": 37,
                     "pH @ rest": 7.4,
@@ -38,6 +39,8 @@ class Settings(object):
                 },
                 "unitDefaults":{
                     "Load": 'W',
+                    "Velocity": 'km/h',
+                    "Inclination": "\N{DEGREE SIGN}",
                     "VO2": 'ml/min',
                     "HR": 'bpm',
                     "SV": 'ml',
@@ -64,6 +67,8 @@ class Settings(object):
                 },
                 "units": {
                     "Load": ['W', 'kJ'],
+                    "Velocity": ['km/h', 'm/s', 'mph'],
+                    "Inclination": ["\N{DEGREE SIGN}", "%"],
                     "VO2": ['ml/min', 'l/min'],
                     "HR": ["bpm"],
                     "SV": ['ml', 'l'],
@@ -143,6 +148,7 @@ class Settings(object):
         }
 
         self.testDefaults = {
+            "loadMode": self.data['testDefaults']['loadMode'],
             "Tc @ rest": self.data['testDefaults']['Tc @ rest'],
             "Tc\u209A\u2091\u2090\u2096": self.data['testDefaults']['Tc\u209A\u2091\u2090\u2096'],
             "pH @ rest": self.data['testDefaults']['pH @ rest'],
@@ -151,6 +157,8 @@ class Settings(object):
 
         self.unitDefaults = {
             "Load_unit": self.data['unitDefaults']['Load'],
+            "Velocity_unit": self.data['unitDefaults']['Velocity'],
+            "Inclination_unit": self.data['unitDefaults']['Inclination'],
             "VO2_unit": self.data['unitDefaults']['VO2'],
             "HR_unit": self.data['unitDefaults']['HR'],
             "SV_unit": self.data['unitDefaults']['SV'],
@@ -178,6 +186,8 @@ class Settings(object):
 
         self.units = {
             "Load_units": self.data['units']['Load'],
+            "Velocity_units": self.data['units']['Velocity'],
+            "Inclination_units": self.data['units']['Inclination'],
             "VO2_units": self.data['units']['VO2'],
             "HR_units": self.data['units']['HR'],
             "SV_units": self.data['units']['SV'],
@@ -298,7 +308,7 @@ class Settings(object):
 
         #     UserMode(self, container)
         if index == 1: # Environmental
-            labelFrame = LabelFrame(self.settingsContainer, text='Environmental defaults')
+            labelFrame = ttk.LabelFrame(self.settingsContainer, text='Environmental defaults')
             labelFrame.pack(fill=BOTH, expand=1, pady=(5,5), padx=(5,5))
             container = ttk.Frame(labelFrame)
             container.grid()
@@ -403,8 +413,19 @@ class Settings(object):
                 self.createNotification('info', 'Settings saved', 5000)
                 
         elif index == 0: # Test
-            labelFrame = LabelFrame(self.settingsContainer, text='Test defaults')
-            labelFrame.pack(fill=BOTH, expand=1, pady=(5,5), padx=(5,5))
+
+            # Select loads or velocity/incline
+            selectionFrame = ttk.Labelframe(self.settingsContainer, text='Use')
+            selectionFrame.pack(fill=X, pady=(5,5), padx=(5,5), anchor='nw')
+            ttk.Label(selectionFrame, text='Load').grid(column=1, row=0, sticky='w')
+            ttk.Label(selectionFrame, text='Velocity / Inclination').grid(column=1, row=1, sticky='w')
+            self.selVar = IntVar(value=self.testDefaults['loadMode'])
+            ttk.Radiobutton(selectionFrame, variable=self.selVar, value=0).grid(column=0, row=0)
+            ttk.Radiobutton(selectionFrame, variable=self.selVar, value=1).grid(column=0, row=1)
+
+            # Select default values/units
+            labelFrame = ttk.Labelframe(self.settingsContainer, text='Value & Unit defaults')
+            labelFrame.pack(fill=X, pady=(5,5), padx=(5,5), anchor='nw')
             # labelFrame.grid_columnconfigure(0, weight=1)
             container = ttk.Frame(labelFrame)
             container.grid()
@@ -419,68 +440,35 @@ class Settings(object):
             ttk.Label(container, text='Meas.').grid(column=3, row=0)
             ttk.Label(container, text='Calc.').grid(column=4, row=0)
 
-            #### Load
-            ttk.Label(container, text='Load').grid(column=0, row=1)
-            units = self.units['Load_units']
-            loadMenuButton = ttk.Menubutton(container)
-            self.menuButtons['Load'] = loadMenuButton
-            loadMenuButton.config(text=self.unitDefaults['Load_unit'])
+            vars = [
+                'Load', 
+                'Velocity',
+                'Inclination',
+                'VO2',
+                'HR',
+                'SV',
+                'Q',
+                'Hb',
+                'SaO2',
+                'CaO2',
+                'SvO2',
+                'CvO2',
+                'C(a-v)O2',
+                'QaO2',
+                'Tc @ rest',
+                'Tc\u209A\u2091\u2090\u2096',
+                'pH @ rest',
+                'pH\u209A\u2091\u2090\u2096',
+                'PvO2'
+            ]
 
-            loadMenu = Menu(loadMenuButton, tearoff=False)
-            for i, u in enumerate(units):
-                MenuElem(loadMenu, loadMenuButton, u, i, units)
-            loadMenuButton['menu']=loadMenu
-            loadMenuButton.grid(column=2, row=1)
+            for i, v in enumerate(vars):
+                if v == 'Tc @ rest' or v == 'Tc\u209A\u2091\u2090\u2096' or v == 'pH @ rest' or v == 'pH\u209A\u2091\u2090\u2096':
+                    SettingsRow(self, container, v, 1, i+1)
+                else:
+                    SettingsRow(self, container, v, 0, i+1)
 
-            #### VO2
-            SettingsRow(self, container, 'VO2', 0, 2)
-
-            #### HR
-            SettingsRow(self, container, 'HR', 0, 3)
-
-            #### SV
-            SettingsRow(self, container, 'SV', 0, 4)
-
-            #### Q
-            SettingsRow(self, container, 'Q', 0, 5)
-
-            #### Hb
-            SettingsRow(self, container, 'Hb', 0, 6)
-
-            #### SaO2
-            SettingsRow(self, container, 'SaO2', 0, 7)
-
-            #### CaO2
-            SettingsRow(self, container, 'CaO2', 0, 8)
-
-            #### SvO2
-            SettingsRow(self, container, 'SvO2', 0, 9)
-
-            #### CvO2
-            SettingsRow(self, container, 'CvO2', 0, 10)
-
-            #### CavO2
-            SettingsRow(self, container, 'C(a-v)O2', 0, 11)
-
-            #### QaO2
-            SettingsRow(self, container, 'QaO2', 0, 12)
-
-            #### Tc @ rest
-            SettingsRow(self, container, 'Tc @ rest', 1, 13)
-
-            #### Tc\u209A\u2091\u2090\u2096
-            SettingsRow(self, container, 'Tc\u209A\u2091\u2090\u2096', 1, 14)
-
-            # pH @ rest
-            SettingsRow(self, container, 'pH @ rest', 1, 15)
-
-            # pH\u209A\u2091\u2090\u2096
-            SettingsRow(self, container, 'pH\u209A\u2091\u2090\u2096', 1, 16)
-
-            #### PvO2
-            SettingsRow(self, container, 'PvO2', 0, 17)
-
-            ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=4, row=18, sticky='E')
+            ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=4, row=20, sticky='E')
 
             def saveSettings():
                 for key, val in self.entries.items():
@@ -495,6 +483,10 @@ class Settings(object):
                     self.mcDefaults[key] = val.get()
                     self.data['mcDefaults'][key] = val.get()
 
+                # Save selection of loads/velocity & incline
+                self.testDefaults['loadMode'] = self.selVar.get()
+                self.data['testDefaults']['loadMode'] = self.selVar.get()
+                
                 ## Update change to every project
                 projects = app.getProjects()
                 if len(projects) > 0:
@@ -528,7 +520,7 @@ class Settings(object):
         pHDif = float(pHrest) - float(pHpeak)
         Tdif = float(Tpeak) - float(Trest)
 
-        if len(test.getWorkLoads()) > 0:
+        if len(test.getWorkLoads()) > 1:
             if pHrest != pHpeak:
                 test.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
 
@@ -536,8 +528,10 @@ class Settings(object):
                 test.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
 
             pHstep = pHDif / (len(test.getWorkLoads())-1)
-
             Tstep = Tdif / (len(test.getWorkLoads())-1)
+        else:
+            pHstep = 0
+            Tstep = 0
 
         # Add linear change
         for i, w in enumerate(test.getWorkLoads()):
@@ -582,9 +576,9 @@ class SettingsRow(object):
             ttk.Label(parent, text=label_subscripted).grid(column=0, row=row)
         else:
             ttk.Label(parent, text=label).grid(column=0, row=row)
-        self.menuButton = ttk.Menubutton(parent)
-        settings.menuButtons[label] = self.menuButton
-        self.menuButton.config(text=settings.unitDefaults[f'{label}_unit'])
+        # self.menuButton = ttk.Menubutton(parent)
+        # settings.menuButtons[label] = self.menuButton
+        # self.menuButton.config(text=settings.unitDefaults[f'{label}_unit'])
 
         # Entry
         if entryFlag == 1:
@@ -593,28 +587,38 @@ class SettingsRow(object):
             tempEntry.insert(0, settings.testDefaults[label])
             tempEntry.grid(column=1, row=row)
 
-         # Unit
-        if len(settings.units[f"{label}_units"]) != 1:
-            menu = Menu(self.menuButton, tearoff=False)
-            units = settings.units[f"{label}_units"]
-            if units != None and label != 'pH\u209A\u2091\u2090\u2096' and label != 'pH @ rest':
-                for i, u in enumerate(units):
-                    MenuElem(menu, self.menuButton, u, i, units)
-                self.menuButton['menu']=menu
-                self.menuButton.grid(column=2, row=row)
-        else:
-            ttk.Label(parent, text=settings.units[f"{label}_units"][0]).grid(column=2, row=row)
+        # Unit
+        try:
+            self.menuButton = ttk.Menubutton(parent)
+            settings.menuButtons[label] = self.menuButton
+            self.menuButton.config(text=settings.unitDefaults[f'{label}_unit'])
+
+            if len(settings.units[f"{label}_units"]) != 1:
+                menu = Menu(self.menuButton, tearoff=False)
+                units = settings.units[f"{label}_units"]
+                if units != None and label != 'pH\u209A\u2091\u2090\u2096' and label != 'pH @ rest':
+                    for i, u in enumerate(units):
+                        MenuElem(menu, self.menuButton, u, i, units)
+                    self.menuButton['menu']=menu
+                    self.menuButton.grid(column=2, row=row)
+            else:
+                ttk.Label(parent, text=settings.units[f"{label}_units"][0]).grid(column=2, row=row)
+        except KeyError:
+            pass
 
         # Measured/Calculated
-        self.intVar = IntVar(value=settings.mcDefaults[f'{label}_mc'])#, name=f'{label}_mc')
-        # if self.intVar not in app.intVars:
-        #     app.intVars.append(self.intVar)
-        self.radio1 = ttk.Radiobutton(parent, value=0, variable=self.intVar)
-        self.radio1.grid(column=3, row=row)
+        try:
+            self.intVar = IntVar(value=settings.mcDefaults[f'{label}_mc'])
+            # if self.intVar not in app.intVars:
+            #     app.intVars.append(self.intVar)
+            self.radio1 = ttk.Radiobutton(parent, value=0, variable=self.intVar)
+            self.radio1.grid(column=3, row=row)
 
-        self.radio2 = ttk.Radiobutton(parent, value=1, variable=self.intVar)
-        self.radio2.grid(column=4, row=row)
-        settings.mcs[f'{label}_mc'] = self.intVar
+            self.radio2 = ttk.Radiobutton(parent, value=1, variable=self.intVar)
+            self.radio2.grid(column=4, row=row)
+            settings.mcs[f'{label}_mc'] = self.intVar
+        except KeyError:
+            pass
 
 """ class UserMode(object):
     def __init__(self, settings, parent):

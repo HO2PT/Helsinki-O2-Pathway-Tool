@@ -18,7 +18,7 @@ class DetailsPanel(ttk.Frame):
             relief='raised'
         )
 
-        self.frame_thickness = 20
+        self.frame_thickness = 10
         self.defHeight = 50
 
         self.upPart = ttk.Frame(self)
@@ -43,16 +43,17 @@ class DetailsPanel(ttk.Frame):
         self.envDetails = EnvDetailModule(self.detailsPanel)
         app.envDetailModule = self.envDetails
 
-        ttk.Button(self.upPart, text='Plot', command=lambda: self.plotData()).pack(side=RIGHT, fill=Y)
+        self.plotButton = ttk.Button(self.upPart, text='Plot', command=lambda: self.plotData())
+        self.plotButton.pack(side=RIGHT, fill=Y)
 
         self.indicator = ttk.Label(self, text='', anchor='center')
         self.indicator.pack(side=BOTTOM, fill=X)
 
         self.detailsPanel.bind('<Motion>', self.changeCursor)
         self.detailsPanel.bind('<B1-Motion>', self.resize)
-        self.detailsPanel.bind('<Double-Button-1>', self.defSize)
+        self.indicator.bind('<Double-Button-1>', self.defSize)
 
-        print(self.testDetails.winfo_width(), self.projectDetails.winfo_width(), self.envDetails.winfo_width())
+        # print(self.testDetails.winfo_width(), self.projectDetails.winfo_width(), self.envDetails.winfo_width())
 
     def plotData(self):
         app.getPlottingPanel().plot()

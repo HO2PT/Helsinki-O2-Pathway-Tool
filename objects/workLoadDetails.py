@@ -9,6 +9,8 @@ class WorkLoadDetails(object):
         self.name = name
         self.isImported = False
         self.Load = 0
+        self.Velocity = 0
+        self.Inclination = 0
         self.VO2 = 0
         self.HR = 0
         self.SV = 0
@@ -37,6 +39,8 @@ class WorkLoadDetails(object):
         defUnits = app.settings.getUnitDef()
 
         self.Load_unit = defUnits['Load_unit']
+        self.Velocity_unit = defUnits['Velocity_unit']
+        self.Inclination_unit = defUnits['Inclination_unit']
         self.VO2_unit = defUnits['VO2_unit']
         self.HR_unit = defUnits['HR_unit']
         self.Sv_unit = defUnits['SV_unit']
@@ -81,6 +85,12 @@ class WorkLoadDetails(object):
         # print(f'UPDATING UNIT {label}, to {unit}')
         if label == 'Load_unit':
             self.Load_unit = unit
+
+        if label == 'Velocity_unit':
+            self.Velocity_unit = unit
+
+        if label == 'Inclination_unit':
+            self.Inclination_unit = unit
 
         if label == 'VO2_unit':
             self.VO2_unit = unit
@@ -168,6 +178,9 @@ class WorkLoadDetails(object):
         if label == 'T_MC': 
             self.T_MC = value
 
+        if label == 'pH_MC': 
+            self.pH_MC = value
+
         if label == 'PvO2_MC': 
             self.PvO2_MC = value
 
@@ -178,6 +191,12 @@ class WorkLoadDetails(object):
         # print('UPDATING VALUE')
         if label == 'Load':
             self.Load = value
+
+        if label == 'Velocity':
+            self.Velocity = value
+
+        if label == 'Inclination':
+            self.Inclination = value
 
         if label == 'VO2':
             self.VO2 = value
@@ -242,6 +261,12 @@ class WorkLoadDetails(object):
             
             'Load': self.Load,
             'Load_unit': self.Load_unit,
+
+            'Velocity': self.Velocity,
+            'Velocity_unit': self.Velocity_unit,
+
+            'Inclination': self.Inclination,
+            'Inclination_unit': self.Inclination_unit,
 
             'VO2': self.VO2,
             'VO2_unit': self.VO2_unit,

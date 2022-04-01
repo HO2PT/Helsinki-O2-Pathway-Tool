@@ -128,7 +128,7 @@ class App(object):
     
         self.VO2mean = np.mean(self.vo2List)
         self.VO2q75, self.VO2q50, self.VO2q25 = np.percentile(self.vo2List, [75, 50, 25])
-        print(f'mean {self.VO2mean}, avg {np.average(self.vo2List)}, median {np.median(self.vo2List)}, q50 {self.VO2q50}')
+        # print(f'mean {self.VO2mean}, avg {np.average(self.vo2List)}, median {np.median(self.vo2List)}, q50 {self.VO2q50}')
         
         self.HRmean = np.mean(self.hrList)
         self.HRq75, self.HRq50, self.HRq25 = np.percentile(self.hrList, [75, 50, 25])

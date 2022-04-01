@@ -1,8 +1,10 @@
 import os
+import math
 from tkinter import *
 from tkinter import ttk
 from objects.test import Test
 from objects.app import app
+from objects.workLoadDetails import WorkLoadDetails
 from modules.notification import notification
 from modules.DataImporter import DataMenuElem
 from tkinter.filedialog import asksaveasfile
@@ -49,66 +51,21 @@ class DataExporter(object):
             container.pack(anchor='center')
 
             self.vars = []
+            loadMode = app.settings.getTestDef()['loadMode']
 
-            vo2Var = IntVar(value=1, name="VO2")
-            self.vars.append(vo2Var)
-            ttk.Checkbutton(container, text='VO2', variable=vo2Var).grid(column=0, row=0, sticky='nw')
-
-            hbVar = IntVar(value=1, name="Hb")
-            self.vars.append(hbVar)
-            ttk.Checkbutton(container, text='Hb', variable=hbVar).grid(column=0, row=1, sticky='nw')
-
-            sao2Var = IntVar(value=1, name="SaO2")
-            self.vars.append(sao2Var)
-            ttk.Checkbutton(container, text='SaO2', variable=sao2Var).grid(column=0, row=2, sticky='nw')
-
-            qVar = IntVar(value=1, name="Q")
-            self.vars.append(qVar)
-            ttk.Checkbutton(container, text='Q', variable=qVar).grid(column=0, row=3, sticky='nw')
-
-            cao2Var = IntVar(value=1, name="CaO2")
-            self.vars.append(cao2Var)
-            ttk.Checkbutton(container, text='CaO2', variable=cao2Var).grid(column=0, row=4, sticky='nw')
-
-            cvo2Var = IntVar(value=1, name="CvO2")
-            self.vars.append(cvo2Var)
-            ttk.Checkbutton(container, text='CvO2', variable=cvo2Var).grid(column=0, row=5, sticky='nw')
-
-            cavo2Var = IntVar(value=1, name="CavO2")
-            self.vars.append(cavo2Var)
-            ttk.Checkbutton(container, text='CavO2', variable=cavo2Var).grid(column=0, row=6, sticky='nw')
-
-            qao2Var = IntVar(value=1, name="QaO2")
-            self.vars.append(qao2Var)
-            ttk.Checkbutton(container, text='QaO2', variable=qao2Var).grid(column=0, row=7, sticky='nw')
-
-            svo2Var = IntVar(value=1, name="SvO2")
-            self.vars.append(svo2Var)
-            ttk.Checkbutton(container, text='SvO2', variable=svo2Var).grid(column=0, row=8, sticky='nw')
-
-            pvo2Var = IntVar(value=1, name="PvO2")
-            self.vars.append(pvo2Var)
-            ttk.Checkbutton(container, text='PvO2', variable=pvo2Var).grid(column=0, row=9, sticky='nw')
-
-            do2Var = IntVar(value=1, name="DO2")
-            self.vars.append(do2Var)
-            ttk.Checkbutton(container, text='DO2', variable=do2Var).grid(column=0, row=10, sticky='nw')
-
-            tcRestVar = IntVar(value=1, name="Tc @ rest")
-            self.vars.append(tcRestVar)
-            ttk.Checkbutton(container, text='Tc @ rest', variable=tcRestVar).grid(column=0, row=11, sticky='nw')
-
-            tcVar = IntVar(value=1, name="Tc\u209A\u2091\u2090\u2096")
-            self.vars.append(tcVar)
-            ttk.Checkbutton(container, text='Tc\u209A\u2091\u2090\u2096', variable=tcVar).grid(column=0, row=12, sticky='nw')
-
-            phRestVar = IntVar(value=1, name="pH @ rest")
-            self.vars.append(phRestVar)
-            ttk.Checkbutton(container, text='pH @ rest', variable=phRestVar).grid(column=0, row=13, sticky='nw')
-
-            phVar = IntVar(value=1, name="pH\u209A\u2091\u2090\u2096")
-            self.vars.append(phVar)
-            ttk.Checkbutton(container, text='pH\u209A\u2091\u2090\u2096', variable=phVar).grid(column=0, row=14, sticky='nw')
+            temp = WorkLoadDetails(name='dummy')
+            for i, key in enumerate(temp.getWorkLoadDetails().keys()):
+                if '_unit' not in key and '_MC' not in key and key != 'id' and key != 'Tc\u209A\u2091\u2090\u2096' and key != 'pH\u209A\u2091\u2090\u2096' and key != 'Tc @ rest' and key != 'pH @ rest':
+                    if loadMode == 0: # Loads
+                        if key != 'Velocity' and key != 'Inclination':
+                            var = IntVar(value=1, name=key)
+                            self.vars.append(var)
+                            ttk.Checkbutton(container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+                    else: # Velocity&Inclination
+                        if key != 'Load':
+                            var = IntVar(value=1, name=key)
+                            self.vars.append(var)
+                            ttk.Checkbutton(container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
 
             ttk.Button(container, text='Export', command=lambda: getSelected()).grid(column=1, row=15)
 
@@ -134,6 +91,7 @@ class DataExporter(object):
                     if v.get() == 1:
                         self.varTemp.append(str(v))
                 self.vars = self.varTemp
+                print(f'params to export {self.vars}')
                 if self.toNew == False:
                     self.selectedSheet = self.menuButton.cget('text')
                     self.exportToSelected()
@@ -143,17 +101,16 @@ class DataExporter(object):
             notification.create('error', 'No imported file detected. Data input by hand?', 5000)
 
     def exportToNew(self):
-        #print('exporting to new')
-        
         imgs = []
         columns = []
         
         if self.onlyPlots == True:
+            print('EXPORT TO NEW - ONLY PLOTS')
             for i, p in enumerate(app.getPlottingPanel().plots):
                 img = p.plot[0].savefig(f'plot{i}.png')
                 imgs.append( img )
                 columns = []
-                for l in p.workLoads:
+                for l in p.workLoadDetailsObjects:
                     name = l.name
                     columns.append(name)
 
@@ -171,17 +128,20 @@ class DataExporter(object):
                 cols = pd.Series(columns)
                 df = pd.concat([df, cols.to_frame().T], axis=0, ignore_index=True)
 
-                for i in range(len(p.workLoads)):
+                for i in range(len(p.workLoadDetailsObjects)):
                     for v in self.vars:
                         self.temp[f'{v}'] = []
 
-                for li, l in enumerate(p.workLoads):
-                    details = l.getDetails().getWorkLoadDetails()
+                for li, l in enumerate(p.workLoadDetailsObjects):
+                    details = l.getWorkLoadDetails()
 
                     for v in self.vars:
                         value = details[v]
                         unit = details[f'{v}_unit']
-                        mc = details[f'{v}_MC']
+                        try:
+                            mc = details[f'{v}_MC']
+                        except KeyError:
+                            mc = None
                         self.temp[f'{v}'].append(value)
                         if v.startswith('pH'):
                             self.units[v] = ''
@@ -212,22 +172,30 @@ class DataExporter(object):
                 self.dfs[id] = df
 
             # Create excel
-            saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
-            with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
-                for i, (key, value) in enumerate(self.dfs.items()):
-                    value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
-                    worksheet = writer.sheets[str(key)[0:30]]
-                    imgDest = f'{os.getcwd()}\plot{i}.png'
-                    worksheet.insert_image('N1', imgDest)
+            try:
+                saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
+                with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
+                    for i, (key, value) in enumerate(self.dfs.items()):
+                        value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
+                        worksheet = writer.sheets[str(key)[0:30]]
+                        imgDest = f'{os.getcwd()}\plot{i}.png'
+                        worksheet.insert_image('N1', imgDest)
+
+                # Delete images
+                # for i, img in enumerate(imgs):
+                #     os.remove(f'{os.getcwd()}\plot{i}.png')
+
+                writer.save()
+                notification.create('info', 'Data successfully exported', 5000)
+            except:
+                notification.create('error', 'Data not exported', 5000)
 
             # Delete images
             for i, img in enumerate(imgs):
                 os.remove(f'{os.getcwd()}\plot{i}.png')
-
-            writer.save()
-            notification.create('info', 'Data successfully exported', 5000)
             self.exportOptions.destroy()
         else:
+            print('EXPORT TO NEW - WHOLE PROJECT')
             project = app.getActiveProject()
             subjects = project.getSubjects()
 
@@ -253,38 +221,48 @@ class DataExporter(object):
                 self.dfs[s.id] = dfSubject
 
             # Create excel
-            saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
-            with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
-                for i, (key, value) in enumerate(self.dfs.items()):
-                    value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
-                    worksheet = writer.sheets[str(key)[0:30]]
-                    for i in range(len(self.images[key])):
-                        if i != 0:
-                            imgDest = f'{os.getcwd()}\plot{value.iloc[i*20][1]}.png'
-                            worksheet.insert_image(f'N{i*20}', imgDest)
-                        else:
-                            imgDest = f'{os.getcwd()}\plot{value.iloc[0][1]}.png'
-                            worksheet.insert_image('N1', imgDest)
+            try:
+                saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
+                with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
+                    for i, (key, value) in enumerate(self.dfs.items()):
+                        value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
+                        worksheet = writer.sheets[str(key)[0:30]]
+                        for i in range(len(self.images[key])):
+                            if i != 0:
+                                imgDest = f'{os.getcwd()}\plot{value.iloc[i*20][1]}.png'
+                                worksheet.insert_image(f'N{i*20}', imgDest)
+                            else:
+                                imgDest = f'{os.getcwd()}\plot{value.iloc[0][1]}.png'
+                                worksheet.insert_image('N1', imgDest)
+
+                # Delete images
+                # for s in subjects:
+                #     tests = s.getTests()
+                #     for t in tests:
+                #         os.remove(f'{os.getcwd()}\plot{t.id}.png')
+                # os.remove(f'{os.getcwd()}\plotProject median-IQR.png')
+                # os.remove(f'{os.getcwd()}\plotProject mean-SD.png')
+
+                writer.save()
+                notification.create('info', 'Data successfully exported', 5000)
+            except:
+                notification.create('error', 'Data not exported', 5000)
 
             # Delete images
             for s in subjects:
                 tests = s.getTests()
                 for t in tests:
                     os.remove(f'{os.getcwd()}\plot{t.id}.png')
-            os.remove(f'{os.getcwd()}\plotProject mean-IQR.png')
+            os.remove(f'{os.getcwd()}\plotProject median-IQR.png')
             os.remove(f'{os.getcwd()}\plotProject mean-SD.png')
-
-            writer.save()
-            notification.create('info', 'Data successfully exported', 5000)
             self.exportOptions.destroy()
 
     def exportToSelected(self):
-        #print('exporting to existing')
-
         excel = app.getActiveProject().data
         ordered, units, mcs = self.getSortedData()
 
         if self.onlyPlots == True: # Export only created plots
+            print('TO SELECTED - ONLY PLOTS')
             self.createDfsOfPlots()
             for key,value in self.dfs.items():
                 # print(key, value)
@@ -292,34 +270,44 @@ class DataExporter(object):
                 self.sheetNames.append(str(key)[0:30])
 
             # Create excel
-            saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
-            with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
-                for sheet in self.sheetNames:
-                    #print(f'sheet: {sheet}')
-                    df = pd.DataFrame.from_dict(excel[sheet])
-                    df.to_excel(writer, sheet_name=sheet, index=False, header=False)
+            try:
+                saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
+                with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
+                    for sheet in self.sheetNames:
+                        #print(f'sheet: {sheet}')
+                        df = pd.DataFrame.from_dict(excel[sheet])
+                        df.to_excel(writer, sheet_name=sheet, index=False, header=False)
 
-                    for i, (key, value) in enumerate(self.dfs.items()):
-                        if sheet == str(key)[0:30]:
-                            #print('osuma')
-                            #print(str(key)[0:30])
-                            worksheet = writer.sheets[sheet]
-                            imgDest = f'{os.getcwd()}\plot{key}.png'
-                            worksheet.insert_image('N1', imgDest)
+                        for i, (key, value) in enumerate(self.dfs.items()):
+                            if sheet == str(key)[0:30]:
+                                #print('osuma')
+                                #print(str(key)[0:30])
+                                worksheet = writer.sheets[sheet]
+                                imgDest = f'{os.getcwd()}\plot{key}.png'
+                                worksheet.insert_image('N1', imgDest)
+
+                # Delete images
+                # for i, (key, value) in enumerate(self.dfs.items()):
+                #     os.remove(f'{os.getcwd()}\plot{key}.png')
+
+                writer.save()
+                notification.create('info', 'Data successfully exported', 5000)
+            except:
+                notification.create('error', 'Data not exported', 5000)
 
             # Delete images
             for i, (key, value) in enumerate(self.dfs.items()):
                 os.remove(f'{os.getcwd()}\plot{key}.png')
-
-            writer.save()
-            notification.create('info', 'Data successfully exported', 5000)
             self.exportOptions.destroy()
 
         else: # Export all values and plots to excel file
+            print('TO SELECTED - WHOLE PROJECT')
             if self.importDataMode == 'long':
                 for key, value in ordered.items():
                     unit = units[f'{key.split("-")[0]}']
                     mc = mcs[f'{key.split("-")[0]}']
+                    # unit = units[key]
+                    # mc = mcs[key]
                     if mc == 1:
                         mc = 'Calculated'
                     else:
@@ -330,6 +318,7 @@ class DataExporter(object):
                 excelTemp = pd.DataFrame.from_dict(excel[self.selectedSheet])
 
                 for key, value in ordered.items():
+                    # print(key, value)
                     unit = units[f'{key.split("-")[0]}']
                     mc = mcs[f'{key.split("-")[0]}']
                     if mc == 1:
@@ -347,9 +336,9 @@ class DataExporter(object):
             excel['Mean-SD'] = df
             self.sheetNames.append('Mean-SD')
 
-            df = self.createProjectPlots('Mean-SD', iqr=True)
-            excel['Mean-IQR'] = df
-            self.sheetNames.append('Mean-IQR')
+            df = self.createProjectPlots('Median-IQR', iqr=True)
+            excel['Median-IQR'] = df
+            self.sheetNames.append('Median-IQR')
 
             # Create plots for subjects
             subjects = app.getActiveProject().getSubjects()
@@ -361,49 +350,63 @@ class DataExporter(object):
                 for t in tests:
                     # plotDf = pd.DataFrame()
                     loads = t.getWorkLoads()
-                    self.createPlot(loads, t.id)
+                    workLoadObjects = []
+                    for l in loads:
+                        workLoadObjects.append(l.getDetails())
+                    self.createPlot(workLoadObjects, t.id)
                     self.images[s.id].append(str(t.id))
 
             excel['Plots'] = plotsDf
             self.sheetNames.append('Plots')
 
-            saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
+            try:
+                saveFile = asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
 
-            # Create excel
-            with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
-                for sheet in self.sheetNames:
-                    df = pd.DataFrame.from_dict(excel[sheet])
-                    df.to_excel(writer, sheet_name=sheet, index=False, header=False)
+                # Create excel
+                with pd.ExcelWriter(f'{saveFile.name}.xlsx', engine='xlsxwriter') as writer:
+                    for sheet in self.sheetNames:
+                        df = pd.DataFrame.from_dict(excel[sheet])
+                        df.to_excel(writer, sheet_name=sheet, index=False, header=False)
 
-                    if sheet == 'Plots':
-                        worksheet = writer.sheets[sheet]
-                        for i, (key, value) in enumerate(self.images.items()):
-                            imgDest = f'{os.getcwd()}\plot{value[0]}.png'
-                            if i != 0:
-                                worksheet.write(f'A{i*20+3}', f'Test ID: {value[0]}')
-                                worksheet.insert_image(f'A{i*20+4}', imgDest)
-                            else:
-                                worksheet.write('A1', f'Test ID: {value[0]}')
-                                worksheet.insert_image('A2', imgDest)
-                    if sheet == 'Mean-IQR':
-                        worksheet = writer.sheets[sheet]
-                        imgDest = f'{os.getcwd()}\plotProject mean-IQR.png'
-                        worksheet.insert_image('H1', imgDest)
-                    elif sheet == 'Mean-SD':
-                        worksheet = writer.sheets[sheet]
-                        imgDest = f'{os.getcwd()}\plotProject mean-SD.png'
-                        worksheet.insert_image('H1', imgDest)
+                        if sheet == 'Plots':
+                            worksheet = writer.sheets[sheet]
+                            for i, (key, value) in enumerate(self.images.items()):
+                                imgDest = f'{os.getcwd()}\plot{value[0]}.png'
+                                if i != 0:
+                                    worksheet.write(f'A{i*20+3}', f'Test ID: {value[0]}')
+                                    worksheet.insert_image(f'A{i*20+4}', imgDest)
+                                else:
+                                    worksheet.write('A1', f'Test ID: {value[0]}')
+                                    worksheet.insert_image('A2', imgDest)
+                        if sheet == 'Median-IQR':
+                            worksheet = writer.sheets[sheet]
+                            imgDest = f'{os.getcwd()}\plotProject median-IQR.png'
+                            worksheet.insert_image('H1', imgDest)
+                        elif sheet == 'Mean-SD':
+                            worksheet = writer.sheets[sheet]
+                            imgDest = f'{os.getcwd()}\plotProject mean-SD.png'
+                            worksheet.insert_image('H1', imgDest)
+
+                # # Delete images
+                # for s in subjects:
+                #     tests = s.getTests()
+                #     for t in tests:
+                #         os.remove(f'{os.getcwd()}\plot{t.id}.png')
+                # os.remove(f'{os.getcwd()}\plotProject median-IQR.png')
+                # os.remove(f'{os.getcwd()}\plotProject mean-SD.png')
+                    
+                writer.save()
+                notification.create('info', 'Data successfully exported', 5000)
+            except:
+                notification.create('error', 'Data not exported', 5000)
 
             # Delete images
             for s in subjects:
                 tests = s.getTests()
                 for t in tests:
                     os.remove(f'{os.getcwd()}\plot{t.id}.png')
-            os.remove(f'{os.getcwd()}\plotProject mean-IQR.png')
+            os.remove(f'{os.getcwd()}\plotProject median-IQR.png')
             os.remove(f'{os.getcwd()}\plotProject mean-SD.png')
-                
-            writer.save()
-            notification.create('info', 'Data successfully exported', 5000)
             self.exportOptions.destroy()
 
     def getSortedData(self):
@@ -434,27 +437,39 @@ class DataExporter(object):
         for s in subjects:
             tests = s.getTests()
             for t in tests:
-                loads = t.getWorkLoads()
+                workLoadObjects = []
+                for l in t.getWorkLoads():
+                    workLoadObjects.append(l.getDetails())
+
                 for i in range(nLoads):
                     try:
-                        details = loads[i].getDetails().getWorkLoadDetails()
-                        app.getPlottingPanel().calc(loads[i], details)
-                        updatedDetails = loads[i].getDetails().getWorkLoadDetails()
+                        details = workLoadObjects[i].getWorkLoadDetails()
+                        app.getPlottingPanel().calc(workLoadObjects[i], details)
+                        updatedDetails = workLoadObjects[i].getWorkLoadDetails()
+                        # print(updatedDetails)
 
                         for v in self.vars:
                             value = updatedDetails[v]
                             unit = updatedDetails[f'{v}_unit']
-                            mc = updatedDetails[f'{v}_MC']
+                            try:
+                                mc = updatedDetails[f'{v}_MC']
+                            except:
+                                mc = None
                             temp[f'{v}-{i+1}'].append(value)
                             units[v] = unit
                             mcs[v] = mc
-                    except:
-                        updatedDetails = loads[0].getDetails().getWorkLoadDetails()
+                            # print(value, unit, mc)
+                    except Exception as err:
+                        # print(f'ERROR: {err}')
+                        updatedDetails = workLoadObjects[0].getWorkLoadDetails()
 
                         for v in self.vars:
                             value = 0
                             unit = updatedDetails[f'{v}_unit']
-                            mc = updatedDetails[f'{v}_MC']
+                            try:
+                                mc = updatedDetails[f'{v}_MC']
+                            except KeyError:
+                                mc = None
                             temp[f'{v}-{i+1}'].append(value)
                             units[v] = unit
                             mcs[v] = mc
@@ -463,12 +478,13 @@ class DataExporter(object):
         ordered = {}
         for v in self.vars:
             for key, value in temp.items():
+                # print(f'from ordered: {key, value}')
                 if key.split('-')[0] == v:
                     ordered[key] = value
 
         return ordered, units, mcs
 
-    def createPlot(self, workLoads, id):
+    def createPlot(self, workLoads, id): #workloads = workloaddetails object
         PvO2 = np.arange(0,100,1)
         plot = plt.subplots()
         fig, ax = plot
@@ -480,10 +496,13 @@ class DataExporter(object):
         ax.set_xlabel('PvO\u2082 (mmHg)')
         ax.set_ylim(top=5000, bottom=0)
         ax.set_xlim(left=0, right=100)
+        plt.subplots_adjust(bottom=0.175)
+
         handles = []
+        ylim = []
 
         def numfmt(x, pos=None):
-            vo2unit = workLoads[0].getDetails().VO2_unit
+            vo2unit = workLoads[0].VO2_unit
             if vo2unit == 'l/min':
                 s = '{0:.1f}'.format(x / 1000.0)
             elif vo2unit == 'ml/min':
@@ -491,7 +510,7 @@ class DataExporter(object):
             return s
 
         # Change y-axis unit based on used vo2 unit
-        vo2unit = workLoads[0].getDetails().VO2_unit
+        vo2unit = workLoads[0].VO2_unit
         yfmt = ticker.FuncFormatter(numfmt)
         plt.gca().yaxis.set_major_formatter(yfmt)
         if vo2unit == 'l/min':
@@ -500,30 +519,48 @@ class DataExporter(object):
             plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
 
         for i, w in enumerate(workLoads):
-            coords = w.getDetails().getCoords()
+            coords = w.getCoords()
             y = coords['y']
             y2 = coords['y2']
             xi = coords['xi']
             yi = coords['yi']
+
+            ylim.append(y2[0])
 
             line, = ax.plot(PvO2, y, lw=2, color=f'C{i}', label=w.name)
             curve, = ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=w.name)
             dot, = ax.plot(xi, yi, 'o', color='red', label=w.name)
 
             handles.insert(i, line)
+        
+        if max(ylim) > 50: # ml/min
+            ylim = 1000 * math.ceil( max(ylim) / 1000 )
+        else: # l/min
+            ylim = 1 * math.ceil( max(ylim) / 1 ) + 1
 
-        leg = ax.legend(handles=handles , loc='upper center', bbox_to_anchor=(0.5, 1.1),
-            fancybox=True, shadow=True, ncol=5)
+        ax.set_ylim(top=ylim, bottom=0)
+
+        leg = ax.legend(handles=handles , loc='upper right',
+            fancybox=True, shadow=True, ncol=2)
         
         fig.savefig(f'plot{id}.png')
         fig.clear()
         plt.close(fig)
 
-    def createDfForTest(self, test, sid):
+    def createDfForTest(self, test, sid, projectPlot = False):
         workLoads = test.getWorkLoads() # Load objects
+        filteredLoads = []
+        # Filter possible empty loads
+        for i, l in enumerate(workLoads):
+            detailsDict = l.getDetails().getWorkLoadDetails()
+            if projectPlot == True:
+                filteredLoads.append(l)
+            else:
+                if i == 0 or detailsDict['Load'] != 0:
+                    filteredLoads.append(l)
 
         columns = []
-        for l in workLoads:
+        for l in filteredLoads:
             name = l.name
             columns.append(name)
 
@@ -545,15 +582,24 @@ class DataExporter(object):
         for v in self.vars:
             self.temp[f'{v}'] = []
 
-        for li, l in enumerate(workLoads):
+        # print(f'initializes rows: {self.temp.keys()}')
+
+        for li, l in enumerate(filteredLoads):
             details = l.getDetails().getWorkLoadDetails()
-            app.getPlottingPanel().calc(workLoads[li], details)
-            updatedDetails = workLoads[li].getDetails().getWorkLoadDetails()
+            # app.getPlottingPanel().calc(workLoads[li], details)
+            # updatedDetails = workLoads[li].getDetails().getWorkLoadDetails()
+            if projectPlot == False:
+                app.getPlottingPanel().calc(l.getDetails(), details)
+            updatedDetails = l.getDetails().getWorkLoadDetails()
+            print(f'DO2 in updatedDetails: {updatedDetails["DO2"]}')
 
             for v in self.vars:
                 value = updatedDetails[v]
                 unit = updatedDetails[f'{v}_unit']
-                mc = updatedDetails[f'{v}_MC']
+                try:
+                    mc = updatedDetails[f'{v}_MC']
+                except KeyError:
+                    mc = None
 
                 self.temp[f'{v}'].append(value)
                 if v.startswith('pH'):
@@ -566,19 +612,29 @@ class DataExporter(object):
             ordered = {}
             for v in self.vars:
                 for key, value in self.temp.items():
-                    if key.split('-')[0] == v:
-                        ordered[key] = value
+                    # print(key, value)
+                    # if key.split('-')[0] == v:
+                    #     ordered[key] = value
+                    ordered[key] = value
 
         # Create plot
-        self.createPlot(workLoads, id)
+        workLoadObjects = []
+        for l in filteredLoads:
+            workLoadObjects.append(l.getDetails())
+
+        if projectPlot == False:
+            self.createPlot(workLoadObjects, id)
+
         try:
             self.images[sid].append('img')
         except:
             pass
                         
         for key, value in ordered.items():
-            unit = self.units[f'{key.split("-")[0]}']
-            mc = self.mcs[f'{key.split("-")[0]}']
+            # unit = self.units[f'{key.split("-")[0]}']
+            # mc = self.mcs[f'{key.split("-")[0]}']
+            unit = self.units[key]
+            mc = self.mcs[key]
             if mc == 1:
                 mc = 'Calculated'
             else:
@@ -598,17 +654,22 @@ class DataExporter(object):
         dummyTest = Test()
         subjects = app.getActiveProject().getSubjects()
         
-        app.plotMean(test=dummyTest, subjects=subjects, plotProject=True, iqr=iqr ,export=True)
-        self.createPlot(dummyTest.getWorkLoads(), dummyTest.id)
+        app.plotMean(test=dummyTest, subjects=subjects, plotProject=True, iqr=iqr, export=True)
+        workLoadDetailObjects = []
+        for w in dummyTest.getWorkLoads():
+            # print(w.getDetails())
+            workLoadDetailObjects.append(w.getDetails())
+            # print(f'plotMeanista detailit: {w.getDetails().getWorkLoadDetails()}')
+        self.createPlot(workLoadDetailObjects, dummyTest.id)
         
-        df = self.createDfForTest(dummyTest, label)
+        df = self.createDfForTest(dummyTest, label, projectPlot=True)
         return df
 
     def createDfsOfPlots(self):
         for i, p in enumerate(app.getPlottingPanel().plots):
             self.images[i] = 'img'
             columns = []
-            for l in p.workLoads:
+            for l in p.workLoadDetailsObjects:
                 name = l.name
                 columns.append(name)
 
@@ -626,17 +687,20 @@ class DataExporter(object):
             cols = pd.Series(columns)
             df = pd.concat([df, cols.to_frame().T], axis=0, ignore_index=True)
 
-            for i in range(len(p.workLoads)):
+            for i in range(len(p.workLoadDetailsObjects)):
                 for v in self.vars:
                     self.temp[f'{v}'] = []
 
-            for li, l in enumerate(p.workLoads):
-                details = l.getDetails().getWorkLoadDetails()
+            for li, l in enumerate(p.workLoadDetailsObjects):
+                details = l.getWorkLoadDetails()
 
                 for v in self.vars:
                     value = details[v]
                     unit = details[f'{v}_unit']
-                    mc = details[f'{v}_MC']
+                    try:
+                        mc = details[f'{v}_MC']
+                    except KeyError:
+                        mc = None
                     self.temp[f'{v}'].append(value)
                     if v.startswith('pH'):
                         self.units[v] = ''
@@ -665,6 +729,6 @@ class DataExporter(object):
                 df = pd.concat([df, value.to_frame().T], axis=0, ignore_index=True)
 
             # Create plot
-            self.createPlot(p.workLoads, id)
+            self.createPlot(p.workLoadDetailsObjects, id)
             
             self.dfs[id] = df
