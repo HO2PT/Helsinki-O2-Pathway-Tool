@@ -154,9 +154,10 @@ class DataImporter(object):
             self.dataTable.rowheader.bind('<ButtonRelease-1>', self.selectRow)
             self.dataTable.rowheader.bind('<Button-3>', self.handleRightClick)
             
-            #self.dataTable.bind('<Button-1>', self.handleLeftClick)
             self.dataTable.bind('<B1-Motion>', self.handleDragSelection)
             self.dataTable.bind('<Button-1>', self.handleTableClick)
+            self.dataTable.bind('<Control-Button-1>', self.handleTableCtrlClick)
+            self.dataTable.bind('<Shift-Button-1>', self.handleDragSelection)
             self.dataTable.bind('<Button-3>', self.handleRightClick) 
 
             self.nextButton = ttk.Button(self.footer, text='Next', command=lambda: self.getInput())
@@ -165,6 +166,60 @@ class DataImporter(object):
             self.cancelButton.grid(column=2, row=0)
         else:
             notification.create('error', 'Error opening file', 5000)
+
+    def handleTableClick(self, e=None):
+        print('handle LEFT click')
+        col = self.dataTable.get_col_clicked(e)
+        row = self.dataTable.get_row_clicked(e)
+        self.multiplecollist = []
+        self.multiplerowlist = []
+        self.multiplecells = []
+        self.dataTable.delete('ctrlSel')
+
+        self.dataTable.delete('rect')
+        self.dataTable.delete('multicellrect')
+        self.deselectAll()
+
+        ##
+        self.multiplecells.append(self.dataTable.model.getValueAt(row, col))
+        self.multiplecollist.append(col)
+        self.multiplerowlist.append(row)
+
+        self.dataTable.setSelectedRow(row)
+        self.dataTable.setSelectedCol(col)
+        self.dataTable.drawSelectedRect(row=row, col=col)
+        self.dataTable.rowheader.drawRect(row)
+        self.dataTable.tablecolheader.drawRect(col)
+
+        self.updateSelectionText(e)
+
+    def handleTableCtrlClick(self,e):
+        print('handle CTRL click')
+        
+        row = self.dataTable.get_row_clicked(e)
+        col = self.dataTable.get_col_clicked(e)
+        isSelected = False
+
+        for i, r in enumerate(self.multiplerowlist):
+            if r == row and self.multiplecollist[i] == col:
+                isSelected = True
+                self.dataTable.drawRect(row=row, col=col, delete=1)
+                del self.multiplerowlist[i]
+                del self.multiplecollist[i]
+
+        if isSelected == False:
+            self.multiplecells.append(self.dataTable.model.getValueAt(row, col))
+            self.multiplecollist.append(col)
+            self.multiplerowlist.append(row)
+
+            for i, c in enumerate(self.multiplecollist):
+                self.dataTable.drawRect(row=self.multiplerowlist[i], col=c, color='#E4DED4', tag='ctrlSel', delete=1)
+
+        self.dataTable.drawSelectedRect(row=row, col=col)
+        self.dataTable.rowheader.drawRect(row)
+        self.dataTable.tablecolheader.drawRect(col)
+
+        self.updateSelectionText(e)
     
     def handleListboxSelect(self, e):
         index = self.progressionList.curselection()[0]
@@ -177,7 +232,17 @@ class DataImporter(object):
             # Select column
             self.dataTable.drawSelectedCol(col=col, delete=False)
             self.dataTable.tablecolheader.drawRect(col=col, delete=False)
-        self.updateColumnText()
+        else:
+            self.dataTable.delete('colrect')
+            self.dataTable.tablecolheader.delete('rect')
+            for i, c in enumerate(self.multiplecollist):
+                if c == col:
+                    del self.multiplecollist[i]
+            
+            for c in self.multiplecollist:
+                self.dataTable.drawSelectedCol(col=c, delete=False)
+                self.dataTable.tablecolheader.drawRect(col=c, delete=False)
+        self.updateSelectionText(e)
 
     def handleDragSelection(self, e):
         self.multiplecollist = []
@@ -292,11 +357,20 @@ class DataImporter(object):
             self.dataTable.drawSelectedCol(c, delete=False)
             self.dataTable.tablecolheader.drawRect(c, delete=False)
 
-        self.updateColumnText()
+        # self.updateColumnText()
+        self.updateSelectionText(e)
 
     def handleRightClick(self, e):
         self.deselectAll()
         self.multiplecollist = []
+        self.multiplerowlist = []
+        self.multiplecells = []
+        self.dataTable.delete('ctrlSel')
+        self.dataTable.delete('currentrect')
+        self.dataTable.delete('multicellrect')
+        self.dataTable.delete('colrect')
+        self.dataTable.tablecolheader.delete('rect')
+
         """ self.dataTable.selectNone()
         # Deselect column
         self.dataTable.setSelectedCol( -1 )
@@ -307,7 +381,7 @@ class DataImporter(object):
         self.dataTable.drawSelectedRow()
         self.dataTable.rowheader.clearSelected() """
 
-        self.dataTable.drawSelectedRect(row=-1, col=-1, color='red')
+        # self.dataTable.drawSelectedRect(row=-1, col=-1, color='red')
         self.selectionText.configure(text='')
             
     def selectCol(self, e):
@@ -321,27 +395,10 @@ class DataImporter(object):
         self.dataTable.tablecolheader.drawRect(col=col)
         self.multiplecollist.append(col)
 
-        self.updateColumnText()
-
-    def handleTableClick(self, e=None):
-        col = self.dataTable.get_col_clicked(e)
-        row = self.dataTable.get_row_clicked(e)
-        self.multiplecollist = []
-        self.multiplerowlist = []
-
-        self.dataTable.delete('rect')
-        self.dataTable.delete('multicellrect')
-        self.deselectAll()
-
-        self.dataTable.setSelectedRow(row)
-        self.dataTable.setSelectedCol(col)
-        self.dataTable.drawSelectedRect(row=row, col=col)
-        self.dataTable.rowheader.drawRect(row)
-        self.dataTable.tablecolheader.drawRect(col)
-
+        # self.updateColumnText()
         self.updateSelectionText(e)
 
-    def updateColumnText(self):
+    """ def updateColumnText(self):
         cols = self.multiplecollist
         if len(cols) > 1:
             temp = cols[0]
@@ -360,7 +417,7 @@ class DataImporter(object):
                         self.selectionText.configure(text=text)
                     temp = c
         else:
-            self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]}')
+            self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]}') """
 
     def updateSelectionText(self, e=None):
         # print('UPDATED CALLED')
@@ -371,7 +428,7 @@ class DataImporter(object):
         # print(f'COLS: {cols}, ROWS: {rows}')
 
         if len(rows) > 0 and len(cols) == 0: # only rows selected
-            # print('ONLY ROWS SELECTED')
+            print('ONLY ROWS SELECTED')
             if len(rows) > 1:
                 temp = rows[0]
                 for i, r in enumerate(rows):
@@ -393,7 +450,7 @@ class DataImporter(object):
                 self.selectionText.configure(text=f'Selected row {rows[0]+1}')
 
         elif len(cols) >= 1 and len(rows) == 0: # only cols selected
-            # print('ONLY COLS SELECTED')
+            print('ONLY COLS SELECTED')
             if len(cols) > 1:
                 temp = cols[0]
                 for i, c in enumerate(cols):
@@ -412,12 +469,26 @@ class DataImporter(object):
                         temp = c
             else:
                 self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]}')
-        elif len(cols) >= 1 and len(rows) >= 1: # multiple cells selected
-            # print('MULTIPLE CELLS SELECTED')
-            self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]}-{cols[-1]}')
-        else:
+     
+        elif len(cols) == 1 and len(rows) == 1: # single cell selected
             # print('SINGEL CELL SELECTED')
             self.selectionText.configure(text=f'Selected cell row {cellY+1} - col {cellX}')
+        else: # multiple cells selected
+            # print('MULTIPLE CELLS SELECTED')
+            text = ''
+            if all(cols[0] == col for col in cols): # if all the selections in same col
+                for r in rows:
+                    text += f'{r+1},'
+                self.selectionText.configure(text=f'Selected rows: {text} col: {cols[0]}')
+            elif all(rows[0] == row for row in rows):  # if all the selections in same row
+                for c in cols:
+                    text += f'{c},'
+                text = text[0:-1]
+                self.selectionText.configure(text=f'Selected row: {rows[0]+1} cols: {text}')
+            else:
+                self.selectionText.configure(text=f'Multiple selections')
+
+            # self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]}-{cols[-1]}')
 
     def selectRow(self, e):
         row = self.dataTable.get_row_clicked(e)
@@ -456,11 +527,20 @@ class DataImporter(object):
         # print(f'len collist: {len(self.multiplecollist)}')
         # print(f'len rowlist: {len(self.multiplerowlist)}')
         # print(f'selected rows: {len(self.dataTable.getSelectedRows())}')
-        if len(self.multiplecollist) > 1 or (len(self.multiplecollist) == 0 and len(self.dataTable.getSelectedRows()) > 0):
-            #print('LEVEÄ MUOTO')
+        if len(self.multiplecollist) > 1 and len(self.multiplerowlist) > 1:
+
+            if self.multiplecollist[0] == self.multiplecollist[1]:
+                print('PITKÄ MUOTO')
+                self.dataMode = 'long'
+            elif self.multiplerowlist[0] == self.multiplerowlist[1]:
+                print('LEVEÄ MUOTO')
+                self.dataMode = 'wide'
+
+        elif len(self.multiplecollist) > 1 or (len(self.multiplecollist) == 0 and len(self.dataTable.getSelectedRows()) > 0):
+            print('LEVEÄ MUOTO')
             self.dataMode = 'wide'
         else:
-            #print('PITKÄ MUOTO')
+            print('PITKÄ MUOTO')
             self.dataMode = 'long'
 
     def getInput(self):
@@ -512,7 +592,7 @@ class DataImporter(object):
         # print(nRows)
         
         # print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
-        #print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
+        print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
 
         if col == -1 and row == -1: # nothing selected
             #print('NOTHING SELECTED')
@@ -521,6 +601,7 @@ class DataImporter(object):
             self.notif.configure(style='error.TLabel', text=f'Nothing selected')
             self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
         else: # something selected
+
             if col == -1: # rows selected
                 if len(rows) > 1 and col == -1: # multiple row
                     #print('USEAMPI RIVI')
@@ -839,7 +920,7 @@ class DataImporter(object):
 
             if row >= 0 and col >= 0: # cells selected
                 if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1: # multiple cells
-                    #print('MULTIPLE CELLS SELECTED')
+                    print('MULTIPLE CELLS SELECTED')
 
                     if self.stage == 0: # ids
                         self.checkDataForm()
@@ -847,25 +928,41 @@ class DataImporter(object):
 
                         if self.dataMode == 'wide':
                             for i, c in enumerate(self.multiplecollist):
-                                for r in self.multiplerowlist:
-                                    # Create subject, set its id, add a test, reset workloads
+                                if len(self.multiplerowlist) == 1:
+                                    for r in self.multiplerowlist:
+                                        # Create subject, set its id, add a test, reset workloads
+                                        subject = Subject()
+                                        subject.setId(self.columnNames[i])
+                                        subject.addTest()
+                                        subject.getTests()[0].workLoads = []
+                                        self.subjects.append(subject)
+                                else:
                                     subject = Subject()
                                     subject.setId(self.columnNames[i])
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
                                     self.subjects.append(subject)
+
                             success = True
                             self.tempLocData['id'] = self.columnNames
 
                         elif self.dataMode == 'long':
                             for i, r in enumerate(self.multiplerowlist):
-                                for c in self.multiplecollist:
-                                    # Create subject, set its id, add a test, reset workloads
+                                if len(self.multiplecollist) == 1:
+                                    for c in self.multiplecollist:
+                                        # Create subject, set its id, add a test, reset workloads
+                                        subject = Subject()
+                                        subject.setId(self.rowNames[i])
+                                        subject.addTest()
+                                        subject.getTests()[0].workLoads = []
+                                        self.subjects.append(subject)
+                                else:
                                     subject = Subject()
                                     subject.setId(self.rowNames[i])
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
                                     self.subjects.append(subject)
+
                             success = True
                             self.tempLocData['id'] = self.rowNames
                     
@@ -956,7 +1053,7 @@ class DataImporter(object):
                         success = self.getMultiCellValues('pH\u209A\u2091\u2090\u2096')
 
                 else: # single cell
-                    #print('SINGLE CELL SELECTED')
+                    print('SINGLE CELL SELECTED')
                     value = self.dataTable.model.getValueAt(row, col)
                     columnName = self.dataTable.getSelectionValues()[0][0]
                     rowName = self.dataTable.getSelectedRows().iloc[0,0]
@@ -1169,38 +1266,60 @@ class DataImporter(object):
         colList = self.multiplecollist
         rowList = self.multiplerowlist
 
-        if self.dataMode == None:
-            if len(colList) > len(rowList):
-                self.dataMode = 'long'
-            else:
-                self.dataMode = 'wide'
+        # if self.dataMode == None:
+        #     if len(colList) > len(rowList):
+        #         self.dataMode = 'long'
+        #     else:
+        #         self.dataMode = 'wide'
 
         if self.dataMode == 'long':
+            print('LONG')
             for ri, r in enumerate(rowList):
                 test = self.subjects[ri].getTests()[0]
                 test.workLoads = [] # delete previous workloads, if re-fetching loads
 
-                for ci, c in enumerate(colList):
-                    columnName = self.columnNames[ci]
+                if len(colList) == 1: # if selected by dragging or shift
+                    print('SHIFT/DRAG')
+                    for ci, c in enumerate(colList):
+                        columnName = self.columnNames[ci]
+                        load = test.createLoad()
+                        load.setName(columnName) # column name
+                        load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+                        load.getDetails().setImported(True)
+                else: # if selected with ctrl
+                    print('CTRL')
+                    columnName = self.columnNames[ri]
                     load = test.createLoad()
                     load.setName(columnName) # column name
-                    load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+                    load.getDetails().setValue('Load', self.colValues[ri][r]) # set value
                     load.getDetails().setImported(True)
+                    continue
 
             self.tempLocData['Load'] = self.colValues
 
         elif self.dataMode == 'wide':
+            print('WIDE')
             for ci, c in enumerate(colList):
                 test = self.subjects[ci].getTests()[0]
                 test.workLoads = [] # delete previous workloads, if re-fetching loads
 
-                for ri, r in enumerate(rowList):
-                    rowName = self.rowNames[ri]
+                if len(rowList) == 1: # if selected by dragging or shift
+                    print('SHIFT/DRAG')
+                    for ri, r in enumerate(rowList):
+                        rowName = self.rowNames[ri]
+                        load = test.createLoad()
+                        load.setName(rowName) # column name
+                        load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+                        load.getDetails().setImported(True)
+                else: # if selected with ctrl
+                    print('CTRL')
+                    rowName = self.rowNames[ci]
                     load = test.createLoad()
                     load.setName(rowName) # column name
-                    load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+                    load.getDetails().setValue('Load', self.colValues[ci][rowList[ci]]) # set value
                     load.getDetails().setImported(True)
-            
+                    continue
+
             self.tempLocData['Load'] = self.colValues
 
     def getMultiCellValues(self, label):
