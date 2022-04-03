@@ -41,6 +41,9 @@ class ScrollableNotebook(ttk.Frame):
 
         if self.notebookTab.identify(e.x, e.y) == 'close':
             if askokcancel("Confirm", "Do you want to remove the tab?"):
+                if len(self.notebookTab.tabs()) == 1:
+                    app.setActiveTest(None)
+
                 tab_id = self.notebookTab.tabs()[clickedTabIndex]
                 content_id = self.notebookContent.tabs()[clickedTabIndex]
 

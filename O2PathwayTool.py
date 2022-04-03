@@ -76,9 +76,9 @@ def resize(e):
 # root.bind('<Configure>', lambda e: resize(e))
 
 def debug():
-    for d in app.getActiveTest().getWorkLoads():
-        print(d.getDetails().getWorkLoadDetails())
-    
+    # for d in app.getActiveTest().getWorkLoads():
+        # print(d.getDetails().getWorkLoadDetails())
+    print(app.getActiveTest())
     # print(app.getActiveProject().data)
     
     # a = WorkLoadDetails(name='dummy')

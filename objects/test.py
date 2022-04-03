@@ -4,11 +4,12 @@ from objects.workLoadDetails import WorkLoadDetails
 from objects.app import app
 
 class Test(object):
-    def __init__(self, id = None):
+    def __init__(self, id = None, parentSubject = None):
         if id == None:
             self.id = uuid.uuid1()
         else:
             self.id = id
+        self.parentSubject = parentSubject
         self.date = None
         self.data = None
         self.subjectDetails = None

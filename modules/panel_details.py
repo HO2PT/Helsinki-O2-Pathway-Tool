@@ -68,7 +68,7 @@ class DetailsPanel(ttk.Frame):
             self.detailsPanel.configure(height=event.y, width=self.detailsPanel.winfo_reqwidth())
         
         if containerHeight < minHeight:
-            self.indicator.configure(text='\u25BC', foreground='white', background='#4eb1ff')
+            self.indicator.configure(text='\u2B81', foreground='white', background='#4eb1ff')
         else:
             self.indicator.configure(text='', background=app.root.cget('bg'))
 

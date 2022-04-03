@@ -26,7 +26,7 @@ class ProjectList(object):
         self.createButton.grid(column=0, row=0)
         self.editButton = ttk.Button(buttonContainer, text='Edit', command=lambda: self.editProject())
         self.editButton.grid(column=1, row=0)
-        self.deleteButton = ttk.Button(buttonContainer, text='Del', command=lambda: self.deleteProject())
+        self.deleteButton = ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteProject())
         self.deleteButton.grid(column=2, row=0)
         
         ttk.Button(buttonContainer, text='Import...').grid(column=0, row=1)
@@ -162,7 +162,7 @@ class ProjectList(object):
         app.addProject(project)
         app.setActiveProject(project)
         app.setActiveSubject(None)
-        app.setActiveTest(None)
+        # app.setActiveTest(None)
 
         # Refresh views
         app.sidepanel_subjectList.refreshList()
@@ -178,7 +178,7 @@ class ProjectList(object):
 
         # Refresh app state
         app.setActiveSubject(None)
-        app.setActiveTest(None)
+        # app.setActiveTest(None)
 
         # Refresh views
         app.sidepanel_subjectList.refreshList()

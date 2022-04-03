@@ -1214,15 +1214,15 @@ class DataImporter(object):
                 test = s.getTests()[0]
                 loads = test.getWorkLoads()
                     
-                if len(rowList) < nLoads:
+                if len(colList) < nLoads and len(colList) != 1:
                     s = ttk.Style()
                     s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(rowList)} values given')
+                    self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(colList)} values given')
                     self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
                 else:
                     for li, l in enumerate(loads):
                         details = l.getDetails()
-                        if len(rowList) == 1:
+                        if len(colList) == 1:
                             value = self.dataTable.model.getValueAt(rowList[si], colList[0])
                         else:
                             value = self.dataTable.model.getValueAt(rowList[si], colList[li])
@@ -1234,7 +1234,7 @@ class DataImporter(object):
                 test = s.getTests()[0]
                 loads = test.getWorkLoads()
 
-                if len(rowList) < nLoads:
+                if len(rowList) < nLoads and len(rowList) != 1:
                     s = ttk.Style()
                     s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
                     self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(rowList)} values given')

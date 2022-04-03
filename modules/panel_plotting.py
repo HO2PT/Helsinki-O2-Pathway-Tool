@@ -574,20 +574,27 @@ class PlotTab():
 
         self.toolbarWrapper.grid_columnconfigure(2, minsize=25)
 
+        # Set plot title
+        ttk.Label(self.toolbarWrapper, text='Set plot title').grid(column=2, row=0, sticky='w')
+        self.titleEntry = ttk.Entry(self.toolbarWrapper)
+        self.titleEntry.grid(column=2, row=1)
+        setTitleButton = ttk.Button(self.toolbarWrapper, text='Set', command=self.setPlotTitle)
+        setTitleButton.grid(column=3, row=1)
+
         # Set Y tick size
-        ttk.Label(self.toolbarWrapper, text='Y-axis ticks').grid(column=3, row=0, columnspan=2)
-        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks('y')).grid(column=3, row=1)
-        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks('y')).grid(column=4, row=1)
+        ttk.Label(self.toolbarWrapper, text='Y-axis ticks').grid(column=4, row=0, columnspan=2)
+        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks('y')).grid(column=4, row=1)
+        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks('y')).grid(column=5, row=1)
 
         # Set X tick size
         ttk.Label(self.toolbarWrapper, text='X-axis ticks').grid(column=5, row=0, columnspan=2)
-        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=5, row=1)
-        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks('x')).grid(column=6, row=1)
+        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=6, row=1)
+        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks('x')).grid(column=7, row=1)
         
-        self.toolbarWrapper.grid_columnconfigure(5, minsize=25)
+        self.toolbarWrapper.grid_columnconfigure(6, minsize=25)
 
         # Hide legend button
-        ttk.Button(self.toolbarWrapper, text='Hide legend', command=lambda: self.hideLegend()).grid(column=7, row=1)
+        ttk.Button(self.toolbarWrapper, text='Hide legend', command=lambda: self.hideLegend()).grid(column=8, row=1)
 
         ##
         ## RIGHT SIDE
@@ -613,6 +620,10 @@ class PlotTab():
             self.loadTabs.append(loadTabObject)
         # print(self.loadNotebookFrame.winfo_children())
         return self.tabFrame
+
+    def setPlotTitle(self):
+        self.ax.set_title(self.titleEntry.get())
+        self.canvas.draw()
 
     def changeCursor(self, e):
         if self.loadNotebookFrame.identify(e.x, e.y) == 'border':
