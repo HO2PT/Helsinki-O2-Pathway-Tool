@@ -2,10 +2,12 @@ from cmath import exp
 from csv import excel_tab
 import ctypes
 import math
+from re import sub
 import sys
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
+from numpy import NaN
 import pandas as pd
 from pandastable import Table, TableModel
 from modules.notification import notification
@@ -51,7 +53,7 @@ class DataImporter(object):
         self.stage = 0
         self.atdivider = None
         self.tests = []
-        self.subjects = []
+        self.subjects = {}
         self.currentDf = None
         self.tempLocData = {}
 
@@ -92,10 +94,12 @@ class DataImporter(object):
             self.progressionList.insert('end', 'QaO\u2082')
             self.progressionList.insert('end', 'SvO\u2082')
             self.progressionList.insert('end', 'PvO\u2082')
-            self.progressionList.insert('end', 'Tc@rest')
-            self.progressionList.insert('end', 'Tc\u209A\u2091\u2090\u2096')
-            self.progressionList.insert('end', 'pH@rest')
-            self.progressionList.insert('end', 'pH\u209A\u2091\u2090\u2096')
+            self.progressionList.insert('end', 'T')
+            self.progressionList.insert('end', 'pH')
+            # self.progressionList.insert('end', 'Tc@rest')
+            # self.progressionList.insert('end', 'Tc\u209A\u2091\u2090\u2096')
+            # self.progressionList.insert('end', 'pH@rest')
+            # self.progressionList.insert('end', 'pH\u209A\u2091\u2090\u2096')
             self.progressionList.pack(expand=1, fill=BOTH)
             self.progressionList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect(e) )
 
@@ -112,7 +116,7 @@ class DataImporter(object):
             # Instructions
             headerFrame = ttk.Frame(self.rightPanel)
             headerFrame.pack(fill=X)
-            self.instructionText = ttk.Label(headerFrame, text='Define column/row/cell containing ID')
+            self.instructionText = ttk.Label(headerFrame, text='Define column/row containing ID')
             self.instructionText.pack()
             self.selectionText = ttk.Label(headerFrame, text='')
             self.selectionText.pack(side=RIGHT, fill=BOTH)
@@ -137,7 +141,7 @@ class DataImporter(object):
 
             nameOfFirstSheet = list(self.dfList)[0]
 
-            self.dataTable = Table(dataFrame, dataframe=self.dfList[nameOfFirstSheet])
+            self.dataTable = Table(dataFrame, dataframe=self.dfList[nameOfFirstSheet], editable=False)
             self.dataTable.show()
 
             # Make initial selection
@@ -153,7 +157,9 @@ class DataImporter(object):
 
             self.dataTable.rowheader.bind('<ButtonRelease-1>', self.selectRow)
             self.dataTable.rowheader.bind('<Button-3>', self.handleRightClick)
-            
+
+            self.dataTable.rowindexheader.bind('<1>', lambda e: None)
+
             self.dataTable.bind('<B1-Motion>', self.handleDragSelection)
             self.dataTable.bind('<Button-1>', self.handleTableClick)
             self.dataTable.bind('<Control-Button-1>', self.handleTableCtrlClick)
@@ -168,7 +174,8 @@ class DataImporter(object):
             notification.create('error', 'Error opening file', 5000)
 
     def handleTableClick(self, e=None):
-        print('handle LEFT click')
+        pass
+        """ print('handle LEFT click')
         col = self.dataTable.get_col_clicked(e)
         row = self.dataTable.get_row_clicked(e)
         self.multiplecollist = []
@@ -191,10 +198,11 @@ class DataImporter(object):
         self.dataTable.rowheader.drawRect(row)
         self.dataTable.tablecolheader.drawRect(col)
 
-        self.updateSelectionText(e)
+        self.updateSelectionText(e) """
 
     def handleTableCtrlClick(self,e):
-        print('handle CTRL click')
+        pass
+        """ print('handle CTRL click')
         
         row = self.dataTable.get_row_clicked(e)
         col = self.dataTable.get_col_clicked(e)
@@ -219,7 +227,7 @@ class DataImporter(object):
         self.dataTable.rowheader.drawRect(row)
         self.dataTable.tablecolheader.drawRect(col)
 
-        self.updateSelectionText(e)
+        self.updateSelectionText(e) """
     
     def handleListboxSelect(self, e):
         index = self.progressionList.curselection()[0]
@@ -245,7 +253,8 @@ class DataImporter(object):
         self.updateSelectionText(e)
 
     def handleDragSelection(self, e):
-        self.multiplecollist = []
+        pass
+        """ self.multiplecollist = []
         self.multiplerowlist = []
         # self.dataTable.clearSelected()
 
@@ -297,7 +306,7 @@ class DataImporter(object):
                 self.drawMultipleCells()
             self.dataTable.delete('multiplesel')
 
-        self.updateSelectionText(e)
+        self.updateSelectionText(e) """
 
     def updateDragText(self):
         rows = self.multiplerowlist
@@ -428,7 +437,7 @@ class DataImporter(object):
         # print(f'COLS: {cols}, ROWS: {rows}')
 
         if len(rows) > 0 and len(cols) == 0: # only rows selected
-            print('ONLY ROWS SELECTED')
+            # print('ONLY ROWS SELECTED')
             if len(rows) > 1:
                 temp = rows[0]
                 for i, r in enumerate(rows):
@@ -450,7 +459,7 @@ class DataImporter(object):
                 self.selectionText.configure(text=f'Selected row {rows[0]+1}')
 
         elif len(cols) >= 1 and len(rows) == 0: # only cols selected
-            print('ONLY COLS SELECTED')
+            # print('ONLY COLS SELECTED')
             if len(cols) > 1:
                 temp = cols[0]
                 for i, c in enumerate(cols):
@@ -543,8 +552,24 @@ class DataImporter(object):
             print('PITKÄ MUOTO')
             self.dataMode = 'long'
 
+    def closeOptions(self, value):
+        col = self.dataTable.getSelectedColumn()
+        row = self.dataTable.getSelectedRow()
+        if col >= 0:
+            if value == 0:
+                self.dataMode = 'wide'
+            else:
+                self.dataMode = 'long'
+        if row >= 0:
+            if value == 0:
+                self.dataMode = 'long'
+            else:
+                self.dataMode = 'wide'
+        self.options.destroy()
+
     def getInput(self):
         # print('GETTING INPUT')
+
         col = self.dataTable.getSelectedColumn()
         row = self.dataTable.getSelectedRow()
         rows = self.dataTable.getSelectedRows()
@@ -554,6 +579,32 @@ class DataImporter(object):
         self.rowValues = []
         self.rowNames= []
         success = False
+
+        if self.stage == 0 and (len(self.multiplecollist) == 1 or len(rows) == 1 and row != -1):
+            def move(e):
+                editOptionsX = self.nextButton.winfo_rootx()-self.nextButton.winfo_reqwidth() - 10
+                editOptionsY = self.nextButton.winfo_rooty()-(self.nextButton.winfo_reqheight()*4)
+                self.options.geometry("+%d+%d" % ( editOptionsX, editOptionsY ))
+                self.options.lift()
+
+            self.options = Toplevel(bg='#38B3FF', borderwidth=5)
+            self.options.overrideredirect(True)
+            editOptionsX = self.nextButton.winfo_rootx()-self.nextButton.winfo_reqwidth() - 10
+            editOptionsY = self.nextButton.winfo_rooty()-(self.nextButton.winfo_reqheight()*4)
+            self.options.geometry("+%d+%d" % ( editOptionsX, editOptionsY ))
+            self.options.lift()
+
+            self.options.bind('<Configure>', move)
+
+            container = Frame(self.options, bd=0)
+            container.pack()            
+            var = IntVar()
+            ttk.Label(container, text='Selection contains single ID or multiple ID?').pack()
+            ttk.Radiobutton(container, variable=var, value=0, text='Single ID').pack()
+            ttk.Radiobutton(container, variable=var, value=1, text='Multiple IDs').pack()
+            ttk.Button(container, text='OK', command=lambda: self.closeOptions(var.get())).pack()
+
+            self.window.wait_window(self.options)
 
         if len(self.multiplecollist) > 0 and len(self.multiplerowlist) > 0: # set up values lists if multicell
             for i, c in enumerate(self.customGetSelectionValues()):
@@ -571,7 +622,9 @@ class DataImporter(object):
             for ri in range(len(rows)):
                 temp = []
                 for i in range(self.dataTable.cols):
-                    if i != 0:
+                    if str(rows.iloc[ri,i]) == 'nan':
+                        temp.append(0)
+                    else:
                         temp.append(rows.iloc[ri,i])
                 self.rowValues.append(temp)        
                 self.rowNames.append(rows.iloc[ri,0])
@@ -592,7 +645,7 @@ class DataImporter(object):
         # print(nRows)
         
         # print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
-        print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
+        # print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
 
         if col == -1 and row == -1: # nothing selected
             #print('NOTHING SELECTED')
@@ -603,316 +656,218 @@ class DataImporter(object):
         else: # something selected
 
             if col == -1: # rows selected
-                if len(rows) > 1 and col == -1: # multiple row
-                    #print('USEAMPI RIVI')
+                if self.stage == 0: # ids
+                    if len(rows) > 1 and col == -1: # multiple rows
+                        print('USEAMPI RIVI')
+                        if self.stage == 0: # ids
+                            # self.checkDataForm()
+                            for i, id in enumerate(self.rowNames):
+                                # Create subject, set its id, add a test, reset workloads
+                                subject = Subject()
+                                subject.setId(id)
+                                subject.addTest()
+                                subject.getTests()[0].workLoads = []
+                                self.subjects[rows.index[i]] = subject
 
-                    if self.stage == 0: # ids
-                        self.checkDataForm()
-                        for id in self.rowNames:
-                            # Create subject, set its id, add a test, reset workloads
-                            subject = Subject()
-                            subject.setId(id)
-                            subject.addTest()
-                            subject.getTests()[0].workLoads = []
-                            self.subjects.append(subject)
-                        
-                        self.tempLocData['id'] = self.rowNames
-                        success = True
+                            self.tempLocData['id'] = self.rowNames
+                            print(self.subjects)
+                            success = True
 
-                    elif self.stage == 1: # Loads
-                        #print('**LOADS**')
-                        self.getLoadsFromRows()
-                        success = True
+                    else: # single rows
+                        print('YKSI RIVI')
+                        if self.stage == 0: #ids
+                            if self.dataMode == 'long':
+                                for i, id in enumerate(self.rowNames):
+                                    # Create subject, set its id, add a test, reset workloads
+                                    subject = Subject()
+                                    subject.setId(id)
+                                    subject.addTest()
+                                    subject.getTests()[0].workLoads = []
+                                    self.subjects[rows.index[i]] = subject
 
-                    elif self.stage == 2: #VO2
-                        #print('**VO2**')
-                        success = self.getRowValues('VO2')
+                                # self.tempLocData['id'] = self.rowNames[0]
 
-                    elif self.stage == 3: #HR
-                        #print('**HR**')
-                        success = self.getRowValues('HR')
+                            elif self.dataMode == 'wide':
+                                for i, id in enumerate(self.rowValues[0]):
+                                    if i != 0:
+                                        # Create subject, set its id, add a test, reset workloads
+                                        subject = Subject()
+                                        subject.setId(id)
+                                        subject.addTest()
+                                        subject.getTests()[0].workLoads = []
+                                        self.subjects[i] = subject
 
-                    elif self.stage == 4: #SV
-                        #print('**SV**')
-                        success = self.getRowValues('SV')
+                            # self.tempLocData['id'] = self.rowNames
+                            print(self.subjects)
+                            success = True
 
-                    elif self.stage == 5: #Q
-                        #print('**Q**')
-                        success = self.getRowValues('Q')
+                elif self.stage == 1: # Loads
+                    #print('**LOADS**')
+                    success = self.getLoadsFromRows()
 
-                    elif self.stage == 6: #Hb
-                        #print('**Hb**')
-                        success = self.getRowValues('Hb')
+                elif self.stage == 2: #VO2
+                    #print('**VO2**')
+                    success = self.getRowValues('VO2')
 
-                    elif self.stage == 7: #SaO2
-                        #print('**SaO2**')
-                        success = self.getRowValues('SaO2')
+                elif self.stage == 3: #HR
+                    #print('**HR**')
+                    success = self.getRowValues('HR')
 
-                    elif self.stage == 8: #CaO2
-                        #print('**CaO2**')
-                        success = self.getRowValues('CaO2')
+                elif self.stage == 4: #SV
+                    #print('**SV**')
+                    success = self.getRowValues('SV')
 
-                    elif self.stage == 9: #CvO2
-                        #print('**CvO2**')
-                        success = self.getRowValues('CvO2')
+                elif self.stage == 5: #Q
+                    #print('**Q**')
+                    success = self.getRowValues('Q')
 
-                    elif self.stage == 10: #CavO2
-                        #print('**CavO2**')
-                        success = self.getRowValues('CavO2')
+                elif self.stage == 6: #Hb
+                    #print('**Hb**')
+                    success = self.getRowValues('Hb')
 
-                    elif self.stage == 11: #QaO2
-                        #print('**QaO2**')
-                        success = self.getRowValues('QaO2')
+                elif self.stage == 7: #SaO2
+                    #print('**SaO2**')
+                    success = self.getRowValues('SaO2')
 
-                    elif self.stage == 12: #SvO2
-                        #print('**SvO2**')
-                        success = self.getRowValues('SvO2')
+                elif self.stage == 8: #CaO2
+                    #print('**CaO2**')
+                    success = self.getRowValues('CaO2')
 
-                    elif self.stage == 13: #PvO2
-                        #print('**PvO2**')
-                        success = self.getRowValues('PvO2')
+                elif self.stage == 9: #CvO2
+                    #print('**CvO2**')
+                    success = self.getRowValues('CvO2')
 
-                    elif self.stage == 14: #Tc @ rest
-                        #print('**Tc@rest**')
-                        success = self.getRowValues('Tc@rest')
+                elif self.stage == 10: #CavO2
+                    #print('**CavO2**')
+                    success = self.getRowValues('CavO2')
 
-                    elif self.stage == 15: #Tc\u209A\u2091\u2090\u2096
-                        #print('**Tc\u209A\u2091\u2090\u2096**')
-                        success = self.getRowValues('Tc\u209A\u2091\u2090\u2096')
+                elif self.stage == 11: #QaO2
+                    #print('**QaO2**')
+                    success = self.getRowValues('QaO2')
 
-                    elif self.stage == 16: #pH @ rest
-                        #print('**pH@rest**')
-                        success = self.getRowValues('pH@rest')
+                elif self.stage == 12: #SvO2
+                    #print('**SvO2**')
+                    success = self.getRowValues('SvO2')
 
-                    elif self.stage == 17: #pH\u209A\u2091\u2090\u2096
-                        #print('**pH\u209A\u2091\u2090\u2096**')
-                        success = self.getRowValues('pH\u209A\u2091\u2090\u2096')
+                elif self.stage == 13: #PvO2
+                    #print('**PvO2**')
+                    success = self.getRowValues('PvO2')
+                    
+                elif self.stage == 14: #T
+                    success = self.getRowValues('T')
 
-                else: # single rows
-                    #print('YKSI RIVI')
-                    if self.stage == 0: #ids
-                        self.checkDataForm()
-                        for id in self.rowValues[0]:
-                            # Create subject, set its id, add a test, reset workloads
-                            subject = Subject()
-                            subject.setId(id)
-                            subject.addTest()
-                            subject.getTests()[0].workLoads = []
-                            self.subjects.append(subject)
-
-                        self.tempLocData['id'] = self.rowValues[0]
-                        success = True
-
-                    elif self.stage == 1: # load
-                        #print('**LOADS**')
-                        self.getLoadsFromRows()
-                        success = True
-
-                    elif self.stage == 2: # VO2
-                        #print('**VO2**')
-                        success = self.getRowValues('VO2')
-
-                    elif self.stage == 3: #HR
-                        #print('**HR**')
-                        success = self.getRowValues('HR')
-
-                    elif self.stage == 4: #SV
-                        #print('**SV**')
-                        success = self.getRowValues('SV')
-
-                    elif self.stage == 5: #Q
-                        #print('**Q**')
-                        success = self.getRowValues('Q')
-
-                    elif self.stage == 6: #Hb
-                        #print('**Hb**')
-                        success = self.getRowValues('Hb')
-
-                    elif self.stage == 7: #SaO2
-                        #print('**SaO2**')
-                        success = self.getRowValues('SaO2')
-
-                    elif self.stage == 8: #CaO2
-                        #print('**CaO2**')
-                        success = self.getRowValues('CaO2')
-
-                    elif self.stage == 9: #CvO2
-                        #print('**CvO2**')
-                        success = self.getRowValues('CvO2')
-
-                    elif self.stage == 10: #CavO2
-                        #print('**CavO2**')
-                        success = self.getRowValues('CavO2')
-
-                    elif self.stage == 11: #QaO2
-                        #print('**QaO2**')
-                        success = self.getRowValues('QaO2')
-
-                    elif self.stage == 12: #SvO2
-                        #print('**SvO2**')
-                        success = self.getRowValues('SvO2')
-
-                    elif self.stage == 13: #PvO2
-                        #print('**PvO2**')
-                        success = self.getRowValues('PvO2')
-
-                    elif self.stage == 14: #Tc @ rest
-                        #print('**Tc@rest**')
-                        success = self.getRowValues('Tc@rest')
-
-                    elif self.stage == 15: #Tc\u209A\u2091\u2090\u2096
-                        #print('**Tc\u209A\u2091\u2090\u2096**')
-                        self.getRowValues('Tc\u209A\u2091\u2090\u2096')
-
-                    elif self.stage == 16: #pH @ rest
-                        #print('**pH@rest**')
-                        success = self.getRowValues('pH@rest')
-
-                    elif self.stage == 17: #pH\u209A\u2091\u2090\u2096
-                        #print('**pH\u209A\u2091\u2090\u2096**')
-                        success = self.getRowValues('pH\u209A\u2091\u2090\u2096')
+                elif self.stage == 15: #pH
+                    success = self.getRowValues('pH')
 
                 if success:
                     self.addCheckMark(self.stage)
                     self.nextStage()
 
             if row == -1: # cols selected
-                if len(self.multiplecollist) > 1: # multiple columns
-                    #print('USEAMPI SARAKE')
-                    # print(colValues)
+                if self.stage == 0: #ids
+                    if len(self.multiplecollist) > 1: # multiple columns
+                        #print('USEAMPI SARAKE')
+                        
+                        if self.stage == 0: # ids
+                            # self.checkDataForm()
+                            for i, id in enumerate(self.columnNames):
+                                # Create subject, set its id, add a test, reset workloads
+                                subject = Subject()
+                                subject.setId(id)
+                                subject.addTest()
+                                subject.getTests()[0].workLoads = []
+                                # self.subjects.append(subject)
+                                colIndex = self.multiplecollist[i]
+                                self.subjects[colIndex] = subject
+
+                            print(self.subjects)
+                            success = True
+                            # self.tempLocData['id'] = self.columnNames
+
+                    else: # one column
+                        if self.stage == 0: # ids
+                            # self.checkDataForm()
+                            if self.dataMode == 'long':
+                                for i, c in enumerate(self.colValues): #iterate cols as list
+                                    for ci, cv in enumerate(c): #iterate values
+                                        if ci != 0: #skip header
+                                            # Create subject, set its id, add a test, reset workloads
+                                            subject = Subject()
+                                            subject.setId(cv)
+                                            subject.addTest()
+                                            subject.getTests()[0].workLoads = []
+                                            self.subjects[ci] = subject
+                            else:
+                                for i, id in enumerate(self.columnNames):
+                                    # Create subject, set its id, add a test, reset workloads
+                                    subject = Subject()
+                                    subject.setId(id)
+                                    subject.addTest()
+                                    subject.getTests()[0].workLoads = []
+                                    colIndex = self.multiplecollist[i]
+                                    self.subjects[colIndex] = subject
+
+                            print(self.subjects)
+                            success = True
+                            # self.tempLocData['id'] = self.colValues[0][1:]
                     
-                    if self.stage == 0: # ids
-                        self.checkDataForm()
-                        for c in self.colValues:
-                            # Create subject, set its id, add a test, reset workloads
-                            id = c[0]
-                            subject = Subject()
-                            subject.setId(id)
-                            subject.addTest()
-                            subject.getTests()[0].workLoads = []
-                            self.subjects.append(subject)
-                        success = True
-                        self.tempLocData['id'] = self.colValues
+                elif self.stage == 1: # Loads
+                    # print('**LOADS**')
+                    success = self.getLoadsFromCols()
 
-                    elif self.stage == 1: # Loads
-                        self.getLoadsFromCols()
-                        success = True
+                elif self.stage == 2: #VO2
+                    #print('**VO2**')
+                    success = self.getColumnValues('VO2')
+
+                elif self.stage == 3: #HR
+                    #print('**HR**')
+                    success = self.getColumnValues('HR')
+
+                elif self.stage == 4: #SV
+                    #print('**SV**')
+                    success = self.getColumnValues('SV')
+
+                elif self.stage == 5: #Q
+                    #print('**Q**')
+                    success = self.getColumnValues('Q')
+
+                elif self.stage == 6: #Hb
+                    #print('**Hb**')
+                    success = self.getColumnValues('Hb')
+
+                elif self.stage == 7: #SaO2
+                    #print('**SaO2**')
+                    success = self.getColumnValues('SaO2')
+
+                elif self.stage == 8: #CaO2
+                    #print('**CaO2**')
+                    success = self.getColumnValues('CaO2')
+
+                elif self.stage == 9: #CvO2
+                    #print('**CvO2**')
+                    success = self.getColumnValues('CvO2')
+
+                elif self.stage == 10: #CavO2
+                    #print('**CavO2**')
+                    success = self.getColumnValues('CavO2')
+
+                elif self.stage == 11: #QaO2
+                    #print('**QaO2**')
+                    success = self.getColumnValues('QaO2')
+
+                elif self.stage == 12: #SvO2
+                    #print('**SvO2**')
+                    success = self.getColumnValues('SvO2')
+
+                elif self.stage == 13: #PvO2
+                    #print('**PvO2**')
+                    success = self.getColumnValues('PvO2')
                     
-                    elif self.stage == 2: # VO2
-                        success = self.getColumnValues('VO2')
+                elif self.stage == 14: #T
+                    success = self.getColumnValues('T')
 
-                    elif self.stage == 3: # HR
-                        success = self.getColumnValues('HR')
-
-                    elif self.stage == 4: # SV
-                        success = self.getColumnValues('SV')
-
-                    elif self.stage == 5: # Q
-                        success = self.getColumnValues('Q')
-
-                    elif self.stage == 6: # Hb
-                        success = self.getColumnValues('Hb')
-
-                    elif self.stage == 7: # SaO2
-                        success = self.getColumnValues('SaO2')
-                    
-                    elif self.stage == 8: # CaO2
-                        success = self.getColumnValues('CaO2')
-
-                    elif self.stage == 9: # CvO2
-                        success = self.getColumnValues('CvO2')
-
-                    elif self.stage == 10: # CavO2
-                        success = self.getColumnValues('CavO2')
-
-                    elif self.stage == 11: # QaO2
-                        success = self.getColumnValues('QaO2')
-
-                    elif self.stage == 12: # SvO2
-                        success = self.getColumnValues('SvO2')
-
-                    elif self.stage == 13: # PvO2
-                        success = self.getColumnValues('PvO2')
-
-                    elif self.stage == 14: # Tc @ rest
-                        success = self.getColumnValues('Tc@rest')
-
-                    elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
-                        success = self.getColumnValues('Tc\u209A\u2091\u2090\u2096')
-
-                    elif self.stage == 16: # pH @ rest
-                        success = self.getColumnValues('pH@rest')
-
-                    elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
-                        success = self.getColumnValues('pH\u209A\u2091\u2090\u2096')
-
-                else: # one column
-                    #print('YKSI SARAKE')
-                    # print( colValues )
-
-                    if self.stage == 0: # ids
-                        self.checkDataForm()
-
-                        for id in self.colValues[0][1:]:
-                            # Create subject, set its id, add a test, reset workloads
-                            subject = Subject()
-                            subject.setId(id)
-                            subject.addTest()
-                            subject.getTests()[0].workLoads = []
-                            self.subjects.append(subject)
-                        success = True
-                        self.tempLocData['id'] = self.colValues[0][1:]
-                    
-                    elif self.stage == 1: # loads
-                        success = self.getLoadsFromCols()
-                    
-                    elif self.stage == 2: # VO2
-                        success = self.getColumnValues('VO2')
-
-                    elif self.stage == 3: # HR
-                        success = self.getColumnValues('HR')
-
-                    elif self.stage == 4: # SV
-                        success = self.getColumnValues('SV')
-
-                    elif self.stage == 5: # Q
-                        success = self.getColumnValues('Q')
-
-                    elif self.stage == 6: # Hb
-                        success = self.getColumnValues('Hb')
-
-                    elif self.stage == 7: # SaO2
-                        success = self.getColumnValues('SaO2')
-                    
-                    elif self.stage == 8: # CaO2
-                        success = self.getColumnValues('CaO2')
-
-                    elif self.stage == 9: # CvO2
-                        success = self.getColumnValues('CvO2')
-
-                    elif self.stage == 10: # CavO2
-                        success = self.getColumnValues('CavO2')
-
-                    elif self.stage == 11: # QaO2
-                        success = self.getColumnValues('QaO2')
-
-                    elif self.stage == 12: # SvO2
-                        success = self.getColumnValues('SvO2')
-
-                    elif self.stage == 13: # PvO2
-                        success = self.getColumnValues('PvO2')
-
-                    elif self.stage == 14: # Tc @ rest
-                        success = self.getColumnValues('Tc@rest')
-
-                    elif self.stage == 15: # Tc\u209A\u2091\u2090\u2096
-                        success = self.getColumnValues('Tc\u209A\u2091\u2090\u2096')
-
-                    elif self.stage == 16: # pH @ rest
-                        success = self.getColumnValues('pH@rest')
-
-                    elif self.stage == 17: # pH\u209A\u2091\u2090\u2096
-                        success = self.getColumnValues('pH\u209A\u2091\u2090\u2096')
+                elif self.stage == 15: #pH
+                    success = self.getColumnValues('pH')
 
                 if success:
                     self.addCheckMark(self.stage)
@@ -923,8 +878,8 @@ class DataImporter(object):
                     print('MULTIPLE CELLS SELECTED')
 
                     if self.stage == 0: # ids
-                        self.checkDataForm()
-                        self.subjects = []
+                        # self.checkDataForm()
+                        self.subjects = {}
 
                         if self.dataMode == 'wide':
                             for i, c in enumerate(self.multiplecollist):
@@ -935,15 +890,16 @@ class DataImporter(object):
                                         subject.setId(self.columnNames[i])
                                         subject.addTest()
                                         subject.getTests()[0].workLoads = []
-                                        self.subjects.append(subject)
+                                        # self.subjects.append(subject)
+                                        self.subjects[c] = subject
                                 else:
                                     subject = Subject()
                                     subject.setId(self.columnNames[i])
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
-                                    self.subjects.append(subject)
+                                    # self.subjects.append(subject)
+                                    self.subjects[c] = subject
 
-                            success = True
                             self.tempLocData['id'] = self.columnNames
 
                         elif self.dataMode == 'long':
@@ -955,16 +911,20 @@ class DataImporter(object):
                                         subject.setId(self.rowNames[i])
                                         subject.addTest()
                                         subject.getTests()[0].workLoads = []
-                                        self.subjects.append(subject)
+                                        # self.subjects.append(subject)
+                                        self.subjects[r] = subject
                                 else:
                                     subject = Subject()
                                     subject.setId(self.rowNames[i])
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
-                                    self.subjects.append(subject)
-
-                            success = True
+                                    # self.subjects.append(subject)
+                                    self.subjects[r] = subject
+                            
                             self.tempLocData['id'] = self.rowNames
+                        
+                        print(self.subjects)
+                        success = True
                     
                     elif self.stage == 1: # loads
                         #print('**LOADS**')
@@ -1060,12 +1020,14 @@ class DataImporter(object):
 
                     if self.stage == 0: # ids
                         # Create subject, set its id, add a test, reset workloads
-                        self.subjects = []
+                        self.subjects = {}
                         subject = Subject()
                         subject.setId(value)
                         subject.addTest()
                         subject.getTests()[0].workLoads = []
-                        self.subjects.append(subject)
+                        # self.subjects.append(subject)
+                        i = f'{row}-{col}'
+                        self.subjects[i] = subject
                         self.dataMode = None
                         success = True
                         self.tempLocData['id'] = value
@@ -1139,6 +1101,7 @@ class DataImporter(object):
         if hasattr(self, 'test'):
             del self.test
         self.window.destroy()
+        self.options.destroy()
         del self
 
     def updateTable(self, table):
@@ -1175,90 +1138,95 @@ class DataImporter(object):
                     x.append(val)
             lists.append(x)
         return lists
-
-    def getColumnValues(self, label):
-        nLoads = len(self.tempLocData['Load'])
-        flag = False
-
-        for i, s in enumerate(self.subjects):
-            test = s.getTests()[0]
-            loads = test.getWorkLoads()
-
-            if len(self.colValues) == 1:
-                for j, l in enumerate(loads):
-                    details = l.getDetails()
-                    colValues = self.colValues[0][1:]
-                    details.setValue(label, colValues[i])
-                flag = True
-            else:
-                if len(self.colValues) < nLoads:
-                    s = ttk.Style()
-                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(self.colValues)} values given')
-                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
-                else:
-                    for j, l in enumerate(loads):
-                        details = l.getDetails()
-                        colValues = self.colValues[j][1:]
-                        details.setValue(label, colValues[i])
-                        # print(label, colValues[i])
-                    flag = True
-        return flag
-        # self.tempLocData[label] = self.columnNames
     
     def getLoadsFromCols(self):
-        for i, s in enumerate(self.subjects):
+        for rowIndex, s in self.subjects.items():
             test = s.getTests()[0]
             test.workLoads = [] # delete previous workloads, if re-fetching loads
-            for j, l in enumerate(self.colValues):
-                l = l[1:]
-                # print(f'l: {l}')
-                if l[i] != '':
-                    load = test.createLoad()
-                    load.setName(self.columnNames[j]) # column name
-                    load.getDetails().setValue('Load', l[i]) # set value
-                    load.getDetails().setImported(True)
+
+            for i, v in enumerate(self.colValues): #iterate cols as list
+                for ci, cv in enumerate(v): #iterate values
+                    if ci == rowIndex: #if row matches subject's row
+                        columnName = self.columnNames[i]
+                        load = test.createLoad()
+                        
+                        load.setName(columnName) # column name
+                        load.getDetails().setValue('Load', cv) # set value
+                        load.getDetails().setImported(True)
+                        continue
         
         self.tempLocData['Load'] = self.columnNames
         return True
 
     def getLoadsFromRows(self):
-        for i, s in enumerate(self.subjects):
+        for colIndex, s in self.subjects.items():
             test = s.getTests()[0]
             test.workLoads = [] # delete previous workloads, if re-fetching loads
-            for j, l in enumerate(self.rowValues):
-                if math.isnan(l[i]) == False:
-                    load = test.createLoad()
-                    load.setName(self.rowNames[j]) # row name
-                    load.getDetails().setValue('Load', l[i]) # set value
-                    load.getDetails().setImported(True)
+
+            for i, v in enumerate(self.rowValues): #iterate rows as list
+                for ci, cv in enumerate(v): #iterate values
+                    if ci == colIndex: #if col matches subject's col
+                        rowName = self.rowNames[i]
+                        load = test.createLoad()
+                        load.setName(rowName) # row name
+                        load.getDetails().setValue('Load', cv) # set value
+                        load.getDetails().setImported(True)
+                        continue
         
         self.tempLocData['Load'] = self.rowNames
+        return True
 
-    def getRowValues(self, label):
-        nLoads = len(self.tempLocData['Load'])
+    def getColumnValues(self, label):
         flag = False
 
-        for i, s in enumerate(self.subjects):
+        for rowIndex, s in self.subjects.items():
             test = s.getTests()[0]
             loads = test.getWorkLoads()
             
-            if len(self.rowValues) == 1:
-                for j, l in enumerate(loads):
-                    details = l.getDetails()
-                    details.setValue(label, self.rowValues[0][i])
-                flag = True
-            else:
-                if len(self.rowValues) < nLoads:
+            if len(self.colValues) < len(loads) and len(self.colValues) != 1:
                     s = ttk.Style()
                     s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(style='error.TLabel', text=f'You have {nLoads} loads but only {len(self.rowValues)} values given')
+                    self.notif.configure(style='error.TLabel', text=f'You have {len(loads)} loads but only {len(self.colValues)} values given')
                     self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
-                else:
-                    for j, l in enumerate(loads):
+            else:
+                if len(self.colValues) == 1:
+                    for li, l in enumerate(loads):
                         details = l.getDetails()
-                        details.setValue(label, self.rowValues[j][i])
-                    flag = True
+                        value = self.colValues[0][rowIndex]
+                        details.setValue(label, value)
+                else:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        value = self.colValues[li][rowIndex]
+                        details.setValue(label, value)
+                flag = True
+        return flag
+        # self.tempLocData[label] = self.columnNames
+
+    def getRowValues(self, label):
+        flag = False
+
+        for colIndex, s in self.subjects.items():
+            test = s.getTests()[0]
+            loads = test.getWorkLoads()
+            
+            if len(self.rowValues) < len(loads) and len(self.rowValues) != 1:
+                    s = ttk.Style()
+                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                    self.notif.configure(style='error.TLabel', text=f'You have {len(loads)} loads but only {len(self.rowValues)} values given')
+                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+            else:
+                if len(self.rowValues) == 1:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        value = self.rowValues[0][colIndex]
+                        details.setValue(label, value)
+                else:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        value = self.rowValues[li][colIndex]
+                        details.setValue(label, value)
+                flag = True
         return flag
         # self.tempLocData[label] = self.rowNames
 
@@ -1266,44 +1234,116 @@ class DataImporter(object):
         colList = self.multiplecollist
         rowList = self.multiplerowlist
 
-        # if self.dataMode == None:
-        #     if len(colList) > len(rowList):
-        #         self.dataMode = 'long'
-        #     else:
-        #         self.dataMode = 'wide'
+        if self.dataMode == None:
+            if all(colList[0] == col for col in colList):
+                self.dataMode = 'wide'
+            elif all(rowList[0] == col for col in rowList):
+                self.dataMode = 'long'
+            elif len(colList) > len(rowList):
+                self.dataMode = 'long'
+            else:
+                self.dataMode = 'wide'
 
         if self.dataMode == 'long':
             print('LONG')
-            for ri, r in enumerate(rowList):
-                test = self.subjects[ri].getTests()[0]
+
+            # iterate cols
+            # get value by subject row
+
+            if len(self.subjects) == 1:
+                i = list(self.subjects) 
+                i = i[0].split('-')[0]
+
+                for s in self.subjects.values():
+                    test = s.tests[0]
+                    test.workLoads = [] # delete previous workloads, if re-fetching loads
+
+                for ri, r in enumerate(rowList):
+                    print(f'r {r}, i {i}')
+                    if r == i:
+                        columnName = self.columnNames[ri]
+                        load = test.createLoad()
+                        load.setName(columnName) # column name
+                        print(self.colValues[ri][i])
+                        load.getDetails().setValue('Load', self.colValues[ri][i]) # set value
+                        load.getDetails().setImported(True)
+
+            else:
+                for rowIndex, s in self.subjects.items():
+                    test = s.tests[0]
+                    test.workLoads = [] # delete previous workloads, if re-fetching loads
+                    self.colValues = list(dict.fromkeys(self.colValues))
+                    print(f'debug len {len(self.colValues)}')
+                    for v in self.colValues:
+                        for ci, cv in enumerate(v):
+                            if ci == rowIndex:
+                                columnName = v[0]
+                                load = test.createLoad()
+                                load.setName(columnName) # column name
+                                load.getDetails().setValue('Load', cv) # set value
+                                load.getDetails().setImported(True)
+                                continue
+
+                """ for ri, r in enumerate(rowList):
+                if len(self.subjects) > 1:
+                    test = self.subjects[ri].getTests()[0]
+                else:
+                    test = self.subjects[0].getTests()[0]
                 test.workLoads = [] # delete previous workloads, if re-fetching loads
 
-                if len(colList) == 1: # if selected by dragging or shift
-                    print('SHIFT/DRAG')
+                for ci, c in enumerate(colList):
+                    columnName = self.columnNames[ci]
+                    load = test.createLoad()
+                    load.setName(columnName) # column name
+                    load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+                    load.getDetails().setImported(True) """
+
+                """ if len(rowList) == 1 or all(rowList[0] == col for col in rowList): # single row
+                    print('single row')
                     for ci, c in enumerate(colList):
                         columnName = self.columnNames[ci]
                         load = test.createLoad()
                         load.setName(columnName) # column name
                         load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
                         load.getDetails().setImported(True)
-                else: # if selected with ctrl
-                    print('CTRL')
+                else: # multiple rows
+                    print('multiple rows')
                     columnName = self.columnNames[ri]
                     load = test.createLoad()
                     load.setName(columnName) # column name
                     load.getDetails().setValue('Load', self.colValues[ri][r]) # set value
                     load.getDetails().setImported(True)
-                    continue
+                    continue """
 
             self.tempLocData['Load'] = self.colValues
 
         elif self.dataMode == 'wide':
             print('WIDE')
-            for ci, c in enumerate(colList):
-                test = self.subjects[ci].getTests()[0]
+            for i, s in self.subjects.items():
+                test = s.tests[0]
+
+                for ci, c in enumerate(colList):
+                    if c == i:
+                        rowName = self.rowNames[ci]
+                        load = test.createLoad()
+                        load.setName(rowName) # row name
+                        load.getDetails().setValue('Load', self.colValues[ci][rowList[ci]]) # set value
+                        load.getDetails().setImported(True)
+                """ for ci, c in enumerate(colList):
+                if len(self.subjects) > 1:
+                    test = self.subjects[ci].getTests()[0]
+                else:
+                    test = self.subjects[0].getTests()[0]
                 test.workLoads = [] # delete previous workloads, if re-fetching loads
 
-                if len(rowList) == 1: # if selected by dragging or shift
+                for ri, r in enumerate(rowList):
+                    rowName = self.rowNames[ri]
+                    load = test.createLoad()
+                    load.setName(rowName) # column name
+                    load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
+                    load.getDetails().setImported(True) """
+
+                """ if len(rowList) == 1: # if selected by dragging or shift
                     print('SHIFT/DRAG')
                     for ri, r in enumerate(rowList):
                         rowName = self.rowNames[ri]
@@ -1318,7 +1358,7 @@ class DataImporter(object):
                     load.setName(rowName) # column name
                     load.getDetails().setValue('Load', self.colValues[ci][rowList[ci]]) # set value
                     load.getDetails().setImported(True)
-                    continue
+                    continue """
 
             self.tempLocData['Load'] = self.colValues
 
@@ -1389,7 +1429,7 @@ class DataImporter(object):
 
         if to > 0:
             ttk.Button(self.footer, text='Prev', command=lambda: self.prevStage()).grid(column=0, row=0)
-            passBtn = ttk.Button(self.footer, text='Pass', command=lambda: self.nextStage())
+            passBtn = ttk.Button(self.footer, text='Skip', command=lambda: self.nextStage())
             passBtn.grid(column=2, row=0)
             ttk.Button(self.footer, text='Done', command=lambda: self.importData()).grid(column=3, row=0)
             self.cancelButton.grid(column=4, row=0)
@@ -1401,60 +1441,52 @@ class DataImporter(object):
             self.instructionText.configure(text='Define ID column/row')
         elif to == 1:
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define loads row/column/cell')
+            self.instructionText.configure(text='Define loads row/column')
         elif to == 2: # -> VO2
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define VO\u2082 row/column/cell')
+            self.instructionText.configure(text='Define VO\u2082 row/column')
         elif to== 3: # -> HR
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define HR row/column/cell')
+            self.instructionText.configure(text='Define HR row/column')
         elif to == 4: # -> SV
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define SV row/column/cell')
+            self.instructionText.configure(text='Define SV row/column')
         elif to == 5: # -> Q
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define Q row/column/cell')
+            self.instructionText.configure(text='Define Q row/column')
         elif to == 6: # -> Hb
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define Hb row/column/cell')
+            self.instructionText.configure(text='Define Hb row/column')
         elif to == 7: # -> SaO2
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define SaO\u2082 row/column/cell')
+            self.instructionText.configure(text='Define SaO\u2082 row/column')
         elif to == 8: # -> CaO2
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define CaO\u2082 row/column/cell')
+            self.instructionText.configure(text='Define CaO\u2082 row/column')
         elif to == 9: # -> CvO2
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define CvO\u2082 row/column/cell')
+            self.instructionText.configure(text='Define CvO\u2082 row/column')
         elif to == 10: # -> CavO2
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define CavO\u2082 row/column/cell')
+            self.instructionText.configure(text='Define CavO\u2082 row/column')
         elif to == 11: # -> QaO2
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define QaO\u2082 row/column/cell')
+            self.instructionText.configure(text='Define QaO\u2082 row/column')
         elif to == 12: # -> SvO2
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define SvO\u2082 row/column/cell')
+            self.instructionText.configure(text='Define SvO\u2082 row/column')
         elif to == 13: # -> PvO2
             self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define PvO\u2082 row/column/cell')
-        elif to == 14: # -> Tc @ rest
+            self.instructionText.configure(text='Define PvO\u2082 row/column')
+        elif to == 14: # -> T
             self.moveArrow(self.stage, to)
             passBtn.configure(text='Use Default Values')
-            self.instructionText.configure(text='Define Tc@rest row/column/cell')
-        elif to == 15: # -> Tc\u209A\u2091\u2090\u2096
+            self.instructionText.configure(text='Define T row/column')
+        elif to == 15: # -> pH
             self.moveArrow(self.stage, to)
             passBtn.configure(text='Use Default Values')
-            self.instructionText.configure(text='Define Tc\u209A\u2091\u2090\u2096 row/column/cell')
-        elif to == 16: # -> pH @ rest
-            self.moveArrow(self.stage, to)
-            passBtn.configure(text='Use Default Values')
-            self.instructionText.configure(text='Define pH@rest row/column/cell')
-        elif to == 17: # -> pH\u209A\u2091\u2090\u2096
-            self.moveArrow(self.stage, to)
-            passBtn.configure(text='Use Default Values')
-            self.instructionText.configure(text='Define pH\u209A\u2091\u2090\u2096 row/column/cell')
-        elif to == 18: # Finish
+            self.instructionText.configure(text='Define pH row/column')
+        elif to == 16: # Finish
             self.importData()
 
         self.stage = to
@@ -1501,7 +1533,7 @@ class DataImporter(object):
         project.data = self.dfList
 
         # Add dataloc information
-        project.dataMode = self.dataMode
+        # project.dataMode = self.dataMode
         project.idLoc = self.tempLocData.get('id', None)
         project.loadLoc = self.tempLocData.get('Load', None)
         project.vo2Loc = self.tempLocData.get('VO2', None)
@@ -1550,8 +1582,12 @@ class DataImporter(object):
         print(project.phRestLoc)
         print(project.phLoc) """
 
-        for s in self.subjects:
-            project.addSubject(s)
+        if type(self.subjects) is dict:
+            for s in self.subjects.values():
+                project.addSubject(s)
+        else:
+            for s in self.subjects:
+                project.addSubject(s)
 
         app.sidepanel_projectList.refreshList()
         app.sidepanel_subjectList.refreshList()
