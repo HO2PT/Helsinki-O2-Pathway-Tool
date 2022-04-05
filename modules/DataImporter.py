@@ -1,12 +1,14 @@
 from cmath import exp
 from csv import excel_tab
 import ctypes
+from email import header
 import math
 from re import sub
 import sys
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
+from click import command
 from numpy import NaN
 import pandas as pd
 from pandastable import Table, TableModel
@@ -36,13 +38,6 @@ from objects.subject import Subject
 
 # Luo vaihtoehdot tuo projekti, tuo käyttäjä, tuo testi
 # tuodessa testiä lisätään aktiivisen käyttäjän alle jnejne.
-
-##
-## - Lisää tsekkaus, jos esim. len(collist) = 0, iske sarakkeen tiedot
-## kaikkiin kuormiin
-##
-## - Virheilmoitus jos tulee indexerror
-##
 
 class DataImporter(object):
     def __init__(self):
@@ -110,7 +105,7 @@ class DataImporter(object):
             # Notification bar
             notifFrame = ttk.Frame(self.rightPanel)
             notifFrame.pack(fill=X)
-            self.notif = ttk.Label(notifFrame, text='')
+            self.notif = ttk.Label(notifFrame, text='', anchor='center', foreground='white')
             self.notif.pack(fill=X)
 
             # Instructions
@@ -118,11 +113,13 @@ class DataImporter(object):
             headerFrame.pack(fill=X)
             self.instructionText = ttk.Label(headerFrame, text='Define column/row containing ID')
             self.instructionText.pack()
-            self.selectionText = ttk.Label(headerFrame, text='')
-            self.selectionText.pack(side=RIGHT, fill=BOTH)
+            # self.selectionText = ttk.Label(headerFrame, text='')
+            # self.selectionText.pack(side=RIGHT, fill=BOTH)
 
             # Create menubutton for selection of excel sheet
-            self.menuButton = ttk.Menubutton(headerFrame, text=list(self.data.sheet_names)[0])
+            sheetFrame = ttk.Labelframe(headerFrame, text='Select excel sheet')
+            sheetFrame.pack(side=LEFT)
+            self.menuButton = ttk.Menubutton(sheetFrame, text=list(self.data.sheet_names)[0])
             menu = Menu(self.menuButton, tearoff=False)
 
             for s in self.data.sheet_names:
@@ -131,6 +128,24 @@ class DataImporter(object):
             self.menuButton['menu'] = menu
             self.menuButton.pack(side=LEFT)
 
+            # Mass selection entries
+            ttk.Label(headerFrame, text='Select from:').pack(side=LEFT)
+
+            self.strVar = StringVar(value='row')
+            self.selMenuButton = ttk.Menubutton(headerFrame, textvariable=self.strVar)
+            selMenu = Menu(self.selMenuButton, tearoff=False)
+            selMenu.add_command(label='row', command= lambda: self.strVar.set('row'))
+            selMenu.add_command(label='column', command= lambda: self.strVar.set('column'))
+            self.selMenuButton['menu'] = selMenu
+            self.selMenuButton.pack(side=LEFT)
+
+            self.varStart = IntVar()
+            self.varEnd = IntVar()
+            ttk.Entry(headerFrame, textvariable=self.varStart).pack(side=LEFT)
+            ttk.Label(headerFrame, text='to').pack(side=LEFT)
+            ttk.Entry(headerFrame, textvariable=self.varEnd).pack(side=LEFT)
+            ttk.Button(headerFrame, text='Set', command=self.setMassSel).pack(side=LEFT)
+
             # Data frame
             dataFrame = ttk.Frame(self.rightPanel)
             dataFrame.pack(fill=BOTH, expand=True)
@@ -138,6 +153,9 @@ class DataImporter(object):
             # Footer
             self.footer = ttk.Frame(self.rightPanel)
             self.footer.pack(side=BOTTOM, anchor='ne')
+
+            self.selectionText = ttk.Label(self.footer, text='')
+            self.selectionText.grid(column=0, row=0)
 
             nameOfFirstSheet = list(self.dfList)[0]
 
@@ -172,6 +190,44 @@ class DataImporter(object):
             self.cancelButton.grid(column=2, row=0)
         else:
             notification.create('error', 'Error opening file', 5000)
+
+    def setMassSel(self):
+        selMode = self.strVar.get()
+        start = self.varStart.get()
+        end = self.varEnd.get()
+        self.handleRightClick() # deselect all
+
+        if selMode == 'row':
+            if start-1 < 0:
+                self.notif.configure(text='Start row index out of range', background='red')
+                self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+            elif end > self.dataTable.rows:
+                self.notif.configure(text='End row index out of range', background='red')
+                self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+            else:
+                for i in range(start-1, end):
+                    self.multiplerowlist.append(i)
+                    self.dataTable.multiplerowlist.append(i)
+                    self.dataTable.rowheader.drawRect(row=i, delete=False)
+                del self.dataTable.multiplerowlist[0]
+                self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
+        else: # cols
+            if start < 0:
+                self.notif.configure(text='Start column index out of range', background='red')
+                self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+            elif end > self.dataTable.cols:
+                self.notif.configure(text='End column index out of range', background='red')
+                self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+            else:
+                for i in range(start, end):
+                    self.multiplecollist.append(i)
+                self.multiplecollist.append(end)
+
+                for c in self.multiplecollist:
+                    print(c)
+                    self.dataTable.setSelectedCol( c )
+                    self.dataTable.drawSelectedCol(c, delete=False)
+                    self.dataTable.tablecolheader.drawRect(c, delete=False)
 
     def handleTableClick(self, e=None):
         pass
@@ -369,7 +425,7 @@ class DataImporter(object):
         # self.updateColumnText()
         self.updateSelectionText(e)
 
-    def handleRightClick(self, e):
+    def handleRightClick(self, e = None):
         self.deselectAll()
         self.multiplecollist = []
         self.multiplerowlist = []
@@ -573,7 +629,8 @@ class DataImporter(object):
         col = self.dataTable.getSelectedColumn()
         row = self.dataTable.getSelectedRow()
         rows = self.dataTable.getSelectedRows()
-        nRows = self.dataTable.rows
+        if len(self.multiplerowlist) == 0:
+            self.multiplerowlist = rows
         self.colValues = []
         self.columnNames = []
         self.rowValues = []
@@ -587,7 +644,7 @@ class DataImporter(object):
                 self.options.geometry("+%d+%d" % ( editOptionsX, editOptionsY ))
                 self.options.lift()
 
-            self.options = Toplevel(bg='#38B3FF', borderwidth=5)
+            self.options = Toplevel(bg='#4eb1ff', borderwidth=5)
             self.options.overrideredirect(True)
             editOptionsX = self.nextButton.winfo_rootx()-self.nextButton.winfo_reqwidth() - 10
             editOptionsY = self.nextButton.winfo_rooty()-(self.nextButton.winfo_reqheight()*4)
@@ -606,7 +663,8 @@ class DataImporter(object):
 
             self.window.wait_window(self.options)
 
-        if len(self.multiplecollist) > 0 and len(self.multiplerowlist) > 0: # set up values lists if multicell
+        """ if len(self.multiplecollist) > 0 and len(self.multiplerowlist) > 0: # set up values lists if multicell
+            print('ASDASKDLASDKSALDSAKDLADKALDKSALDKAS')
             for i, c in enumerate(self.customGetSelectionValues()):
                 # self.dataTable.setSelectedCol(c)
                 # self.colValues.append(self.customGetSelectionValues()[0][0:])
@@ -618,22 +676,22 @@ class DataImporter(object):
                 self.dataTable.setSelectedRow(r)
                 self.rowValues.append(self.dataTable.getSelectedRows())
                 self.rowNames.append(self.dataTable.getSelectedRows().iloc[0,0])
-        else: # set up values lists if whole rows/cols selected
-            for ri in range(len(rows)):
-                temp = []
-                for i in range(self.dataTable.cols):
-                    if str(rows.iloc[ri,i]) == 'nan':
-                        temp.append(0)
-                    else:
-                        temp.append(rows.iloc[ri,i])
-                self.rowValues.append(temp)        
-                self.rowNames.append(rows.iloc[ri,0])
+        else: # set up values lists if whole rows/cols selected """
+        for ri in range(len(rows)):
+            temp = []
+            for i in range(self.dataTable.cols):
+                if str(rows.iloc[ri,i]) == 'nan':
+                    temp.append(0)
+                else:
+                    temp.append(rows.iloc[ri,i])
+            self.rowValues.append(temp)        
+            self.rowNames.append(rows.iloc[ri,0])
 
-            for i, c in enumerate(self.customGetSelectionValues()):
-                # self.dataTable.setSelectedCol(c)
-                # print(f'JEPPISJEE: {self.customGetSelectionValues()}')
-                self.colValues.append(c[0:])
-                self.columnNames.append(c[0])
+        for i, c in enumerate(self.customGetSelectionValues()):
+            # self.dataTable.setSelectedCol(c)
+            # print(f'JEPPISJEE: {self.customGetSelectionValues()}')
+            self.colValues.append(c[0:])
+            self.columnNames.append(c[0])
             # self.colValues = self.customGetSelectionValues()
             # self.columnNames = self.customGetSelectionValues()[0][0]
 
@@ -642,19 +700,18 @@ class DataImporter(object):
         # print(f'row names: {self.rowNames}')
         # print(f'row values: {self.rowValues}')
         # print(rows)
-        # print(nRows)
         
         # print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
         # print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
+        # print(f'STAGE {self.stage}')
 
-        if col == -1 and row == -1: # nothing selected
+        if (len(self.multiplerowlist) < 1 and len(self.multiplecollist) < 1): # nothing selected
             #print('NOTHING SELECTED')
             s = ttk.Style()
             s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
             self.notif.configure(style='error.TLabel', text=f'Nothing selected')
             self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
         else: # something selected
-
             if col == -1: # rows selected
                 if self.stage == 0: # ids
                     if len(rows) > 1 and col == -1: # multiple rows
@@ -702,7 +759,7 @@ class DataImporter(object):
                             success = True
 
                 elif self.stage == 1: # Loads
-                    #print('**LOADS**')
+                    # print('**LOADS**')
                     success = self.getLoadsFromRows()
 
                 elif self.stage == 2: #VO2
@@ -873,7 +930,7 @@ class DataImporter(object):
                     self.addCheckMark(self.stage)
                     self.nextStage()
 
-            if row >= 0 and col >= 0: # cells selected
+            """ if row >= 0 and col >= 0: # cells selected
                 if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1: # multiple cells
                     print('MULTIPLE CELLS SELECTED')
 
@@ -1036,10 +1093,10 @@ class DataImporter(object):
                         s = self.subjects[0]
                         test = s.getTests()[0]
                         load = test.createLoad()
-                        """ if self.dataMode == 'long':
+                        if self.dataMode == 'long':
                             load.setName(rowName) # row name
                         elif self.dataMode == 'wide':
-                            load.setName(columnName) # column name """
+                            load.setName(columnName) # column name
                         load.setName(columnName) # column name
                         load.getDetails().setValue('Load', value) # set value
                         load.getDetails().setImported(True) # set as imported
@@ -1095,7 +1152,7 @@ class DataImporter(object):
 
                 if success:
                     self.addCheckMark(self.stage)
-                    self.nextStage()
+                    self.nextStage() """
 
     def closeImporter(self):
         if hasattr(self, 'test'):

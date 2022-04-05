@@ -557,44 +557,51 @@ class PlotTab():
 
         # Figure toolbar
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.toolbarContainer, pack_toolbar=False)
+        self.toolbar.update()
         self.toolbar.pack(fill=X)
         
         # Custom toolbar
         self.toolbarWrapper = ttk.Frame(self.toolbarContainer)
         self.toolbarWrapper.pack(side=LEFT, anchor='nw')
-        ttk.Label(self.toolbarWrapper, text='Set Y-axis max. value').grid(column=0, row=0)
 
         # Set y limit
         # self.yValue = StringVar(self.toolbarWrapper, value=self.plot[1].get_ylim()[1])
-        self.yValue = StringVar(self.toolbarWrapper, value=yLimit)
-        self.yEntry = ttk.Entry(self.toolbarWrapper, textvariable=self.yValue)
+        setYLimFrame = ttk.Labelframe(self.toolbarWrapper, text='Set Y-axis max. value', padding=(5,5))
+        setYLimFrame.grid(column=0, row=0, padx=(5,5))
+        self.yValue = StringVar(setYLimFrame, value=yLimit)
+        self.yEntry = ttk.Entry(setYLimFrame, textvariable=self.yValue)
         self.yEntry.grid(column=0, row=1)
         # self.yValue.trace('w', self.updateY)
-        ttk.Button(self.toolbarWrapper, text='Set', command=lambda: self.setYLim()).grid(column=1, row=1)
+        ttk.Button(setYLimFrame, text='Set', command=lambda: self.setYLim()).grid(column=1, row=1)
 
         self.toolbarWrapper.grid_columnconfigure(2, minsize=25)
 
         # Set plot title
-        ttk.Label(self.toolbarWrapper, text='Set plot title').grid(column=2, row=0, sticky='w')
-        self.titleEntry = ttk.Entry(self.toolbarWrapper)
+        setTitleFrame = ttk.Labelframe(self.toolbarWrapper, text='Set plot title', padding=(5,5))
+        setTitleFrame.grid(column=2, row=0, sticky='w', padx=(5,5))
+        self.titleEntry = ttk.Entry(setTitleFrame)
         self.titleEntry.grid(column=2, row=1)
-        setTitleButton = ttk.Button(self.toolbarWrapper, text='Set', command=self.setPlotTitle)
+        setTitleButton = ttk.Button(setTitleFrame, text='Set', command=self.setPlotTitle)
         setTitleButton.grid(column=3, row=1)
 
+        # Set tick size
+        setTicksFrame = ttk.Labelframe(self.toolbarWrapper, text='Set axis ticks', padding=(5,5))
+        setTicksFrame.grid(column=4, row=0, columnspan=4, padx=(5,5))
+
         # Set Y tick size
-        ttk.Label(self.toolbarWrapper, text='Y-axis ticks').grid(column=4, row=0, columnspan=2)
-        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks('y')).grid(column=4, row=1)
-        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks('y')).grid(column=5, row=1)
+        ttk.Label(setTicksFrame, text='Y-axis').grid(column=4, row=0, columnspan=2)
+        ttk.Button(setTicksFrame, text='+', width=3 ,command=lambda: self.incTicks('y')).grid(column=4, row=1)
+        ttk.Button(setTicksFrame, text='-', width=3, command=lambda: self.decTicks('y')).grid(column=5, row=1)
 
         # Set X tick size
-        ttk.Label(self.toolbarWrapper, text='X-axis ticks').grid(column=5, row=0, columnspan=2)
-        ttk.Button(self.toolbarWrapper, text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=6, row=1)
-        ttk.Button(self.toolbarWrapper, text='-', width=3, command=lambda: self.decTicks('x')).grid(column=7, row=1)
+        ttk.Label(setTicksFrame, text='X-axis').grid(column=6, row=0, columnspan=2)
+        ttk.Button(setTicksFrame, text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=6, row=1)
+        ttk.Button(setTicksFrame, text='-', width=3, command=lambda: self.decTicks('x')).grid(column=7, row=1)
         
-        self.toolbarWrapper.grid_columnconfigure(6, minsize=25)
+        # self.toolbarWrapper.grid_columnconfigure(6, minsize=25)
 
         # Hide legend button
-        ttk.Button(self.toolbarWrapper, text='Hide legend', command=lambda: self.hideLegend()).grid(column=8, row=1)
+        ttk.Button(self.toolbarWrapper, text='Toggle\nlegend', command=lambda: self.hideLegend()).grid(column=8, row=0, padx=(5,5))
 
         ##
         ## RIGHT SIDE

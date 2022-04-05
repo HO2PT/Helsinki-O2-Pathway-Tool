@@ -22,10 +22,14 @@ class ProjectDetailsModule(ttk.Frame):
         self.VO2min = ttk.Label(self.container, text=None)
         self.VO2mean = ttk.Label(self.container, text=None)
 
+        self.sep1 = ttk.Separator(self.container)
+
         # QaO2 details
         self.QaO2max = ttk.Label(self.container, text=None)
         self.QaO2min = ttk.Label(self.container, text=None)
         self.QaO2mean = ttk.Label(self.container, text=None)
+
+        self.sep2 = ttk.Separator(self.container)
 
         # DO2 details
         self.DO2max = ttk.Label(self.container, text=None)
@@ -38,9 +42,11 @@ class ProjectDetailsModule(ttk.Frame):
         self.VO2max.pack(expand=False)
         self.VO2min.pack(expand=False)
         self.VO2mean.pack(expand=False)
+        self.sep1.pack(fill=X, pady=5)
         self.QaO2max.pack(expand=False)
         self.QaO2min.pack(expand=False)
         self.QaO2mean.pack(expand=False)
+        self.sep2.pack(fill=X, pady=5)
         self.DO2max.pack(expand=False)
         self.DO2min.pack(expand=False)
         self.DO2mean.pack(expand=False)

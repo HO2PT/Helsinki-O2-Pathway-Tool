@@ -316,14 +316,17 @@ class TestList(object):
         self.testList.selection_set(newIndex)
 
         test = app.getActiveSubject().tests[self.testList.curselection()[0]]
-        if test.workLoads[0].details.isImported == True:
-            testCopy = deepcopy(test)
-            app.setActiveTest(testCopy)
-        else:
-            app.setActiveTest(test)
+        try:
+            if test.workLoads[0].details.isImported == True:
+                testCopy = deepcopy(test)
+                app.setActiveTest(testCopy)
+            else:
+                app.setActiveTest(test)
 
-        time.sleep(0.05)
+            time.sleep(0.05)
 
-        # Refresh views
-        app.testDetailModule.refreshTestDetails()
-        app.envDetailModule.refresh()
+            # Refresh views
+            app.testDetailModule.refreshTestDetails()
+            app.envDetailModule.refresh()
+        except:
+            notification.create('error', 'No workloads found', 5000)

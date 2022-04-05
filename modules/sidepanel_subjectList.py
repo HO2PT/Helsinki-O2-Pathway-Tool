@@ -32,30 +32,40 @@ class SubjectList(object):
         ttk.Button(buttonContainer, text='Plot mean...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
 
     def showCreateOptions(self):
-        # Create popup
-        editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*4)
-        # editscreen.wm_overrideredirect(True)
-        editscreen.title('Create options')
-        editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
-        ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
-        editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
-        editscreen.grid_propagate(False)
+        Options(self, 'add')
+    
+    def showComparisonOptions(self):
+        if len(self.subjectList.curselection()) > 1:
+            Options(self, 'compare')
+        else:
+            notification.create('error', 'Select at least 2 subjects for comparison', '5000')
+    
+    def showMeanOptions(self):
+        if len(self.subjectList.curselection()) > 0:
+            Options(self, 'mean')
+            """ # Create popup
+            editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*4)
+            editscreen.title('Plot options')
+            editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
+            ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+            editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
+            editscreen.grid_propagate(False)
                 
-        self.var = IntVar(value=0)
-        opt1 = ttk.Radiobutton(editscreen, text='Create subject', variable=self.var, value=0)
-        opt1.grid(column=1, row=0, sticky='w')
-        opt2 = ttk.Radiobutton(editscreen, text="Add last test's final load(s) as tab", variable=self.var, value=1)
-        opt2.grid(column=1, row=1, sticky='w')
-        ttk.Button(editscreen, text='Next', command=lambda: add()).grid(column=0, columnspan=2, row=3, sticky='swe')
+            self.var = IntVar(value=0)
+            opt1 = ttk.Radiobutton(editscreen, text='Mean/SD', variable=self.var, value=0)
+            opt1.grid(column=1, row=0, sticky='w')
+            opt2 = ttk.Radiobutton(editscreen, text='Mean/IQR', variable=self.var, value=1)
+            opt2.grid(column=1, row=1, sticky='w')
+            ttk.Button(editscreen, text='Plot', command=lambda: plot()).grid(column=3, row=3, sticky='se')
 
-        def add():
-            if self.var.get() == 0:
-                print(self.var.get())
-                self.createSubject()
-            else:
-                print(self.var.get())
-                self.addToActiveTest()
-            editscreen.destroy()
+            def plot():
+                if self.var.get() == 0:
+                    self.plotMeanSd()
+                else:
+                    self.plotMeanIqr()
+                editscreen.destroy() """
+        else:
+            notification.create('error', 'Subject not selected', '5000')
 
     def addToActiveTest(self):
         project = app.getActiveProject()
@@ -90,32 +100,6 @@ class SubjectList(object):
                 app.activeTest.addWorkLoad(loadCopy)
 
         app.testDetailModule.refreshTestDetails()
-
-    def showMeanOptions(self):
-        if len(self.subjectList.curselection()) > 0:
-            # Create popup
-            editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*4)
-            editscreen.title('Plot options')
-            editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
-            ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
-            editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
-            editscreen.grid_propagate(False)
-                
-            self.var = IntVar(value=0)
-            opt1 = ttk.Radiobutton(editscreen, text='Mean/SD', variable=self.var, value=0)
-            opt1.grid(column=1, row=0, sticky='w')
-            opt2 = ttk.Radiobutton(editscreen, text='Mean/IQR', variable=self.var, value=1)
-            opt2.grid(column=1, row=1, sticky='w')
-            ttk.Button(editscreen, text='Plot', command=lambda: plot()).grid(column=3, row=3, sticky='se')
-
-            def plot():
-                if self.var.get() == 0:
-                    self.plotMeanSd()
-                else:
-                    self.plotMeanIqr()
-                editscreen.destroy()
-        else:
-            notification.create('error', 'Subject not selected', '5000')
 
     def plotMeanSd(self):
         subjects = []
@@ -163,36 +147,6 @@ class SubjectList(object):
         # Refresh views
         app.testDetailModule.refreshTestDetails()
         app.envDetailModule.refresh()
-
-    def showComparisonOptions(self):
-        if len(self.subjectList.curselection()) > 1:
-            # Create edit popup
-            editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*4)
-            editscreen.title('Compare')
-            editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
-            ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
-            editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
-            editscreen.grid_propagate(False)
-            
-            self.var = IntVar(value=0)
-            opt1 = ttk.Radiobutton(editscreen, text='Last loads of first tests', variable=self.var, value=0)
-            opt1.grid(column=1, row=0, sticky='w')
-            opt2 = ttk.Radiobutton(editscreen, text='Last loads of last tests', variable=self.var, value=-1)
-            opt2.grid(column=1, row=1, sticky='w')
-            opt32 = ttk.Entry(editscreen, width=3)
-            opt3 = ttk.Radiobutton(editscreen, text='Last Load of test number', variable=self.var, value=-999)
-            opt3.grid(column=1, row=2, sticky='w')
-            opt32.grid(column=2, row=2, sticky='w')
-            ttk.Button(editscreen, text='Compare', command=lambda: close()).grid(column=0, columnspan=3, row=3, sticky='swe')
-
-            def close():
-                if self.var.get() == -999:
-                    self.compareSubjects(int(opt32.get())-1)
-                else:
-                    self.compareSubjects(self.var.get())
-                editscreen.destroy()
-        else:
-            notification.create('error', 'Select at least 2 subjects for comparison', '5000')
 
     def editSubject(self):
         index = self.subjectList.curselection()[0]
@@ -309,3 +263,96 @@ class SubjectList(object):
 
         # Refresh views
         app.sidepanel_testList.refreshList()
+
+class Options():
+    def __init__(self, parent, mode):
+        self.parent = parent
+        self.mode = mode
+
+        if self.mode == 'add' or self.mode == 'mean':
+            self.height = 3
+        elif self.mode == 'compare':
+            self.height = 4
+
+        self.win = Toplevel(width=(self.parent.editButton.winfo_width() * 3), height=self.parent.editButton.winfo_height() * self.height, bg='#4eb1ff', borderwidth=3)
+        self.win.overrideredirect(True)
+        winX = self.parent.editButton.winfo_rootx() - self.parent.editButton.winfo_width()
+        winY = self.parent.editButton.winfo_rooty() - (self.parent.editButton.winfo_height() * self.height)
+        self.win.geometry("+%d+%d" % ( winX, winY ))
+        self.win.pack_propagate(False)
+
+        self.bindId = app.root.bind('<Configure>', self.move)
+
+        container = Frame(self.win, bd=0)
+        container.pack(fill=BOTH, expand=True)
+        
+        footer = Frame(self.win, bd=0)
+        footer.pack(fill=BOTH, expand=True)
+                
+        if self.mode == 'add':
+            self.var = IntVar(value=0)
+            opt1 = ttk.Radiobutton(container, text='Create subject', variable=self.var, value=0)
+            opt1.grid(column=0, row=0, sticky='w', columnspan=2)
+            opt2 = ttk.Radiobutton(container, text="Add last test's final load(s) as tab", variable=self.var, value=1)
+            opt2.grid(column=0, row=1, sticky='w', columnspan=2)
+            ttk.Button(footer, text='Next', command=self.add).pack(side=LEFT, fill=X, expand=True)
+            ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+        
+        elif self.mode == 'compare':
+            self.var = IntVar(value=0)
+            opt1 = ttk.Radiobutton(container, text='Last loads of first tests', variable=self.var, value=0)
+            opt1.grid(column=0, row=0, sticky='w')
+            opt2 = ttk.Radiobutton(container, text='Last loads of last tests', variable=self.var, value=-1)
+            opt2.grid(column=0, row=1, sticky='w')
+            self.opt32 = ttk.Entry(container, width=3)
+            opt3 = ttk.Radiobutton(container, text='Last Load of test number', variable=self.var, value=-999)
+            opt3.grid(column=0, row=2, sticky='w')
+            self.opt32.grid(column=1, row=2, sticky='w')
+            ttk.Button(footer, text='Compare', command=self.compare).pack(side=LEFT, fill=X, expand=True)
+            ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+
+        elif self.mode == 'mean':
+            self.var = IntVar(value=0)
+            opt1 = ttk.Radiobutton(container, text='Mean/SD', variable=self.var, value=0)
+            opt1.grid(column=1, row=0, sticky='w')
+            opt2 = ttk.Radiobutton(container, text='Mean/IQR', variable=self.var, value=1)
+            opt2.grid(column=1, row=1, sticky='w')
+            ttk.Button(footer, text='Plot', command=self.plotMean).pack(side=LEFT, fill=X, expand=True)
+            ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+
+
+    def add(self):
+        if self.var.get() == 0:
+            self.parent.createSubject()
+        else:
+            self.parent.addToActiveTest()
+        app.root.unbind('<Configure>', self.bindId)
+        self.win.destroy()
+        
+    def close(self):
+        app.root.unbind('<Configure>', self.bindId)
+        self.win.destroy()
+
+    def compare(self):
+        if self.var.get() == -999:
+            self.parent.compareSubjects(int(self.opt32.get())-1)
+        else:
+            self.parent.compareSubjects(self.var.get())
+
+        app.root.unbind('<Configure>', self.bindId)
+        self.win.destroy()
+
+    def plotMean(self):
+        if self.var.get() == 0:
+            self.parent.plotMeanSd()
+        else:
+            self.parent.plotMeanIqr()
+
+        app.root.unbind('<Configure>', self.bindId)
+        self.win.destroy()
+
+    def move(self, e):
+        winX = self.parent.editButton.winfo_rootx() - self.parent.editButton.winfo_width()
+        winY = self.parent.editButton.winfo_rooty() - (self.parent.editButton.winfo_height() * self.height)
+        self.win.geometry("+%d+%d" % ( winX, winY ))
+        self.win.lift()
