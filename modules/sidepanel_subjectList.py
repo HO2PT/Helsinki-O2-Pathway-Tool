@@ -23,7 +23,7 @@ class SubjectList(object):
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add...', command=self.showCreateOptions).grid(column=0, row=0)
-        self.editButton = ttk.Button(buttonContainer, text='Edit', command=lambda: self.editSubject())
+        self.editButton = ttk.Button(buttonContainer, text='Edit...', command=lambda: self.editSubject())
         self.editButton.grid(column=1, row=0)
         ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteSubject()).grid(column=2, row=0)
         
@@ -149,25 +149,11 @@ class SubjectList(object):
         app.envDetailModule.refresh()
 
     def editSubject(self):
-        index = self.subjectList.curselection()[0]
-
-        # Create edit popup
-        editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*3)
-        editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
-        ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
-        editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
-        editscreen.pack_propagate(False)
-        
-        ttk.Label(editscreen, text='Subject name').pack()
-        nameEntry = ttk.Entry(editscreen)
-        nameEntry.pack(expand=TRUE)
-        ttk.Button(editscreen, text='Save', command=lambda: edit()).pack(side=BOTTOM,anchor='e')
-
-        def edit():
-            subject = app.getActiveSubject()
-            subject.setId(nameEntry.get())
-            self.refreshList()
-            editscreen.destroy()
+        if len(self.subjectList.curselection()) < 2:
+            index = self.subjectList.curselection()[0]
+            Options(self, 'edit', index)
+        else:
+            notification.create('error', 'Select only 1 subject to edit', 5000)
 
     def deleteSubject(self):
         project = app.getActiveProject()
@@ -265,14 +251,16 @@ class SubjectList(object):
         app.sidepanel_testList.refreshList()
 
 class Options():
-    def __init__(self, parent, mode):
+    def __init__(self, parent, mode, index = None):
         self.parent = parent
         self.mode = mode
+        if index != None:
+            self.index = index
 
-        if self.mode == 'add' or self.mode == 'mean':
-            self.height = 3
-        elif self.mode == 'compare':
+        if self.mode == 'compare':
             self.height = 4
+        else:
+            self.height = 3
 
         self.win = Toplevel(width=(self.parent.editButton.winfo_width() * 3), height=self.parent.editButton.winfo_height() * self.height, bg='#4eb1ff', borderwidth=3)
         self.win.overrideredirect(True)
@@ -319,15 +307,26 @@ class Options():
             opt2.grid(column=1, row=1, sticky='w')
             ttk.Button(footer, text='Plot', command=self.plotMean).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+        
+        elif self.mode == 'edit':
+            ttk.Label(container, text='Subject name').pack()
+            self.nameEntry = ttk.Entry(container)
+            self.nameEntry.pack(expand=TRUE)
+            ttk.Button(footer, text='Save', command=self.edit).pack(side=LEFT, fill=X, expand=True)
+            ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
 
+    def edit(self):
+        subject = app.getActiveSubject()
+        subject.setId(self.nameEntry.get())
+        self.parent.refreshList()
+        self.close()
 
     def add(self):
         if self.var.get() == 0:
             self.parent.createSubject()
         else:
             self.parent.addToActiveTest()
-        app.root.unbind('<Configure>', self.bindId)
-        self.win.destroy()
+        self.close()
         
     def close(self):
         app.root.unbind('<Configure>', self.bindId)
@@ -338,18 +337,14 @@ class Options():
             self.parent.compareSubjects(int(self.opt32.get())-1)
         else:
             self.parent.compareSubjects(self.var.get())
-
-        app.root.unbind('<Configure>', self.bindId)
-        self.win.destroy()
+        self.close()
 
     def plotMean(self):
         if self.var.get() == 0:
             self.parent.plotMeanSd()
         else:
             self.parent.plotMeanIqr()
-
-        app.root.unbind('<Configure>', self.bindId)
-        self.win.destroy()
+        self.close()
 
     def move(self, e):
         winX = self.parent.editButton.winfo_rootx() - self.parent.editButton.winfo_width()

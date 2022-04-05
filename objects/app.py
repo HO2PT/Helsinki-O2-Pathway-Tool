@@ -98,10 +98,18 @@ class App(object):
         
         for s in subjects:
             tests = s.getTests()
+            wOrig = None
 
             for t in tests:
-                # details = t.getMaxLoad()
-                wOrig = t.getWorkLoads()[-1] # Last workload object
+                ## Select last w with values
+                for i, l in enumerate(t.workLoads):
+                    if i != 0:
+                        if l.details.getWorkLoadDetails()['Load'] == 0:
+                            wOrig = t.workLoads[i-1]
+                            break
+                if wOrig == None:
+                    wOrig = t.workLoads[-1] # Last workload object
+
                 w = deepcopy(wOrig)
                 workLoadObject = w.getDetails()
                 details = w.getDetails().getWorkLoadDetails()
