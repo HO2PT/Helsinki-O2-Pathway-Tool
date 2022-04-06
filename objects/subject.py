@@ -17,5 +17,8 @@ class Subject(object):
     def getTests(self):
         return self.tests
 
+    def deleteTest(self, index):
+        del self.tests[index]
+
     def setId(self, id):
         self.id = id

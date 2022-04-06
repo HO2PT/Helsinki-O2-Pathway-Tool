@@ -4,9 +4,9 @@ from tkinter import ttk
 from objects.app import app
 
 class Settings(object):
-
     def __init__(self):  
-        self.vars = [] 
+        self.vars = []
+        self.notifications = []
         try:
             settingsFile = open('settings.pkl', "rb")
             self.data = pickle.load(settingsFile)
@@ -261,15 +261,16 @@ class Settings(object):
         settingsFile.close()
 
     def openSettings(self):
-        settingsWindow = Toplevel()
-        settingsWindow.title("Settings")
-        settingsWindow.geometry("500x500")
+        self.settingsWindow = Toplevel(width=500, height=500)
+        self.settingsWindow.title("Settings")
+        self.settingsWindow.pack_propagate(False)
+        self.settingsWindow.update_idletasks()
 
-        settingsX = app.root.winfo_rootx() + (app.root.winfo_reqwidth()/1.5)
-        settingsY = app.root.winfo_rooty() + (app.root.winfo_reqheight()*0.1)
-        settingsWindow.geometry("+%d+%d" % ( settingsX, settingsY ))
+        initX = int(app.root.winfo_screenwidth()) * 0.5 - int(self.settingsWindow.winfo_width()) * 0.5
+        initY = int(app.root.winfo_screenheight()) * 0.5 - int(self.settingsWindow.winfo_height()) * 0.5
+        self.settingsWindow.geometry("+%d+%d" % ( initX, initY ))
         
-        self.sideMenu = Listbox(settingsWindow, exportselection=FALSE, width=20)
+        self.sideMenu = Listbox(self.settingsWindow, exportselection=FALSE, width=20)
         self.sideMenu.pack(side=LEFT, fill=Y)
         self.sideMenu.pack_propagate(False)
         self.sideMenu.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
@@ -278,19 +279,56 @@ class Settings(object):
         self.sideMenu.insert('end', 'Test')
         self.sideMenu.insert('end', 'Environmental')
 
-        rightContainer = ttk.Frame(settingsWindow)
-        rightContainer.pack(fill=BOTH, expand=1)
+        self.rightContainer = ttk.Frame(self.settingsWindow)
+        self.notification = ttk.Frame(self.rightContainer, height=20)
+        self.canvas = Canvas(self.rightContainer)
+        self.scrollbar = ttk.Scrollbar(self.rightContainer, orient=VERTICAL, command=self.canvas.yview)
+        self.contentWrapper = ttk.Frame(self.canvas)
+        self.footer = ttk.Frame(self.rightContainer)
 
-        self.notification = ttk.Frame(rightContainer, height=25)
-        self.notification.pack(fill=X)
-        
-        self.settingsContainer = ttk.Frame(rightContainer)
+        self.contentWrapper.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
+        self.canvas.create_window((0, 0), window=self.contentWrapper, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.mouseWheelBindId = app.root.bind_all('<MouseWheel>', self.handleMouseWheel)
+
+        # Top part
+        rightContainerTop = ttk.Frame(self.contentWrapper)
+        rightContainerTop.pack()
+
+        self.settingsContainer = ttk.Frame(rightContainerTop)
         self.settingsContainer.pack(side=LEFT, fill=BOTH, expand=TRUE)
+
+        ttk.Button(self.footer, text='Cancel', command=lambda: self.cancel()).pack(side=RIGHT, padx=(5,5))
+        ttk.Button( self.footer, text='Save', command=lambda: self.saveSettings( self.sideMenu.curselection()[0] ) ).pack(side=RIGHT, padx=(5,5))
         
+        # Set initial selections
         self.sideMenu.selection_set(0)
         self.handleListboxSelect(0)
 
-        settingsWindow.mainloop()
+        # Pack every widget
+        self.rightContainer.pack(side=RIGHT, fill=BOTH, expand=True)
+        self.notification.pack(side=TOP, fill=X)
+        self.footer.pack(side=BOTTOM, fill=X)
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+        self.canvas.pack(side=LEFT, fill=BOTH, expand=True)
+        
+        self.settingsWindow.protocol("WM_DELETE_WINDOW", self.cancel)
+
+        self.settingsWindow.mainloop()
+
+    def cancel(self):
+        app.root.unbind('<MouseWheel>', self.mouseWheelBindId)
+        self.settingsWindow.destroy()
+
+    def handleMouseWheel(self, e):
+        if self.settingsContainer.winfo_reqheight() > self.rightContainer.winfo_reqheight():
+            self.canvas.yview_scroll(int(-1*(e.delta/120)), "units")
 
     def handleListboxSelect(self, index=None):
         index = self.sideMenu.curselection()[0]
@@ -298,121 +336,7 @@ class Settings(object):
         for child in self.settingsContainer.winfo_children():
             child.destroy()
 
-        # app.intVars = []
-
-        # if index == 0:
-        #     labelFrame = LabelFrame(self.settingsContainer, text='General defaults')
-        #     labelFrame.grid()
-        #     container = ttk.Frame(labelFrame)
-        #     container.grid()
-
-        #     UserMode(self, container)
-        if index == 1: # Environmental
-            labelFrame = ttk.LabelFrame(self.settingsContainer, text='Environmental defaults')
-            labelFrame.pack(fill=BOTH, expand=1, pady=(5,5), padx=(5,5))
-            container = ttk.Frame(labelFrame)
-            container.grid()
-            self.menuButtons = {}
-
-            #### Elevation
-            ttk.Label(container, text='Elevation').grid(column=0, row=0)
-            elevEntry = ttk.Entry(container, width=7)
-            elevEntry.insert(0, self.envDefaults['Elevation'])
-            elevEntry.grid(column=1, row=0)
-
-            # Elevation unit
-            units = self.units['Elevation_units']
-            elevMenuButton = ttk.Menubutton(container)
-            self.menuButtons['Elevation'] = elevMenuButton
-            elevMenuButton.config(text=self.unitDefaults['Elevation_unit'])
-
-            elevMenu = Menu(elevMenuButton, tearoff=False)
-            for i, u in enumerate(units):
-                MenuElem(elevMenu, elevMenuButton, u, i, units)
-            elevMenuButton['menu']=elevMenu
-            elevMenuButton.grid(column=2, row=0)
-
-            #### Atmosphere pressure
-            ttk.Label(container, text='ATM').grid(column=0, row=1)
-            atmEntry = ttk.Entry(container, width=7)
-            atmEntry.insert(0, self.envDefaults['Atm'])
-            atmEntry.grid(column=1, row=1)
-
-            # Atmosphere pressure unit
-            units = self.units['ATM_units']
-            atmMenuButton = ttk.Menubutton(container)
-            self.menuButtons['ATM'] = atmMenuButton
-            atmMenuButton.config(text=self.unitDefaults['ATM_unit'])
-
-            atmMenu = Menu(atmMenuButton, tearoff=False)
-            for i, u in enumerate(units):
-                MenuElem(atmMenu, atmMenuButton, u, i, units)
-            atmMenuButton['menu']=atmMenu
-            atmMenuButton.grid(column=2, row=1)
-
-            # FiO2
-            ttk.Label(container, text='FiO\u2082').grid(column=0, row=2)
-            fio2Entry = ttk.Entry(container, width=7)
-            fio2Entry.insert(0, self.envDefaults['FiO2'])
-            fio2Entry.grid(column=1, row=2)
-            ttk.Label(container, text='%').grid(column=2, row=2)
-
-            #### Temperature
-            ttk.Label(container, text='Temperature').grid(column=0, row=3)
-            tempEntry = ttk.Entry(container, width=7)
-            tempEntry.insert(0, self.envDefaults['Temp'])
-            tempEntry.grid(column=1, row=3)
-
-            # Temperature unit
-            units = self.units['Temperature_units']
-            tempMenuButton = ttk.Menubutton(container)
-            self.menuButtons['Temperature'] = tempMenuButton
-            tempMenuButton.config(text=self.unitDefaults['Temperature_unit'])
-
-            tempMenu = Menu(tempMenuButton, tearoff=False)
-            for i, u in enumerate(units):
-                MenuElem(tempMenu, tempMenuButton, u, i, units)
-            tempMenuButton['menu']=tempMenu
-            tempMenuButton.grid(column=2, row=3)
-
-            #### RH%
-            ttk.Label(container, text='RH%').grid(column=0, row=4)
-            rhEntry = ttk.Entry(container, width=7)
-            rhEntry.insert(0, self.envDefaults['Rh'])
-            rhEntry.grid(column=1, row=4)
-            ttk.Label(container, text='%').grid(column=2, row=4)
-
-            ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=2, row=5, sticky='E')
-
-            def saveSettings():
-                # Values
-                self.envDefaults['Elevation'] = elevEntry.get()
-                self.envDefaults['Atm'] = atmEntry.get()
-                self.envDefaults['FiO2'] = fio2Entry.get()
-                self.envDefaults['Temp'] = tempEntry.get()
-                self.envDefaults['Rh'] = rhEntry.get()
-
-                # Units
-                for key, val in self.menuButtons.items():
-                    self.unitDefaults[key+'_unit'] = val.cget('text')
-
-                    # Save changes to settings.pkl-file
-                    self.data['unitDefaults'][key] = val.cget('text')
-
-                # Save changes to settings.pkl-file
-                self.data['envDefaults']['Elevation'] = elevEntry.get()
-                self.data['envDefaults']['Atm'] = atmEntry.get()
-                self.data['envDefaults']['FiO2'] = fio2Entry.get()
-                self.data['envDefaults']['Temp'] = tempEntry.get()
-                self.data['envDefaults']['Rh'] = rhEntry.get()
-
-                settingsFile = open('settings.pkl', 'wb')
-                pickle.dump(self.data, settingsFile)
-                settingsFile.close()
-
-                self.createNotification('info', 'Settings saved', 5000)
-                
-        elif index == 0: # Test
+        if index == 0: # Test
 
             # Select loads or velocity/incline
             selectionFrame = ttk.Labelframe(self.settingsContainer, text='Use')
@@ -468,48 +392,161 @@ class Settings(object):
                 else:
                     SettingsRow(self, container, v, 0, i+1)
 
-            ttk.Button(container, text='Save', command=lambda: saveSettings()).grid(column=4, row=20, sticky='E')
+        elif index == 1: # Environmental
+            labelFrame = ttk.LabelFrame(self.settingsContainer, text='Environmental defaults')
+            labelFrame.pack(fill=BOTH, expand=1, pady=(5,5), padx=(5,5))
+            container = ttk.Frame(labelFrame)
+            container.grid()
+            self.menuButtons = {}
 
-            def saveSettings():
-                for key, val in self.entries.items():
+            #### Elevation
+            ttk.Label(container, text='Elevation').grid(column=0, row=0)
+            self.elevEntry = ttk.Entry(container, width=7)
+            self.elevEntry.insert(0, self.envDefaults['Elevation'])
+            self.elevEntry.grid(column=1, row=0)
+
+            # Elevation unit
+            units = self.units['Elevation_units']
+            elevMenuButton = ttk.Menubutton(container)
+            self.menuButtons['Elevation'] = elevMenuButton
+            elevMenuButton.config(text=self.unitDefaults['Elevation_unit'])
+
+            elevMenu = Menu(elevMenuButton, tearoff=False)
+            for i, u in enumerate(units):
+                MenuElem(elevMenu, elevMenuButton, u, i, units)
+            elevMenuButton['menu']=elevMenu
+            elevMenuButton.grid(column=2, row=0)
+
+            #### Atmosphere pressure
+            ttk.Label(container, text='ATM').grid(column=0, row=1)
+            self.atmEntry = ttk.Entry(container, width=7)
+            self.atmEntry.insert(0, self.envDefaults['Atm'])
+            self.atmEntry.grid(column=1, row=1)
+
+            # Atmosphere pressure unit
+            units = self.units['ATM_units']
+            atmMenuButton = ttk.Menubutton(container)
+            self.menuButtons['ATM'] = atmMenuButton
+            atmMenuButton.config(text=self.unitDefaults['ATM_unit'])
+
+            atmMenu = Menu(atmMenuButton, tearoff=False)
+            for i, u in enumerate(units):
+                MenuElem(atmMenu, atmMenuButton, u, i, units)
+            atmMenuButton['menu']=atmMenu
+            atmMenuButton.grid(column=2, row=1)
+
+            # FiO2
+            ttk.Label(container, text='FiO\u2082').grid(column=0, row=2)
+            self.fio2Entry = ttk.Entry(container, width=7)
+            self.fio2Entry.insert(0, self.envDefaults['FiO2'])
+            self.fio2Entry.grid(column=1, row=2)
+            ttk.Label(container, text='%').grid(column=2, row=2)
+
+            #### Temperature
+            ttk.Label(container, text='Temperature').grid(column=0, row=3)
+            self.tempEntry = ttk.Entry(container, width=7)
+            self.tempEntry.insert(0, self.envDefaults['Temp'])
+            self.tempEntry.grid(column=1, row=3)
+
+            # Temperature unit
+            units = self.units['Temperature_units']
+            tempMenuButton = ttk.Menubutton(container)
+            self.menuButtons['Temperature'] = tempMenuButton
+            tempMenuButton.config(text=self.unitDefaults['Temperature_unit'])
+
+            tempMenu = Menu(tempMenuButton, tearoff=False)
+            for i, u in enumerate(units):
+                MenuElem(tempMenu, tempMenuButton, u, i, units)
+            tempMenuButton['menu']=tempMenu
+            tempMenuButton.grid(column=2, row=3)
+
+            #### RH%
+            ttk.Label(container, text='RH%').grid(column=0, row=4)
+            self.rhEntry = ttk.Entry(container, width=7)
+            self.rhEntry.insert(0, self.envDefaults['Rh'])
+            self.rhEntry.grid(column=1, row=4)
+            ttk.Label(container, text='%').grid(column=2, row=4)
+
+    def saveSettings(self, option):
+        
+        if option == 0: # Test
+            for key, val in self.entries.items():
                     self.testDefaults[key] = val.get()
                     self.data['testDefaults'][key] = val.get()
                 
-                for key, val in self.menuButtons.items():
-                    self.unitDefaults[key+'_unit'] = val.cget('text')
-                    self.data['unitDefaults'][key] = val.cget('text')
+            for key, val in self.menuButtons.items():
+                self.unitDefaults[key+'_unit'] = val.cget('text')
+                self.data['unitDefaults'][key] = val.cget('text')
 
-                for key, val in self.mcs.items():
-                    self.mcDefaults[key] = val.get()
-                    self.data['mcDefaults'][key] = val.get()
+            for key, val in self.mcs.items():
+                self.mcDefaults[key] = val.get()
+                self.data['mcDefaults'][key] = val.get()
 
-                # Save selection of loads/velocity & incline
-                self.testDefaults['loadMode'] = self.selVar.get()
-                self.data['testDefaults']['loadMode'] = self.selVar.get()
+            # Save selection of loads/velocity & incline
+            self.testDefaults['loadMode'] = self.selVar.get()
+            self.data['testDefaults']['loadMode'] = self.selVar.get()
                 
-                ## Update change to every project
-                projects = app.getProjects()
-                if len(projects) > 0:
-                    for p in projects:
-                        subjects = p.getSubjects()
-                        for s in subjects:
-                            tests = s.getTests()
-                            for t in tests:
-                                loads = t.getWorkLoads()
-                                for l in loads:
-                                    for key, val in self.unitDefaults.items():
-                                        l.getDetails().setUnit(key, val)
-                                    for key, val in self.testDefaults.items():
-                                        l.getDetails().setValue(key, val)
-                                self.updatePhAndTemp(t)
-                    
-                    app.testDetailModule.refreshTestDetails()
+            ## Update change to every project
+            projects = app.getProjects()
+            if len(projects) > 0:
+                for p in projects:
+                    subjects = p.getSubjects()
+                    for s in subjects:
+                        tests = s.getTests()
+                        for t in tests:
+                            loads = t.getWorkLoads()
+                            for l in loads:
+                                for key, val in self.unitDefaults.items():
+                                    l.getDetails().setUnit(key, val)
+                                for key, val in self.testDefaults.items():
+                                    l.getDetails().setValue(key, val)
+                            self.updatePhAndTemp(t)
 
-                settingsFile = open('settings.pkl', 'wb')
-                pickle.dump(self.data, settingsFile)
-                settingsFile.close()
+        elif option == 1: # Environmental
+            # Values
+            self.envDefaults['Elevation'] = self.elevEntry.get()
+            self.envDefaults['Atm'] = self.atmEntry.get()
+            self.envDefaults['FiO2'] = self.fio2Entry.get()
+            self.envDefaults['Temp'] = self.tempEntry.get()
+            self.envDefaults['Rh'] = self.rhEntry.get()
 
-                self.createNotification('info', 'Settings saved', 5000)
+            # Units
+            for key, val in self.menuButtons.items():
+                self.unitDefaults[key+'_unit'] = val.cget('text')
+
+                # Save changes to settings.pkl-file
+                self.data['unitDefaults'][key] = val.cget('text')
+
+            # Save changes to settings.pkl-file
+            self.data['envDefaults']['Elevation'] = self.elevEntry.get()
+            self.data['envDefaults']['Atm'] = self.atmEntry.get()
+            self.data['envDefaults']['FiO2'] = self.fio2Entry.get()
+            self.data['envDefaults']['Temp'] = self.tempEntry.get()
+            self.data['envDefaults']['Rh'] = self.rhEntry.get()
+
+            ## Update change to every project
+            projects = app.getProjects()
+            if len(projects) > 0:
+                for p in projects:
+                    subjects = p.getSubjects()
+                    for s in subjects:
+                        tests = s.getTests()
+                        for t in tests:
+                            for key, val in self.unitDefaults.items():
+                                t.envDetails.setDetail(key, val)
+                            for key, val in self.envDefaults.items():
+                                t.envDetails.setDetail(key, val)
+                            
+
+        settingsFile = open('settings.pkl', 'wb')
+        pickle.dump(self.data, settingsFile)
+        settingsFile.close()
+
+        if app.activeTest != None:
+            app.testDetailModule.refreshTestDetails()
+            app.envDetailModule.refresh()
+
+        self.createNotification('info', 'Settings saved', 5000)
 
     def updatePhAndTemp(self, test):
         # Add linear change in pH and T
@@ -543,16 +580,24 @@ class Settings(object):
             details.setValue('T', f'{"{0:.1f}".format(Tvalue)}')
         
     def createNotification(self, type, text, timeout):
-        style = ttk.Style()
-        
-        if type == 'info':
-            style.configure('settings.TLabel', background="green", foreground="white", anchor="CENTER")
-        if type == 'error':
-            style.configure('settings.TLabel', background="red", foreground="white", anchor="CENTER")
+        def destroy():
+            notif.destroy()
+            self.notifications = []
 
-        notif = ttk.Label(self.notification, style='settings.TLabel', text=text)
-        notif.pack(fill=X)
-        notif.after(timeout, lambda: notif.destroy())
+        if len(self.notifications) > 0:
+            pass
+        else:
+            style = ttk.Style()
+            
+            if type == 'info':
+                style.configure('settings.TLabel', background="green", foreground="white", anchor="CENTER")
+            if type == 'error':
+                style.configure('settings.TLabel', background="red", foreground="white", anchor="CENTER")
+
+            notif = ttk.Label(self.notification, style='settings.TLabel', text=text)
+            notif.pack(fill=X)
+            self.notifications.append(notif)
+            notif.after(timeout, destroy)
 
 class MenuElem(object):
     def __init__(self, menu, menuButton, label, index, elems):

@@ -146,13 +146,18 @@ class TestList(object):
 
         for i in self.testList.curselection():
             toBeDeleted.append(i)
+
+        # If one of the deleted test is set as active test
+        # refresh app state and details panel
+        for t in toBeDeleted:
+            if app.activeTest == tests[t]:
+                app.setActiveTest(None)
+                app.testDetailModule.refreshTestDetails()
             
         sortedToBeDeleted = sorted(toBeDeleted, reverse=True)
         for i in sortedToBeDeleted:
-            del tests[i]
-        
-        # app.setActiveTest(None)
-        # app.testDetailModule.refreshTestDetails()
+            subject.deleteTest(i)
+
         self.refreshList()
 
     def createTest(self):

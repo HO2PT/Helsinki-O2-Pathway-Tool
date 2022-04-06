@@ -30,22 +30,6 @@ class Project(object):
         self.dataMode = None
         self.idLoc = None
         self.loadLoc = None
-        # self.vo2Loc = None
-        # self.hrLoc = None
-        # self.svLoc = None
-        # self.qLoc = None
-        # self.hbLoc = None
-        # self.sao2Loc = None
-        # self.cao2Loc = None
-        # self.cvo2Loc = None
-        # self.cavo2Loc = None
-        # self.qao2Loc = None
-        # self.svo2Loc = None
-        # self.pvo2Loc = None
-        # self.tcRestLoc = None
-        # self.tcLoc = None
-        # self.phRestLoc = None
-        # self.phLoc = None
 
     def addSubject(self, subject):
         self.subjects.append(subject)

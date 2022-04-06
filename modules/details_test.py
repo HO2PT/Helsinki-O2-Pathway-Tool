@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import ttk
 from objects.app import app
 from modules.ScrollableNotebook import ScrollableNotebook
+from objects.test import Test
 
 class TestDetailModule(ttk.Frame):    
     def __init__(self, detailsPanel, *args, **kwargs):
@@ -33,7 +34,14 @@ class TestDetailModule(ttk.Frame):
 
     def refreshTestDetails(self):
         # Refresh details
-        self.testId.config(text=f'Id: {app.getActiveTest().id}')
+        # if there is no active test, create a dummy test
+        try:
+            self.testId.config(text=f'Id: {app.getActiveTest().id}')
+        except:
+            emptyTest = Test()
+            app.setActiveTest(emptyTest)
+            self.testId.config(text=f'Id: {app.getActiveTest().id}')
+
         self.loadsContainer.pack(side=LEFT, fill=BOTH)#, expand=TRUE)
         self.loadNotebook.refresh()
         
