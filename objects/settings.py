@@ -304,8 +304,8 @@ class Settings(object):
         self.settingsContainer = ttk.Frame(rightContainerTop)
         self.settingsContainer.pack(side=LEFT, fill=BOTH, expand=TRUE)
 
-        ttk.Button(self.footer, text='Cancel', command=lambda: self.cancel()).pack(side=RIGHT, padx=(5,5))
-        ttk.Button( self.footer, text='Save', command=lambda: self.saveSettings( self.sideMenu.curselection()[0] ) ).pack(side=RIGHT, padx=(5,5))
+        ttk.Button(self.footer, text='Cancel', command=lambda: self.cancel()).pack(side=RIGHT, padx=(5,20))
+        ttk.Button( self.footer, text='Save', command=lambda: self.saveSettings( self.sideMenu.curselection()[0] ) ).pack(side=RIGHT)
         
         # Set initial selections
         self.sideMenu.selection_set(0)
@@ -339,7 +339,7 @@ class Settings(object):
         if index == 0: # Test
 
             # Select loads or velocity/incline
-            selectionFrame = ttk.Labelframe(self.settingsContainer, text='Use')
+            selectionFrame = ttk.Labelframe(self.settingsContainer, text='Use', padding=(5,5))
             selectionFrame.pack(fill=X, pady=(5,5), padx=(5,5), anchor='nw')
             ttk.Label(selectionFrame, text='Load').grid(column=1, row=0, sticky='w')
             ttk.Label(selectionFrame, text='Velocity / Incline').grid(column=1, row=1, sticky='w')
@@ -393,7 +393,7 @@ class Settings(object):
                     SettingsRow(self, container, v, 0, i+1)
 
         elif index == 1: # Environmental
-            labelFrame = ttk.LabelFrame(self.settingsContainer, text='Environmental defaults')
+            labelFrame = ttk.Labelframe(self.settingsContainer, text='Environmental defaults', padding=(5,5))
             labelFrame.pack(fill=BOTH, expand=1, pady=(5,5), padx=(5,5))
             container = ttk.Frame(labelFrame)
             container.grid()

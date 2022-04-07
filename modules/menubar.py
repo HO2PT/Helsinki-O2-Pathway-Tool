@@ -12,6 +12,7 @@ from tkinter.scrolledtext import ScrolledText
 from objects.app import app
 from modules.notification import notification
 from objects.test import Test
+from modules.DataImporter import DataImporter
 from modules.DataExporter import DataExporter
 
 class MenuBar(object):
@@ -23,10 +24,10 @@ class MenuBar(object):
         self.menuBar.add_cascade(label ='File', menu = file)
 
         importFile = Menu(self.menuBar, tearoff = 0)
-        importFile.add_command(label ='Project...', command = lambda: None)
-        importFile.add_command(label ='Subject...', command = lambda: None)
-        importFile.add_command(label ='Test...', command = lambda: None)
-        file.add_cascade(label ='Import', menu = importFile)
+        importFile.add_command(label ='Project...', command = lambda: DataImporter())
+        importFile.add_command(label ='Subject...', command = lambda: DataImporter())
+        importFile.add_command(label ='Test...', command = lambda: DataImporter())
+        file.add_cascade(label ='Import...', menu = importFile)
 
         exportMenu = Menu(self.menuBar, tearoff=0)
         exportMenu.add_command(label='Project to new file...', command=lambda: DataExporter(toNew=1))

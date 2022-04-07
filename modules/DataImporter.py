@@ -1,15 +1,6 @@
-from cmath import exp
-from csv import excel_tab
-import ctypes
-from email import header
-import math
-from re import sub
-import sys
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
-from click import command
-from numpy import NaN
 import pandas as pd
 from pandastable import Table, TableModel
 from modules.notification import notification
@@ -41,9 +32,6 @@ from objects.subject import Subject
 
 class DataImporter(object):
     def __init__(self):
-        #print('IMPORTING YOU SAY')
-        self.multiplecollist = []
-        self.multiplerowlist = []
         self.multiplecells = []
         self.stage = 0
         self.atdivider = None
@@ -63,18 +51,26 @@ class DataImporter(object):
             self.window = Toplevel()
             self.window.title('Import')
             self.window.geometry('750x500')
-
-            windowX = app.root.winfo_rootx() + (app.root.winfo_reqwidth()/2)
-            windowY = app.root.winfo_rooty() + (app.root.winfo_reqheight()/10)
+            self.window.update_idletasks()
+            windowX = int(self.window.winfo_screenwidth()) * 0.5 - int(self.window.winfo_width()) * 0.5
+            windowY = int(self.window.winfo_screenheight()) * 0.5 - int(self.window.winfo_height()) * 0.5
             self.window.geometry("+%d+%d" % ( windowX, windowY ))
 
+            ####
+            self.window.bind('a', lambda e: print(self.dataTable.multiplerowlist, self.dataTable.multiplecollist))
+            ####
+
             # Left panel
-            self.leftPanel = ttk.Frame(self.window)
+            self.leftPanel = ttk.Frame(self.window, padding=(5,5))
             self.leftPanel.pack(side=LEFT, fill=Y)
+
+            # Scrollbar
+            self.yScroll = ttk.Scrollbar(self.leftPanel, orient=VERTICAL)
+            self.yScroll.pack(side=RIGHT, fill=Y)
 
             # Progression
             ttk.Label(self.leftPanel, text='Data import steps').pack()
-            self.progressionList = Listbox(self.leftPanel) #, font=('TkDefaultFont', 20)
+            self.progressionList = Listbox(self.leftPanel, yscrollcommand=self.yScroll.set)
             self.progressionList.insert('end', 'ID \U0001F878') # \U0001F878
             self.progressionList.insert('end', 'Load')
             self.progressionList.insert('end', 'VO\u2082')
@@ -91,15 +87,13 @@ class DataImporter(object):
             self.progressionList.insert('end', 'PvO\u2082')
             self.progressionList.insert('end', 'T')
             self.progressionList.insert('end', 'pH')
-            # self.progressionList.insert('end', 'Tc@rest')
-            # self.progressionList.insert('end', 'Tc\u209A\u2091\u2090\u2096')
-            # self.progressionList.insert('end', 'pH@rest')
-            # self.progressionList.insert('end', 'pH\u209A\u2091\u2090\u2096')
             self.progressionList.pack(expand=1, fill=BOTH)
             self.progressionList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect(e) )
 
+            self.yScroll['command'] = self.progressionList.yview
+
             # Right panel
-            self.rightPanel = ttk.Frame(self.window)
+            self.rightPanel = ttk.Frame(self.window, padding=(5,5))
             self.rightPanel.pack(side=RIGHT, fill=BOTH, expand=1)
 
             # Notification bar
@@ -113,8 +107,6 @@ class DataImporter(object):
             headerFrame.pack(fill=X)
             self.instructionText = ttk.Label(headerFrame, text='Define column/row containing ID')
             self.instructionText.pack()
-            # self.selectionText = ttk.Label(headerFrame, text='')
-            # self.selectionText.pack(side=RIGHT, fill=BOTH)
 
             # Create menubutton for selection of excel sheet
             sheetFrame = ttk.Labelframe(headerFrame, text='Select excel sheet')
@@ -129,22 +121,25 @@ class DataImporter(object):
             self.menuButton.pack(side=LEFT)
 
             # Mass selection entries
-            ttk.Label(headerFrame, text='Select from:').pack(side=LEFT)
-
             self.strVar = StringVar(value='row')
             self.selMenuButton = ttk.Menubutton(headerFrame, textvariable=self.strVar)
             selMenu = Menu(self.selMenuButton, tearoff=False)
             selMenu.add_command(label='row', command= lambda: self.strVar.set('row'))
             selMenu.add_command(label='column', command= lambda: self.strVar.set('column'))
             self.selMenuButton['menu'] = selMenu
-            self.selMenuButton.pack(side=LEFT)
 
             self.varStart = IntVar()
             self.varEnd = IntVar()
-            ttk.Entry(headerFrame, textvariable=self.varStart).pack(side=LEFT)
-            ttk.Label(headerFrame, text='to').pack(side=LEFT)
-            ttk.Entry(headerFrame, textvariable=self.varEnd).pack(side=LEFT)
-            ttk.Button(headerFrame, text='Set', command=self.setMassSel).pack(side=LEFT)
+            self.startEntry = ttk.Entry(headerFrame, textvariable=self.varStart, width=10)
+            self.endEntry = ttk.Entry(headerFrame, textvariable=self.varEnd, width=10)
+            
+            # Packing in reversed order
+            ttk.Button(headerFrame, text='Set', command=self.setMassSel).pack(side=RIGHT)
+            self.endEntry.pack(side=RIGHT)
+            ttk.Label(headerFrame, text='to').pack(side=RIGHT)
+            self.startEntry.pack(side=RIGHT)
+            self.selMenuButton.pack(side=RIGHT)
+            ttk.Label(headerFrame, text='Select from:').pack(side=RIGHT, fill=X)
 
             # Data frame
             dataFrame = ttk.Frame(self.rightPanel)
@@ -152,10 +147,10 @@ class DataImporter(object):
 
             # Footer
             self.footer = ttk.Frame(self.rightPanel)
-            self.footer.pack(side=BOTTOM, anchor='ne')
+            self.footer.pack(side=BOTTOM, fill=X)
 
             self.selectionText = ttk.Label(self.footer, text='')
-            self.selectionText.grid(column=0, row=0)
+            self.selectionText.pack(side=LEFT)
 
             nameOfFirstSheet = list(self.dfList)[0]
 
@@ -163,9 +158,14 @@ class DataImporter(object):
             self.dataTable.show()
 
             # Make initial selection
-            self.dataTable.selectNone()
+            self.dataTable.clearSelected()
+            self.dataTable.rowheader.clearSelected()
             self.dataTable.setSelectedCol(-1)
             self.dataTable.setSelectedRow(-1)
+            self.dataTable.multiplerowlist = []
+            self.dataTable.multiplecollist = []
+
+            # self.dataTable.setSelectedCol(col=3)
             
             self.dataTable.tablecolheader.bind('<Button-1>', self.selectCol)
             self.dataTable.tablecolheader.bind('<Control-Button-1>', self.handleColCtrlSelection)
@@ -185,9 +185,10 @@ class DataImporter(object):
             self.dataTable.bind('<Button-3>', self.handleRightClick) 
 
             self.nextButton = ttk.Button(self.footer, text='Next', command=lambda: self.getInput())
-            self.nextButton.grid(column=1, row=0)
             self.cancelButton = ttk.Button(self.footer, text='Cancel', command=lambda: self.closeImporter())
-            self.cancelButton.grid(column=2, row=0)
+
+            self.cancelButton.pack(side=RIGHT)
+            self.nextButton.pack(side=RIGHT)
         else:
             notification.create('error', 'Error opening file', 5000)
 
@@ -195,7 +196,8 @@ class DataImporter(object):
         selMode = self.strVar.get()
         start = self.varStart.get()
         end = self.varEnd.get()
-        self.handleRightClick() # deselect all
+        # self.handleRightClick() # deselect all
+        self.deselectAll()
 
         if selMode == 'row':
             if start-1 < 0:
@@ -206,10 +208,8 @@ class DataImporter(object):
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
                 for i in range(start-1, end):
-                    self.multiplerowlist.append(i)
                     self.dataTable.multiplerowlist.append(i)
                     self.dataTable.rowheader.drawRect(row=i, delete=False)
-                del self.dataTable.multiplerowlist[0]
                 self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
         else: # cols
             if start < 0:
@@ -220,21 +220,22 @@ class DataImporter(object):
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
                 for i in range(start, end):
-                    self.multiplecollist.append(i)
-                self.multiplecollist.append(end)
+                    self.dataTable.multiplecollist.append(i)
+                self.dataTable.multiplecollist.append(end)
 
-                for c in self.multiplecollist:
-                    print(c)
-                    self.dataTable.setSelectedCol( c )
+                for c in self.dataTable.multiplecollist:
                     self.dataTable.drawSelectedCol(c, delete=False)
                     self.dataTable.tablecolheader.drawRect(c, delete=False)
+
+        # print(f'MASS SELECTION R{self.dataTable.multiplerowlist}, C{self.dataTable.multiplecollist}')
+        self.updateSelectionText()
 
     def handleTableClick(self, e=None):
         pass
         """ print('handle LEFT click')
         col = self.dataTable.get_col_clicked(e)
         row = self.dataTable.get_row_clicked(e)
-        self.multiplecollist = []
+        self.dataTable.multiplecollist = []
         self.multiplerowlist = []
         self.multiplecells = []
         self.dataTable.delete('ctrlSel')
@@ -245,7 +246,7 @@ class DataImporter(object):
 
         ##
         self.multiplecells.append(self.dataTable.model.getValueAt(row, col))
-        self.multiplecollist.append(col)
+        self.dataTable.multiplecollist.append(col)
         self.multiplerowlist.append(row)
 
         self.dataTable.setSelectedRow(row)
@@ -265,18 +266,18 @@ class DataImporter(object):
         isSelected = False
 
         for i, r in enumerate(self.multiplerowlist):
-            if r == row and self.multiplecollist[i] == col:
+            if r == row and self.dataTable.multiplecollist[i] == col:
                 isSelected = True
                 self.dataTable.drawRect(row=row, col=col, delete=1)
                 del self.multiplerowlist[i]
-                del self.multiplecollist[i]
+                del self.dataTable.multiplecollist[i]
 
         if isSelected == False:
             self.multiplecells.append(self.dataTable.model.getValueAt(row, col))
-            self.multiplecollist.append(col)
+            self.dataTable.multiplecollist.append(col)
             self.multiplerowlist.append(row)
 
-            for i, c in enumerate(self.multiplecollist):
+            for i, c in enumerate(self.dataTable.multiplecollist):
                 self.dataTable.drawRect(row=self.multiplerowlist[i], col=c, color='#E4DED4', tag='ctrlSel', delete=1)
 
         self.dataTable.drawSelectedRect(row=row, col=col)
@@ -291,26 +292,26 @@ class DataImporter(object):
 
     def handleColCtrlSelection(self,e):
         col = self.dataTable.get_col_clicked(e)
-        if col not in self.multiplecollist:
-            self.multiplecollist.append(col)
+        if col not in self.dataTable.multiplecollist:
+            self.dataTable.multiplecollist.append(col)
             # Select column
             self.dataTable.drawSelectedCol(col=col, delete=False)
             self.dataTable.tablecolheader.drawRect(col=col, delete=False)
         else:
             self.dataTable.delete('colrect')
             self.dataTable.tablecolheader.delete('rect')
-            for i, c in enumerate(self.multiplecollist):
+            for i, c in enumerate(self.dataTable.multiplecollist):
                 if c == col:
-                    del self.multiplecollist[i]
+                    del self.dataTable.multiplecollist[i]
             
-            for c in self.multiplecollist:
+            for c in self.dataTable.multiplecollist:
                 self.dataTable.drawSelectedCol(col=c, delete=False)
                 self.dataTable.tablecolheader.drawRect(col=c, delete=False)
-        self.updateSelectionText(e)
+        self.updateSelectionText()
 
     def handleDragSelection(self, e):
         pass
-        """ self.multiplecollist = []
+        """ self.dataTable.multiplecollist = []
         self.multiplerowlist = []
         # self.dataTable.clearSelected()
 
@@ -337,11 +338,11 @@ class DataImporter(object):
         else:
             self.dataTable.endcol = colover
             if self.dataTable.endcol < startcol:
-                self.multiplecollist=list(range(self.dataTable.endcol, startcol+1))
+                self.dataTable.multiplecollist=list(range(self.dataTable.endcol, startcol+1))
             else:
-                self.multiplecollist=list(range(startcol, self.dataTable.endcol+1))
+                self.dataTable.multiplecollist=list(range(startcol, self.dataTable.endcol+1))
 
-        for c in self.multiplecollist:
+        for c in self.dataTable.multiplecollist:
             #self.dataTable.drawSelectedCol(c, delete=False)
             self.dataTable.tablecolheader.drawRect(c, delete=False)
 
@@ -358,15 +359,15 @@ class DataImporter(object):
         else:
             self.multiplerowlist = []
             self.multiplerowlist.append(self.dataTable.currentrow)
-            if len(self.multiplecollist) >= 1:
+            if len(self.dataTable.multiplecollist) >= 1:
                 self.drawMultipleCells()
             self.dataTable.delete('multiplesel')
 
         self.updateSelectionText(e) """
 
     def updateDragText(self):
-        rows = self.multiplerowlist
-        cols = self.multiplecollist
+        rows = self.dataTable.multiplerowlist
+        cols = self.dataTable.multiplecollist
         #print(f'ROWS: {rows}')
         #print(f'COLS: {cols}')
         self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]}-{cols[-1]}')
@@ -378,8 +379,8 @@ class DataImporter(object):
         self.dataTable.delete('currentrect')
         self.dataTable.delete('multicellrect')
         
-        rows = self.multiplerowlist
-        cols = self.multiplecollist
+        rows = self.dataTable.multiplerowlist
+        cols = self.dataTable.multiplecollist
         #print(f'ROWS: {rows}')
         #print(f'COLS: {cols}')
         if len(rows) == 0 or len(cols) == 0:
@@ -399,7 +400,7 @@ class DataImporter(object):
                 self.dataTable.lift('celltext'+str(c)+'_'+str(r))
 
     def handleColDrag(self, e):
-        self.multiplecollist = []
+        self.dataTable.multiplecollist = []
         if hasattr(self, 'cellentry'):
             self.dataTable.cellentry.destroy()
         colover = self.dataTable.get_col_clicked(e)
@@ -414,27 +415,27 @@ class DataImporter(object):
         else:
             self.dataTable.endcol = colover
             if self.dataTable.endcol < startcol:
-                self.multiplecollist=list(range(self.dataTable.endcol, startcol+1))
+                self.dataTable.multiplecollist=list(range(self.dataTable.endcol, startcol+1))
             else:
-                self.multiplecollist=list(range(startcol, self.dataTable.endcol+1))
+                self.dataTable.multiplecollist=list(range(startcol, self.dataTable.endcol+1))
 
-        for c in self.multiplecollist:
+        for c in self.dataTable.multiplecollist:
             self.dataTable.drawSelectedCol(c, delete=False)
             self.dataTable.tablecolheader.drawRect(c, delete=False)
 
         # self.updateColumnText()
-        self.updateSelectionText(e)
+        self.updateSelectionText()
 
     def handleRightClick(self, e = None):
         self.deselectAll()
-        self.multiplecollist = []
-        self.multiplerowlist = []
-        self.multiplecells = []
-        self.dataTable.delete('ctrlSel')
-        self.dataTable.delete('currentrect')
-        self.dataTable.delete('multicellrect')
-        self.dataTable.delete('colrect')
-        self.dataTable.tablecolheader.delete('rect')
+        # self.dataTable.multiplecollist = []
+        # self.dataTable.multiplerowlist = []
+        # self.multiplecells = []
+        # self.dataTable.delete('ctrlSel')
+        # self.dataTable.delete('currentrect')
+        # self.dataTable.delete('multicellrect')
+        # self.dataTable.delete('colrect')
+        # self.dataTable.tablecolheader.delete('rect')
 
         """ self.dataTable.selectNone()
         # Deselect column
@@ -450,7 +451,7 @@ class DataImporter(object):
         self.selectionText.configure(text='')
             
     def selectCol(self, e):
-        self.multiplecollist = []
+        self.dataTable.multiplecollist = []
         col = self.dataTable.get_col_clicked(e)
         self.deselectAll()
 
@@ -458,51 +459,25 @@ class DataImporter(object):
         self.dataTable.setSelectedCol( col )
         self.dataTable.drawSelectedCol( col=col )
         self.dataTable.tablecolheader.drawRect(col=col)
-        self.multiplecollist.append(col)
+        # self.dataTable.multiplecollist.append(col)
 
-        # self.updateColumnText()
-        self.updateSelectionText(e)
+        self.updateSelectionText()
 
-    """ def updateColumnText(self):
-        cols = self.multiplecollist
-        if len(cols) > 1:
-            temp = cols[0]
-            for i, c in enumerate(cols):
-                if i != 0:
-                    if c == temp+1:
-                        self.selectionText.configure(text=f'Selected columns {cols[0]}-{cols[-1]}')
-                    else:
-                        text = 'Selected cols '
-                        for i, c in enumerate(cols):
-                            if i != len(cols)-1:
-                                text += f'{c}, '
-                            else:
-                                text += f'{c}'
-
-                        self.selectionText.configure(text=text)
-                    temp = c
-        else:
-            self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]}') """
-
-    def updateSelectionText(self, e=None):
-        # print('UPDATED CALLED')
-        cols = self.multiplecollist
-        rows = self.multiplerowlist
-        cellX = self.dataTable.get_col_clicked(e)
-        cellY = self.dataTable.get_row_clicked(e)
+    def updateSelectionText(self):
+        cols = self.dataTable.multiplecollist
+        rows = self.dataTable.multiplerowlist
         # print(f'COLS: {cols}, ROWS: {rows}')
 
         if len(rows) > 0 and len(cols) == 0: # only rows selected
-            # print('ONLY ROWS SELECTED')
             if len(rows) > 1:
                 temp = rows[0]
                 for i, r in enumerate(rows):
                     # print(r)
                     if i != 0:
                         if r == temp+1:
-                            self.selectionText.configure(text=f'Selected cells {rows[0]+1}-{rows[-1]+1}')
+                            self.selectionText.configure(text=f'Selected rows {rows[0]+1}-{rows[-1]+1}')
                         else:
-                            text = 'Selected cells '
+                            text = 'Selected rows '
                             for i, r in enumerate(rows):
                                 if i != len(rows)-1:
                                     text += f'{r+1}, '
@@ -515,7 +490,6 @@ class DataImporter(object):
                 self.selectionText.configure(text=f'Selected row {rows[0]+1}')
 
         elif len(cols) >= 1 and len(rows) == 0: # only cols selected
-            # print('ONLY COLS SELECTED')
             if len(cols) > 1:
                 temp = cols[0]
                 for i, c in enumerate(cols):
@@ -533,38 +507,26 @@ class DataImporter(object):
                             self.selectionText.configure(text=text)
                         temp = c
             else:
-                self.selectionText.configure(text=f'Selected column {self.multiplecollist[0]}')
-     
-        elif len(cols) == 1 and len(rows) == 1: # single cell selected
-            # print('SINGEL CELL SELECTED')
-            self.selectionText.configure(text=f'Selected cell row {cellY+1} - col {cellX}')
-        else: # multiple cells selected
-            # print('MULTIPLE CELLS SELECTED')
-            text = ''
-            if all(cols[0] == col for col in cols): # if all the selections in same col
-                for r in rows:
-                    text += f'{r+1},'
-                self.selectionText.configure(text=f'Selected rows: {text} col: {cols[0]}')
-            elif all(rows[0] == row for row in rows):  # if all the selections in same row
-                for c in cols:
-                    text += f'{c},'
-                text = text[0:-1]
-                self.selectionText.configure(text=f'Selected row: {rows[0]+1} cols: {text}')
-            else:
-                self.selectionText.configure(text=f'Multiple selections')
-
-            # self.selectionText.configure(text=f'Selected rows: {rows[0]+1}-{rows[-1]+1} cols: {cols[0]}-{cols[-1]}')
+                self.selectionText.configure(text=f'Selected column {self.dataTable.multiplecollist[0]}')
+        else:
+            self.selectionText.configure(text=f'')
 
     def selectRow(self, e):
+        self.dataTable.multiplecollist = []
+        self.dataTable.tablecolheader.drawRect(-1)
+        self.dataTable.delete('colrect')
+        self.dataTable.tablecolheader.delete('rect')
+        self.dataTable.delete('multicellrect')
+        self.updateSelectionText()
+        """ self.deselectAll()
         row = self.dataTable.get_row_clicked(e)
         rows = self.dataTable.getSelectedRows()
+        # self.handleRightClick()
         #print(f'Selected rows {rows}')
 
         if len(rows.index) == 1: # if single row selected
             row = self.dataTable.get_row_clicked(e)
 
-            self.deselectAll()
-            
             # Select row
             self.dataTable.setSelectedRow( row )
             self.dataTable.drawSelectedRow()
@@ -586,41 +548,50 @@ class DataImporter(object):
                                 text += f'{r+1}'
 
                         self.selectionText.configure(text=text)
-                    temp = r
+                    temp = r """
 
     def checkDataForm(self):
-        # print(f'len collist: {len(self.multiplecollist)}')
-        # print(f'len rowlist: {len(self.multiplerowlist)}')
+        # print(f'len collist: {len(self.dataTable.multiplecollist)}')
+        # print(f'len rowlist: {len(self.dataTable.multiplerowlist)}')
         # print(f'selected rows: {len(self.dataTable.getSelectedRows())}')
-        if len(self.multiplecollist) > 1 and len(self.multiplerowlist) > 1:
+        if len(self.dataTable.multiplecollist) > 1 and len(self.dataTable.multiplerowlist) > 1:
 
-            if self.multiplecollist[0] == self.multiplecollist[1]:
+            if self.dataTable.multiplecollist[0] == self.dataTable.multiplecollist[1]:
                 print('PITKÄ MUOTO')
                 self.dataMode = 'long'
-            elif self.multiplerowlist[0] == self.multiplerowlist[1]:
+            elif self.dataTable.multiplerowlist[0] == self.dataTable.multiplerowlist[1]:
                 print('LEVEÄ MUOTO')
                 self.dataMode = 'wide'
 
-        elif len(self.multiplecollist) > 1 or (len(self.multiplecollist) == 0 and len(self.dataTable.getSelectedRows()) > 0):
+        elif len(self.dataTable.multiplecollist) > 1 or (len(self.dataTable.multiplecollist) == 0 and len(self.dataTable.getSelectedRows()) > 0):
             print('LEVEÄ MUOTO')
             self.dataMode = 'wide'
         else:
             print('PITKÄ MUOTO')
             self.dataMode = 'long'
 
-    def closeOptions(self, value):
-        col = self.dataTable.getSelectedColumn()
-        row = self.dataTable.getSelectedRow()
-        if col >= 0:
-            if value == 0:
+    def nextOptions(self, value):
+        # col = self.dataTable.getSelectedColumn()
+        # row = self.dataTable.getSelectedRow()
+        colList = self.dataTable.multiplecollist
+        rowList = self.dataTable.multiplerowlist
+
+        print(f'nextOptions {colList, rowList}')
+        if len(colList) > 0: # Column selected
+            if value == 0: # Single id
                 self.dataMode = 'wide'
-            else:
+            else: # Multiple id
                 self.dataMode = 'long'
-        if row >= 0:
-            if value == 0:
+        if len(rowList) > 0: # Row selected
+            if value == 0: # Single id
                 self.dataMode = 'long'
-            else:
+            else: # Multiple id
                 self.dataMode = 'wide'
+        # print(f'nextOptions datamode: {self.dataMode}')
+        self.options.destroy()
+
+    def closeOptions(self):
+        self.closedByClick = True
         self.options.destroy()
 
     def getInput(self):
@@ -629,54 +600,47 @@ class DataImporter(object):
         col = self.dataTable.getSelectedColumn()
         row = self.dataTable.getSelectedRow()
         rows = self.dataTable.getSelectedRows()
-        if len(self.multiplerowlist) == 0:
-            self.multiplerowlist = rows
+        colList = self.dataTable.multiplecollist
+        rowList = self.dataTable.multiplerowlist
         self.colValues = []
         self.columnNames = []
         self.rowValues = []
         self.rowNames= []
         success = False
+        self.closedByClick = False
 
-        if self.stage == 0 and (len(self.multiplecollist) == 1 or len(rows) == 1 and row != -1):
+        if self.stage == 0 and (len(colList) == 1 or len(rowList) == 1 or len(rows) == 1):# and row != -1):
             def move(e):
-                editOptionsX = self.nextButton.winfo_rootx()-self.nextButton.winfo_reqwidth() - 10
-                editOptionsY = self.nextButton.winfo_rooty()-(self.nextButton.winfo_reqheight()*4)
-                self.options.geometry("+%d+%d" % ( editOptionsX, editOptionsY ))
+                optionsX = int(self.window.winfo_rootx()) + int(self.window.winfo_width()* 0.5) - int(self.options.winfo_width() * 0.5)
+                optionsY = int(self.window.winfo_rooty()) + int(self.window.winfo_height()* 0.5) - int(self.options.winfo_height() * 0.5)
+                self.options.geometry("+%d+%d" % ( optionsX, optionsY ))
                 self.options.lift()
 
             self.options = Toplevel(bg='#4eb1ff', borderwidth=5)
             self.options.overrideredirect(True)
-            editOptionsX = self.nextButton.winfo_rootx()-self.nextButton.winfo_reqwidth() - 10
-            editOptionsY = self.nextButton.winfo_rooty()-(self.nextButton.winfo_reqheight()*4)
-            self.options.geometry("+%d+%d" % ( editOptionsX, editOptionsY ))
+            self.options.update_idletasks()
+            
+            optionsX = int(self.window.winfo_rootx()) + int(self.window.winfo_width()* 0.5) - int(self.options.winfo_width() * 0.5)
+            optionsY = int(self.window.winfo_rooty()) + int(self.window.winfo_height()* 0.5) - int(self.options.winfo_height() * 0.5)
+            self.options.geometry("+%d+%d" % ( optionsX, optionsY ))
             self.options.lift()
 
             self.options.bind('<Configure>', move)
 
-            container = Frame(self.options, bd=0)
+            container = Frame(self.options, bd=0, padx=10, pady=10)
             container.pack()            
             var = IntVar()
             ttk.Label(container, text='Selection contains single ID or multiple ID?').pack()
             ttk.Radiobutton(container, variable=var, value=0, text='Single ID').pack()
             ttk.Radiobutton(container, variable=var, value=1, text='Multiple IDs').pack()
-            ttk.Button(container, text='OK', command=lambda: self.closeOptions(var.get())).pack()
+            buttons = Frame(container, bd=0)
+            buttons.pack(fill=X, expand=1)
+
+            ttk.Button(buttons, text='OK', command=lambda: self.nextOptions(var.get())).pack(side=LEFT, fill=X, expand=True)
+            ttk.Button(buttons, text='Cancel', command=self.closeOptions).pack(side=LEFT, fill=X, expand=True)
 
             self.window.wait_window(self.options)
 
-        """ if len(self.multiplecollist) > 0 and len(self.multiplerowlist) > 0: # set up values lists if multicell
-            print('ASDASKDLASDKSALDSAKDLADKALDKSALDKAS')
-            for i, c in enumerate(self.customGetSelectionValues()):
-                # self.dataTable.setSelectedCol(c)
-                # self.colValues.append(self.customGetSelectionValues()[0][0:])
-                # self.columnNames.append(self.customGetSelectionValues()[0][0])
-                self.colValues.append(c[0:])
-                self.columnNames.append(c[0])
-
-            for r in self.multiplerowlist:
-                self.dataTable.setSelectedRow(r)
-                self.rowValues.append(self.dataTable.getSelectedRows())
-                self.rowNames.append(self.dataTable.getSelectedRows().iloc[0,0])
-        else: # set up values lists if whole rows/cols selected """
         for ri in range(len(rows)):
             temp = []
             for i in range(self.dataTable.cols):
@@ -702,38 +666,27 @@ class DataImporter(object):
         # print(rows)
         
         # print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
-        # print(f'Current list selections: R{self.multiplerowlist}, C{self.multiplecollist}')
+        print(f'Current list selections: R{rowList}, C{colList}')
         # print(f'STAGE {self.stage}')
+        # print(f'DATAMODE: {self.dataMode}')
 
-        if (len(self.multiplerowlist) < 1 and len(self.multiplecollist) < 1): # nothing selected
+        if (len(rowList) < 1 and len(colList) < 1): # nothing selected
             #print('NOTHING SELECTED')
             s = ttk.Style()
             s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
             self.notif.configure(style='error.TLabel', text=f'Nothing selected')
             self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+        elif self.closedByClick == True:
+            pass
         else: # something selected
-            if col == -1: # rows selected
-                if self.stage == 0: # ids
-                    if len(rows) > 1 and col == -1: # multiple rows
-                        print('USEAMPI RIVI')
-                        if self.stage == 0: # ids
-                            # self.checkDataForm()
-                            for i, id in enumerate(self.rowNames):
-                                # Create subject, set its id, add a test, reset workloads
-                                subject = Subject()
-                                subject.setId(id)
-                                subject.addTest()
-                                subject.getTests()[0].workLoads = []
-                                self.subjects[rows.index[i]] = subject
-
-                            self.tempLocData['id'] = self.rowNames
-                            print(self.subjects)
-                            success = True
-
-                    else: # single rows
-                        print('YKSI RIVI')
-                        if self.stage == 0: #ids
-                            if self.dataMode == 'long':
+            print('SOMETHING SELECTED')
+            try:
+                if len(rowList) > 0: # rows selected
+                    if self.stage == 0: # ids
+                        if len(rows) > 1 and col == -1: # multiple rows
+                            # print('USEAMPI RIVI')
+                            if self.stage == 0: # ids
+                                # self.checkDataForm()
                                 for i, id in enumerate(self.rowNames):
                                     # Create subject, set its id, add a test, reset workloads
                                     subject = Subject()
@@ -742,196 +695,574 @@ class DataImporter(object):
                                     subject.getTests()[0].workLoads = []
                                     self.subjects[rows.index[i]] = subject
 
-                                # self.tempLocData['id'] = self.rowNames[0]
+                                self.tempLocData['id'] = self.rowNames
+                                print(self.subjects)
+                                success = True
 
-                            elif self.dataMode == 'wide':
-                                for i, id in enumerate(self.rowValues[0]):
-                                    if i != 0:
+                        else: # single rows
+                            # print('YKSI RIVI')
+                            # print(rows)
+                            # print(self.rowNames)
+                            if self.stage == 0: #ids
+                                if self.dataMode == None:
+                                    self.checkDataForm()
+                                if self.dataMode == 'long':
+                                    for i, id in enumerate(self.rowNames):
                                         # Create subject, set its id, add a test, reset workloads
                                         subject = Subject()
                                         subject.setId(id)
                                         subject.addTest()
                                         subject.getTests()[0].workLoads = []
-                                        self.subjects[i] = subject
+                                        self.subjects[rows.index[i]] = subject
 
-                            # self.tempLocData['id'] = self.rowNames
-                            print(self.subjects)
-                            success = True
+                                    # self.tempLocData['id'] = self.rowNames[0]
 
-                elif self.stage == 1: # Loads
-                    # print('**LOADS**')
-                    success = self.getLoadsFromRows()
-
-                elif self.stage == 2: #VO2
-                    #print('**VO2**')
-                    success = self.getRowValues('VO2')
-
-                elif self.stage == 3: #HR
-                    #print('**HR**')
-                    success = self.getRowValues('HR')
-
-                elif self.stage == 4: #SV
-                    #print('**SV**')
-                    success = self.getRowValues('SV')
-
-                elif self.stage == 5: #Q
-                    #print('**Q**')
-                    success = self.getRowValues('Q')
-
-                elif self.stage == 6: #Hb
-                    #print('**Hb**')
-                    success = self.getRowValues('Hb')
-
-                elif self.stage == 7: #SaO2
-                    #print('**SaO2**')
-                    success = self.getRowValues('SaO2')
-
-                elif self.stage == 8: #CaO2
-                    #print('**CaO2**')
-                    success = self.getRowValues('CaO2')
-
-                elif self.stage == 9: #CvO2
-                    #print('**CvO2**')
-                    success = self.getRowValues('CvO2')
-
-                elif self.stage == 10: #CavO2
-                    #print('**CavO2**')
-                    success = self.getRowValues('CavO2')
-
-                elif self.stage == 11: #QaO2
-                    #print('**QaO2**')
-                    success = self.getRowValues('QaO2')
-
-                elif self.stage == 12: #SvO2
-                    #print('**SvO2**')
-                    success = self.getRowValues('SvO2')
-
-                elif self.stage == 13: #PvO2
-                    #print('**PvO2**')
-                    success = self.getRowValues('PvO2')
-                    
-                elif self.stage == 14: #T
-                    success = self.getRowValues('T')
-
-                elif self.stage == 15: #pH
-                    success = self.getRowValues('pH')
-
-                if success:
-                    self.addCheckMark(self.stage)
-                    self.nextStage()
-
-            if row == -1: # cols selected
-                if self.stage == 0: #ids
-                    if len(self.multiplecollist) > 1: # multiple columns
-                        #print('USEAMPI SARAKE')
-                        
-                        if self.stage == 0: # ids
-                            # self.checkDataForm()
-                            for i, id in enumerate(self.columnNames):
-                                # Create subject, set its id, add a test, reset workloads
-                                subject = Subject()
-                                subject.setId(id)
-                                subject.addTest()
-                                subject.getTests()[0].workLoads = []
-                                # self.subjects.append(subject)
-                                colIndex = self.multiplecollist[i]
-                                self.subjects[colIndex] = subject
-
-                            print(self.subjects)
-                            success = True
-                            # self.tempLocData['id'] = self.columnNames
-
-                    else: # one column
-                        if self.stage == 0: # ids
-                            # self.checkDataForm()
-                            if self.dataMode == 'long':
-                                for i, c in enumerate(self.colValues): #iterate cols as list
-                                    for ci, cv in enumerate(c): #iterate values
-                                        if ci != 0: #skip header
+                                elif self.dataMode == 'wide':
+                                    for i, id in enumerate(self.rowValues[0]):
+                                        if i != 0:
                                             # Create subject, set its id, add a test, reset workloads
                                             subject = Subject()
-                                            subject.setId(cv)
+                                            subject.setId(id)
                                             subject.addTest()
                                             subject.getTests()[0].workLoads = []
-                                            self.subjects[ci] = subject
-                            else:
+                                            self.subjects[i] = subject
+
+                                # self.tempLocData['id'] = self.rowNames
+                                print(self.subjects)
+                                success = True
+
+                    elif self.stage == 1: # Loads
+                        # print('**LOADS**')
+                        success = self.getLoadsFromRows()
+
+                    elif self.stage == 2: #VO2
+                        #print('**VO2**')
+                        success = self.getRowValues('VO2')
+
+                    elif self.stage == 3: #HR
+                        #print('**HR**')
+                        success = self.getRowValues('HR')
+
+                    elif self.stage == 4: #SV
+                        #print('**SV**')
+                        success = self.getRowValues('SV')
+
+                    elif self.stage == 5: #Q
+                        #print('**Q**')
+                        success = self.getRowValues('Q')
+
+                    elif self.stage == 6: #Hb
+                        #print('**Hb**')
+                        success = self.getRowValues('Hb')
+
+                    elif self.stage == 7: #SaO2
+                        #print('**SaO2**')
+                        success = self.getRowValues('SaO2')
+
+                    elif self.stage == 8: #CaO2
+                        #print('**CaO2**')
+                        success = self.getRowValues('CaO2')
+
+                    elif self.stage == 9: #CvO2
+                        #print('**CvO2**')
+                        success = self.getRowValues('CvO2')
+
+                    elif self.stage == 10: #CavO2
+                        #print('**CavO2**')
+                        success = self.getRowValues('CavO2')
+
+                    elif self.stage == 11: #QaO2
+                        #print('**QaO2**')
+                        success = self.getRowValues('QaO2')
+
+                    elif self.stage == 12: #SvO2
+                        #print('**SvO2**')
+                        success = self.getRowValues('SvO2')
+
+                    elif self.stage == 13: #PvO2
+                        #print('**PvO2**')
+                        success = self.getRowValues('PvO2')
+                        
+                    elif self.stage == 14: #T
+                        success = self.getRowValues('T')
+
+                    elif self.stage == 15: #pH
+                        success = self.getRowValues('pH')
+
+                    if success:
+                        self.addCheckMark(self.stage)
+                        self.notif.configure(text='OK', background='green')
+                        self.notif.after(1000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+                        self.nextStage()
+
+                if len(colList) > 0: # cols selected
+                    if self.stage == 0: #ids
+                        if len(colList) > 1: # multiple columns
+                            # print('USEAMPI SARAKE')
+                            
+                            if self.stage == 0: # ids
+                                # self.checkDataForm()
                                 for i, id in enumerate(self.columnNames):
                                     # Create subject, set its id, add a test, reset workloads
                                     subject = Subject()
                                     subject.setId(id)
                                     subject.addTest()
                                     subject.getTests()[0].workLoads = []
-                                    colIndex = self.multiplecollist[i]
+                                    # self.subjects.append(subject)
+                                    colIndex = colList[i]
                                     self.subjects[colIndex] = subject
 
-                            print(self.subjects)
-                            success = True
-                            # self.tempLocData['id'] = self.colValues[0][1:]
-                    
-                elif self.stage == 1: # Loads
-                    # print('**LOADS**')
-                    success = self.getLoadsFromCols()
+                                print(self.subjects)
+                                success = True
+                                # self.tempLocData['id'] = self.columnNames
 
-                elif self.stage == 2: #VO2
-                    #print('**VO2**')
-                    success = self.getColumnValues('VO2')
+                        else: # one column
+                            # print('YKSI SARAKE')
+                            if self.stage == 0: # ids
+                                if self.dataMode == None:
+                                    self.checkDataForm()
+                                if self.dataMode == 'long':
+                                    for i, c in enumerate(self.colValues): #iterate cols as list
+                                        for ci, cv in enumerate(c): #iterate values
+                                            if ci != 0: #skip header
+                                                # Create subject, set its id, add a test, reset workloads
+                                                subject = Subject()
+                                                subject.setId(cv)
+                                                subject.addTest()
+                                                subject.getTests()[0].workLoads = []
+                                                self.subjects[ci] = subject
+                                else:
+                                    for i, id in enumerate(self.columnNames):
+                                        # Create subject, set its id, add a test, reset workloads
+                                        subject = Subject()
+                                        subject.setId(id)
+                                        subject.addTest()
+                                        subject.getTests()[0].workLoads = []
+                                        colIndex = colList[i]
+                                        self.subjects[colIndex] = subject
 
-                elif self.stage == 3: #HR
-                    #print('**HR**')
-                    success = self.getColumnValues('HR')
+                                print(self.subjects)
+                                success = True
+                                # self.tempLocData['id'] = self.colValues[0][1:]
+                        
+                    elif self.stage == 1: # Loads
+                        # print('**LOADS**')
+                        success = self.getLoadsFromCols()
 
-                elif self.stage == 4: #SV
-                    #print('**SV**')
-                    success = self.getColumnValues('SV')
+                    elif self.stage == 2: #VO2
+                        #print('**VO2**')
+                        success = self.getColumnValues('VO2')
 
-                elif self.stage == 5: #Q
-                    #print('**Q**')
-                    success = self.getColumnValues('Q')
+                    elif self.stage == 3: #HR
+                        #print('**HR**')
+                        success = self.getColumnValues('HR')
 
-                elif self.stage == 6: #Hb
-                    #print('**Hb**')
-                    success = self.getColumnValues('Hb')
+                    elif self.stage == 4: #SV
+                        #print('**SV**')
+                        success = self.getColumnValues('SV')
 
-                elif self.stage == 7: #SaO2
-                    #print('**SaO2**')
-                    success = self.getColumnValues('SaO2')
+                    elif self.stage == 5: #Q
+                        #print('**Q**')
+                        success = self.getColumnValues('Q')
 
-                elif self.stage == 8: #CaO2
-                    #print('**CaO2**')
-                    success = self.getColumnValues('CaO2')
+                    elif self.stage == 6: #Hb
+                        #print('**Hb**')
+                        success = self.getColumnValues('Hb')
 
-                elif self.stage == 9: #CvO2
-                    #print('**CvO2**')
-                    success = self.getColumnValues('CvO2')
+                    elif self.stage == 7: #SaO2
+                        #print('**SaO2**')
+                        success = self.getColumnValues('SaO2')
 
-                elif self.stage == 10: #CavO2
-                    #print('**CavO2**')
-                    success = self.getColumnValues('CavO2')
+                    elif self.stage == 8: #CaO2
+                        #print('**CaO2**')
+                        success = self.getColumnValues('CaO2')
 
-                elif self.stage == 11: #QaO2
-                    #print('**QaO2**')
-                    success = self.getColumnValues('QaO2')
+                    elif self.stage == 9: #CvO2
+                        #print('**CvO2**')
+                        success = self.getColumnValues('CvO2')
 
-                elif self.stage == 12: #SvO2
-                    #print('**SvO2**')
-                    success = self.getColumnValues('SvO2')
+                    elif self.stage == 10: #CavO2
+                        #print('**CavO2**')
+                        success = self.getColumnValues('CavO2')
 
-                elif self.stage == 13: #PvO2
-                    #print('**PvO2**')
-                    success = self.getColumnValues('PvO2')
-                    
-                elif self.stage == 14: #T
-                    success = self.getColumnValues('T')
+                    elif self.stage == 11: #QaO2
+                        #print('**QaO2**')
+                        success = self.getColumnValues('QaO2')
 
-                elif self.stage == 15: #pH
-                    success = self.getColumnValues('pH')
+                    elif self.stage == 12: #SvO2
+                        #print('**SvO2**')
+                        success = self.getColumnValues('SvO2')
 
-                if success:
-                    self.addCheckMark(self.stage)
-                    self.nextStage()
+                    elif self.stage == 13: #PvO2
+                        #print('**PvO2**')
+                        success = self.getColumnValues('PvO2')
+                        
+                    elif self.stage == 14: #T
+                        success = self.getColumnValues('T')
 
-            """ if row >= 0 and col >= 0: # cells selected
-                if len(self.multiplerowlist) > 1 or len(self.multiplecollist) > 1: # multiple cells
+                    elif self.stage == 15: #pH
+                        success = self.getColumnValues('pH')
+
+                    if success:
+                        self.addCheckMark(self.stage)
+                        self.notif.configure(text='OK', background='green')
+                        self.notif.after(1000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+                        self.nextStage()
+
+            except Exception as e:
+                print(f'EXCEPTION {e}')
+                s = ttk.Style()
+                s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                self.notif.configure(style='error.TLabel', text=f'ID information needed to import data')
+                self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+
+    def closeImporter(self):
+        if hasattr(self, 'test'):
+            del self.test
+        self.window.destroy()
+        try:
+            self.options.destroy()
+        except:
+            pass
+        del self
+
+    def updateTable(self, table):
+        self.dataTable.updateModel(TableModel(self.dfList[table]))
+        self.dataTable.redraw()
+
+    def deselectAll(self):
+        self.dataTable.clearSelected()
+        self.dataTable.multiplecollist = []
+        self.dataTable.multiplerowlist = []
+        # self.dataTable.setSelectedCol( -1 )
+        self.dataTable.drawSelectedCol(-1)
+        self.dataTable.tablecolheader.drawRect(-1)
+        # self.dataTable.setSelectedRow( -1 )
+        
+        # self.dataTable.drawSelectedRow()
+        self.dataTable.rowheader.clearSelected()
+        self.dataTable.delete('ctrlSel')
+        self.dataTable.delete('currentrect')
+        self.dataTable.delete('multicellrect')
+        self.dataTable.delete('colrect')
+        self.dataTable.delete('rowrect')
+        self.dataTable.tablecolheader.delete('rect')
+        self.updateSelectionText()
+
+
+    def customGetSelectionValues(self):
+        # Get values for current multiple cell selection
+        rows = range(self.dataTable.rows)
+        cols = self.dataTable.multiplecollist
+        model = self.dataTable.model
+        lists = []
+
+        # print('CUSTOM')
+
+        for c in cols:
+            x=[]
+            for r in rows:
+                val = model.getValueAt(r,c)
+                if val == '' or val == None:
+                    x.append(0)
+                else:
+                    x.append(val)
+            lists.append(x)
+        return lists
+    
+    def getLoadsFromCols(self):
+        for rowIndex, s in self.subjects.items():
+            test = s.getTests()[0]
+            test.workLoads = [] # delete previous workloads, if re-fetching loads
+
+            for i, v in enumerate(self.colValues): #iterate cols as list
+                for ci, cv in enumerate(v): #iterate values
+                    if ci == rowIndex: #if row matches subject's row
+                        columnName = self.columnNames[i]
+                        load = test.createLoad()
+                        
+                        load.setName(columnName) # column name
+                        load.getDetails().setValue('Load', cv) # set value
+                        load.getDetails().setImported(True)
+                        continue
+        
+        self.tempLocData['Load'] = self.columnNames
+        return True
+
+    def getLoadsFromRows(self):
+        for colIndex, s in self.subjects.items():
+            test = s.getTests()[0]
+            test.workLoads = [] # delete previous workloads, if re-fetching loads
+
+            for i, v in enumerate(self.rowValues): #iterate rows as list
+                for ci, cv in enumerate(v): #iterate values
+                    if ci == colIndex: #if col matches subject's col
+                        rowName = self.rowNames[i]
+                        load = test.createLoad()
+                        load.setName(rowName) # row name
+                        load.getDetails().setValue('Load', cv) # set value
+                        load.getDetails().setImported(True)
+                        continue
+        
+        self.tempLocData['Load'] = self.rowNames
+        return True
+
+    def getColumnValues(self, label):
+        flag = False
+
+        for rowIndex, s in self.subjects.items():
+            test = s.getTests()[0]
+            loads = test.getWorkLoads()
+            
+            if len(self.colValues) < len(loads) and len(self.colValues) != 1:
+                    s = ttk.Style()
+                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                    self.notif.configure(style='error.TLabel', text=f'You have {len(loads)} loads but only {len(self.colValues)} values given')
+                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+            else:
+                if len(self.colValues) == 1:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        value = self.colValues[0][rowIndex]
+                        details.setValue(label, value)
+                else:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        value = self.colValues[li][rowIndex]
+                        details.setValue(label, value)
+                flag = True
+        return flag
+        # self.tempLocData[label] = self.columnNames
+
+    def getRowValues(self, label):
+        flag = False
+
+        for colIndex, s in self.subjects.items():
+            test = s.getTests()[0]
+            loads = test.getWorkLoads()
+            
+            if len(self.rowValues) < len(loads) and len(self.rowValues) != 1:
+                    s = ttk.Style()
+                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                    self.notif.configure(style='error.TLabel', text=f'You have {len(loads)} loads but only {len(self.rowValues)} values given')
+                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+            else:
+                if len(self.rowValues) == 1:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        value = self.rowValues[0][colIndex]
+                        details.setValue(label, value)
+                else:
+                    for li, l in enumerate(loads):
+                        details = l.getDetails()
+                        value = self.rowValues[li][colIndex]
+                        details.setValue(label, value)
+                flag = True
+        return flag
+        # self.tempLocData[label] = self.rowNames
+
+    def prevStage(self):
+        to = self.stage - 1
+        self.nextStage(to=to)
+
+    def nextStage(self, to=None):
+        if to == None:
+            # self.stage += 1 
+            to = self.stage + 1
+
+        if to > 0:
+            # Reset buttons
+            self.nextButton.pack_forget()
+            self.cancelButton.pack_forget()
+            try:
+                self.passBtn.pack_forget()
+                self.doneBtn.pack_forget()
+                self.prevBtn.pack_forget()
+            except:
+                pass
+
+            # Pack in reversed order
+            self.cancelButton.pack(side=RIGHT)
+            self.doneBtn = ttk.Button(self.footer, text='Done', command=lambda: self.importData())
+            self.doneBtn.pack(side=RIGHT)
+            self.prevBtn = ttk.Button(self.footer, text='Prev', command=lambda: self.prevStage())
+            self.prevBtn.pack(side=RIGHT)
+            self.passBtn = ttk.Button(self.footer, text='Skip', command=lambda: self.nextStage())
+            self.passBtn.pack(side=RIGHT)
+            self.nextButton.pack(side=RIGHT)
+            
+        self.deselectAll()
+
+        if to == 0:
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define ID column/row')
+        elif to == 1:
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define loads row/column')
+        elif to == 2: # -> VO2
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define VO\u2082 row/column')
+        elif to== 3: # -> HR
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define HR row/column')
+        elif to == 4: # -> SV
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define SV row/column')
+        elif to == 5: # -> Q
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define Q row/column')
+        elif to == 6: # -> Hb
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define Hb row/column')
+        elif to == 7: # -> SaO2
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define SaO\u2082 row/column')
+        elif to == 8: # -> CaO2
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define CaO\u2082 row/column')
+        elif to == 9: # -> CvO2
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define CvO\u2082 row/column')
+        elif to == 10: # -> CavO2
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define CavO\u2082 row/column')
+        elif to == 11: # -> QaO2
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define QaO\u2082 row/column')
+        elif to == 12: # -> SvO2
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define SvO\u2082 row/column')
+        elif to == 13: # -> PvO2
+            self.moveArrow(self.stage, to)
+            self.instructionText.configure(text='Define PvO\u2082 row/column')
+        elif to == 14: # -> T
+            self.moveArrow(self.stage, to)
+            self.passBtn.configure(text='Use Default Values')
+            self.instructionText.configure(text='Define T row/column')
+        elif to == 15: # -> pH
+            self.moveArrow(self.stage, to)
+            self.passBtn.configure(text='Use Default Values')
+            self.instructionText.configure(text='Define pH row/column')
+        elif to == 16: # Finish
+            self.importData()
+
+        self.stage = to
+
+    def moveArrow(self, from_, to):
+        value = self.progressionList.get(from_)
+        if '\U0001F878' in value:
+            value = value.replace('\U0001F878','')
+        self.progressionList.delete(from_)
+        self.progressionList.insert(from_, value)
+
+        value = self.progressionList.get(to)
+        if '\U0001F878' not in value:
+            value = f'{value} \U0001F878'
+        self.progressionList.delete(to)
+        self.progressionList.insert(to, value)
+
+    def addCheckMark(self, to):
+        # print(f'adding mark to {to}')
+        value = self.progressionList.get(to)
+        value = f'{value.split(" ")[0]} \u2713'
+        # print(value)
+        self.progressionList.delete(to)
+        self.progressionList.insert(to, value)
+
+    def importData(self):
+        project = Project()
+        app.setActiveProject(project)
+        app.setActiveSubject(None)
+        app.setActiveTest(None)
+
+        project.data = self.dfList
+
+        # Add dataloc information
+        project.dataMode = self.dataMode
+        project.idLoc = self.tempLocData.get('id', None)
+        project.loadLoc = self.tempLocData.get('Load', None)
+        project.vo2Loc = self.tempLocData.get('VO2', None)
+        project.hrLoc = self.tempLocData.get('HR', None)
+        project.svLoc = self.tempLocData.get('SV', None)
+
+        project.qLoc = self.tempLocData.get('Q', None)
+        project.hbLoc = self.tempLocData.get('Hb', None)
+        project.sao2Loc = self.tempLocData.get('SaO2', None)
+        project.cao2Loc = self.tempLocData.get('CaO2', None)
+        project.cvo2Loc = self.tempLocData.get('CvO2', None)
+
+        project.cavo2Loc = self.tempLocData.get('CavO2', None)
+        project.qao2Loc = self.tempLocData.get('QaO2', None)
+        project.svo2Loc = self.tempLocData.get('SvO2', None)
+        project.pvo2Loc = self.tempLocData.get('PvO2', None)
+
+        project.tcRestLoc = self.tempLocData.get('Tc @ rest', None)
+        project.tcLoc = self.tempLocData.get('Tc\u209A\u2091\u2090\u2096', None)
+        project.phRestLoc = self.tempLocData.get('pH @ rest', None) 
+        project.phLoc = self.tempLocData.get('pH\u209A\u2091\u2090\u2096', None)
+        
+        # for key, value in self.dfList.items():
+        #     print(key)
+        #     print(value)
+
+        """ print(project.idLoc)
+        print(project.loadLoc)
+        print(project.vo2Loc)
+        print(project.hrLoc)
+        print(project.svLoc)
+
+        print(project.qLoc)
+        print(project.hbLoc)
+        print(project.sao2Loc)
+        print(project.cao2Loc)
+        print(project.cvo2Loc)
+
+        print(project.cavo2Loc)
+        print(project.qao2Loc)
+        print(project.svo2Loc)
+        print(project.pvo2Loc)
+
+        print(project.tcRestLoc)
+        print(project.tcLoc)
+        print(project.phRestLoc)
+        print(project.phLoc) """
+
+        if type(self.subjects) is dict:
+            for s in self.subjects.values():
+                project.addSubject(s)
+        else:
+            for s in self.subjects:
+                project.addSubject(s)
+
+        app.sidepanel_projectList.refreshList()
+        app.sidepanel_subjectList.refreshList()
+        app.sidepanel_testList.refreshList()
+
+        app.projectDetailModule.refreshDetails()
+        # app.testDetailModule
+
+        # Update app state
+        app.sidepanel_projectList.addToList(project.id)
+        app.addProject(project)
+
+        self.window.destroy()
+        del self
+
+class DataMenuElem(object):
+    def __init__(self, importer, menu, menuButton, option, isExporter = False):
+        self.importer = importer
+        self.menuButton = menuButton
+        self.option = option
+        self.isExporter = isExporter
+        menu.add_command(label=option, command=lambda: self.handleMenuSelect())
+
+    def handleMenuSelect(self):
+        self.menuButton.config(text=self.option)
+        if self.isExporter == False:
+            self.importer.updateTable(self.option)
+
+""" if row >= 0 and col >= 0: # cells selected
+                if len(self.multiplerowlist) > 1 or len(self.dataTable.multiplecollist) > 1: # multiple cells
                     print('MULTIPLE CELLS SELECTED')
 
                     if self.stage == 0: # ids
@@ -939,7 +1270,7 @@ class DataImporter(object):
                         self.subjects = {}
 
                         if self.dataMode == 'wide':
-                            for i, c in enumerate(self.multiplecollist):
+                            for i, c in enumerate(self.dataTable.multiplecollist):
                                 if len(self.multiplerowlist) == 1:
                                     for r in self.multiplerowlist:
                                         # Create subject, set its id, add a test, reset workloads
@@ -961,8 +1292,8 @@ class DataImporter(object):
 
                         elif self.dataMode == 'long':
                             for i, r in enumerate(self.multiplerowlist):
-                                if len(self.multiplecollist) == 1:
-                                    for c in self.multiplecollist:
+                                if len(self.dataTable.multiplecollist) == 1:
+                                    for c in self.dataTable.multiplecollist:
                                         # Create subject, set its id, add a test, reset workloads
                                         subject = Subject()
                                         subject.setId(self.rowNames[i])
@@ -1154,142 +1485,9 @@ class DataImporter(object):
                     self.addCheckMark(self.stage)
                     self.nextStage() """
 
-    def closeImporter(self):
-        if hasattr(self, 'test'):
-            del self.test
-        self.window.destroy()
-        self.options.destroy()
-        del self
-
-    def updateTable(self, table):
-        self.dataTable.updateModel(TableModel(self.dfList[table]))
-        self.dataTable.redraw()
-
-    def deselectAll(self):
-        self.dataTable.selectNone()
-        # Deselect column
-        self.dataTable.setSelectedCol( -1 )
-        self.dataTable.drawSelectedCol(-1)
-        self.dataTable.tablecolheader.drawRect(-1)
-        # Deselect row
-        self.dataTable.setSelectedRow( -1 )
-        self.dataTable.drawSelectedRow()
-        self.dataTable.rowheader.clearSelected()
-
-    def customGetSelectionValues(self):
-        """Get values for current multiple cell selection"""
-        rows = range(self.dataTable.rows)
-        cols = self.multiplecollist
-        model = self.dataTable.model
-        lists = []
-
-        # print('CUSTOM')
-
-        for c in cols:
-            x=[]
-            for r in rows:
-                val = model.getValueAt(r,c)
-                if val == '' or val == None:
-                    x.append(0)
-                else:
-                    x.append(val)
-            lists.append(x)
-        return lists
-    
-    def getLoadsFromCols(self):
-        for rowIndex, s in self.subjects.items():
-            test = s.getTests()[0]
-            test.workLoads = [] # delete previous workloads, if re-fetching loads
-
-            for i, v in enumerate(self.colValues): #iterate cols as list
-                for ci, cv in enumerate(v): #iterate values
-                    if ci == rowIndex: #if row matches subject's row
-                        columnName = self.columnNames[i]
-                        load = test.createLoad()
-                        
-                        load.setName(columnName) # column name
-                        load.getDetails().setValue('Load', cv) # set value
-                        load.getDetails().setImported(True)
-                        continue
-        
-        self.tempLocData['Load'] = self.columnNames
-        return True
-
-    def getLoadsFromRows(self):
-        for colIndex, s in self.subjects.items():
-            test = s.getTests()[0]
-            test.workLoads = [] # delete previous workloads, if re-fetching loads
-
-            for i, v in enumerate(self.rowValues): #iterate rows as list
-                for ci, cv in enumerate(v): #iterate values
-                    if ci == colIndex: #if col matches subject's col
-                        rowName = self.rowNames[i]
-                        load = test.createLoad()
-                        load.setName(rowName) # row name
-                        load.getDetails().setValue('Load', cv) # set value
-                        load.getDetails().setImported(True)
-                        continue
-        
-        self.tempLocData['Load'] = self.rowNames
-        return True
-
-    def getColumnValues(self, label):
-        flag = False
-
-        for rowIndex, s in self.subjects.items():
-            test = s.getTests()[0]
-            loads = test.getWorkLoads()
-            
-            if len(self.colValues) < len(loads) and len(self.colValues) != 1:
-                    s = ttk.Style()
-                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(style='error.TLabel', text=f'You have {len(loads)} loads but only {len(self.colValues)} values given')
-                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
-            else:
-                if len(self.colValues) == 1:
-                    for li, l in enumerate(loads):
-                        details = l.getDetails()
-                        value = self.colValues[0][rowIndex]
-                        details.setValue(label, value)
-                else:
-                    for li, l in enumerate(loads):
-                        details = l.getDetails()
-                        value = self.colValues[li][rowIndex]
-                        details.setValue(label, value)
-                flag = True
-        return flag
-        # self.tempLocData[label] = self.columnNames
-
-    def getRowValues(self, label):
-        flag = False
-
-        for colIndex, s in self.subjects.items():
-            test = s.getTests()[0]
-            loads = test.getWorkLoads()
-            
-            if len(self.rowValues) < len(loads) and len(self.rowValues) != 1:
-                    s = ttk.Style()
-                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(style='error.TLabel', text=f'You have {len(loads)} loads but only {len(self.rowValues)} values given')
-                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
-            else:
-                if len(self.rowValues) == 1:
-                    for li, l in enumerate(loads):
-                        details = l.getDetails()
-                        value = self.rowValues[0][colIndex]
-                        details.setValue(label, value)
-                else:
-                    for li, l in enumerate(loads):
-                        details = l.getDetails()
-                        value = self.rowValues[li][colIndex]
-                        details.setValue(label, value)
-                flag = True
-        return flag
-        # self.tempLocData[label] = self.rowNames
-
-    def getMultiCellLoads(self):
-        colList = self.multiplecollist
-        rowList = self.multiplerowlist
+""" def getMultiCellLoads(self):
+        colList = self.dataTable.multiplecollist
+        rowList = self.dataTable.multiplerowlist
 
         if self.dataMode == None:
             if all(colList[0] == col for col in colList):
@@ -1341,7 +1539,7 @@ class DataImporter(object):
                                 load.getDetails().setImported(True)
                                 continue
 
-                """ for ri, r in enumerate(rowList):
+                for ri, r in enumerate(rowList):
                 if len(self.subjects) > 1:
                     test = self.subjects[ri].getTests()[0]
                 else:
@@ -1353,9 +1551,9 @@ class DataImporter(object):
                     load = test.createLoad()
                     load.setName(columnName) # column name
                     load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
-                    load.getDetails().setImported(True) """
+                    load.getDetails().setImported(True)
 
-                """ if len(rowList) == 1 or all(rowList[0] == col for col in rowList): # single row
+                if len(rowList) == 1 or all(rowList[0] == col for col in rowList): # single row
                     print('single row')
                     for ci, c in enumerate(colList):
                         columnName = self.columnNames[ci]
@@ -1370,7 +1568,7 @@ class DataImporter(object):
                     load.setName(columnName) # column name
                     load.getDetails().setValue('Load', self.colValues[ri][r]) # set value
                     load.getDetails().setImported(True)
-                    continue """
+                    continue
 
             self.tempLocData['Load'] = self.colValues
 
@@ -1386,7 +1584,7 @@ class DataImporter(object):
                         load.setName(rowName) # row name
                         load.getDetails().setValue('Load', self.colValues[ci][rowList[ci]]) # set value
                         load.getDetails().setImported(True)
-                """ for ci, c in enumerate(colList):
+                for ci, c in enumerate(colList):
                 if len(self.subjects) > 1:
                     test = self.subjects[ci].getTests()[0]
                 else:
@@ -1398,9 +1596,9 @@ class DataImporter(object):
                     load = test.createLoad()
                     load.setName(rowName) # column name
                     load.getDetails().setValue('Load', self.colValues[ci][r]) # set value
-                    load.getDetails().setImported(True) """
+                    load.getDetails().setImported(True)
 
-                """ if len(rowList) == 1: # if selected by dragging or shift
+                if len(rowList) == 1: # if selected by dragging or shift
                     print('SHIFT/DRAG')
                     for ri, r in enumerate(rowList):
                         rowName = self.rowNames[ri]
@@ -1415,13 +1613,13 @@ class DataImporter(object):
                     load.setName(rowName) # column name
                     load.getDetails().setValue('Load', self.colValues[ci][rowList[ci]]) # set value
                     load.getDetails().setImported(True)
-                    continue """
+                    continue
 
             self.tempLocData['Load'] = self.colValues
 
     def getMultiCellValues(self, label):
-        colList = self.multiplecollist
-        rowList = self.multiplerowlist
+        colList = self.dataTable.multiplecollist
+        rowList = self.dataTable.multiplerowlist
         nLoads = len(self.tempLocData['Load'])
         flag = False
 
@@ -1471,204 +1669,4 @@ class DataImporter(object):
         test = s.getTests()[0]
         load = test.getWorkLoads()[0]
         load.getDetails().setValue(label, value) # set value
-        return True
-
-    def prevStage(self):
-        to = self.stage - 1
-        self.nextStage(to=to)
-
-    def nextStage(self, to=None):
-        if to == None:
-            # self.stage += 1 
-            to = self.stage + 1
-
-        #print(f'tällä hetkellä stage: {to}')
-
-        if to > 0:
-            ttk.Button(self.footer, text='Prev', command=lambda: self.prevStage()).grid(column=0, row=0)
-            passBtn = ttk.Button(self.footer, text='Skip', command=lambda: self.nextStage())
-            passBtn.grid(column=2, row=0)
-            ttk.Button(self.footer, text='Done', command=lambda: self.importData()).grid(column=3, row=0)
-            self.cancelButton.grid(column=4, row=0)
-        
-        self.deselectAll()
-
-        if to == 0:
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define ID column/row')
-        elif to == 1:
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define loads row/column')
-        elif to == 2: # -> VO2
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define VO\u2082 row/column')
-        elif to== 3: # -> HR
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define HR row/column')
-        elif to == 4: # -> SV
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define SV row/column')
-        elif to == 5: # -> Q
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define Q row/column')
-        elif to == 6: # -> Hb
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define Hb row/column')
-        elif to == 7: # -> SaO2
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define SaO\u2082 row/column')
-        elif to == 8: # -> CaO2
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define CaO\u2082 row/column')
-        elif to == 9: # -> CvO2
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define CvO\u2082 row/column')
-        elif to == 10: # -> CavO2
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define CavO\u2082 row/column')
-        elif to == 11: # -> QaO2
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define QaO\u2082 row/column')
-        elif to == 12: # -> SvO2
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define SvO\u2082 row/column')
-        elif to == 13: # -> PvO2
-            self.moveArrow(self.stage, to)
-            self.instructionText.configure(text='Define PvO\u2082 row/column')
-        elif to == 14: # -> T
-            self.moveArrow(self.stage, to)
-            passBtn.configure(text='Use Default Values')
-            self.instructionText.configure(text='Define T row/column')
-        elif to == 15: # -> pH
-            self.moveArrow(self.stage, to)
-            passBtn.configure(text='Use Default Values')
-            self.instructionText.configure(text='Define pH row/column')
-        elif to == 16: # Finish
-            self.importData()
-
-        self.stage = to
-
-    def moveArrow(self, from_, to):
-        value = self.progressionList.get(from_)
-        """ if self.stage == 14 or self.stage == 16: # if pH or T @ rest
-            value = value.split(' ')[0:3]
-            value = f'{value[0]} {value[1]} {value[2]}'
-        else:
-            value = value.split(' ')
-            value = f'{value[0]} {value[1]}' """
-        # value = value.split(' ')[0]
-        # value = f'{value} \u2713'
-        if '\U0001F878' in value:
-            value = value.replace('\U0001F878','')
-        self.progressionList.delete(from_)
-        self.progressionList.insert(from_, value)
-
-        value = self.progressionList.get(to)
-        if '\U0001F878' not in value:
-            value = f'{value} \U0001F878'
-        self.progressionList.delete(to)
-        self.progressionList.insert(to, value)
-
-    def addCheckMark(self, to):
-        # print(f'adding mark to {to}')
-        value = self.progressionList.get(to)
-        value = f'{value.split(" ")[0]} \u2713'
-        # print(value)
-        self.progressionList.delete(to)
-        self.progressionList.insert(to, value)
-
-    def importData(self):
-        # print(f'SUBJECTS {self.subjects}')
-        # print(f'LAST SUBJECT LOADS {self.subjects[0].getTests()[0].getWorkLoads()}')
-        # print(f'LAST SUBJECT LOADS {self.subjects[0].getTests()[0].getWorkLoads()[0].getDetails().getWorkLoadDetails()}')
-        # print(f'LAST SUBJECT LOADS {self.subjects[0].getTests()[0].getWorkLoads()[1].getDetails().getWorkLoadDetails()}')
-        project = Project()
-        app.setActiveProject(project)
-        app.setActiveSubject(None)
-        app.setActiveTest(None)
-
-        project.data = self.dfList
-
-        # Add dataloc information
-        # project.dataMode = self.dataMode
-        project.idLoc = self.tempLocData.get('id', None)
-        project.loadLoc = self.tempLocData.get('Load', None)
-        project.vo2Loc = self.tempLocData.get('VO2', None)
-        project.hrLoc = self.tempLocData.get('HR', None)
-        project.svLoc = self.tempLocData.get('SV', None)
-
-        project.qLoc = self.tempLocData.get('Q', None)
-        project.hbLoc = self.tempLocData.get('Hb', None)
-        project.sao2Loc = self.tempLocData.get('SaO2', None)
-        project.cao2Loc = self.tempLocData.get('CaO2', None)
-        project.cvo2Loc = self.tempLocData.get('CvO2', None)
-
-        project.cavo2Loc = self.tempLocData.get('CavO2', None)
-        project.qao2Loc = self.tempLocData.get('QaO2', None)
-        project.svo2Loc = self.tempLocData.get('SvO2', None)
-        project.pvo2Loc = self.tempLocData.get('PvO2', None)
-
-        project.tcRestLoc = self.tempLocData.get('Tc @ rest', None)
-        project.tcLoc = self.tempLocData.get('Tc\u209A\u2091\u2090\u2096', None)
-        project.phRestLoc = self.tempLocData.get('pH @ rest', None) 
-        project.phLoc = self.tempLocData.get('pH\u209A\u2091\u2090\u2096', None)
-        
-        # for key, value in self.dfList.items():
-        #     print(key)
-        #     print(value)
-
-        """ print(project.idLoc)
-        print(project.loadLoc)
-        print(project.vo2Loc)
-        print(project.hrLoc)
-        print(project.svLoc)
-
-        print(project.qLoc)
-        print(project.hbLoc)
-        print(project.sao2Loc)
-        print(project.cao2Loc)
-        print(project.cvo2Loc)
-
-        print(project.cavo2Loc)
-        print(project.qao2Loc)
-        print(project.svo2Loc)
-        print(project.pvo2Loc)
-
-        print(project.tcRestLoc)
-        print(project.tcLoc)
-        print(project.phRestLoc)
-        print(project.phLoc) """
-
-        if type(self.subjects) is dict:
-            for s in self.subjects.values():
-                project.addSubject(s)
-        else:
-            for s in self.subjects:
-                project.addSubject(s)
-
-        app.sidepanel_projectList.refreshList()
-        app.sidepanel_subjectList.refreshList()
-        app.sidepanel_testList.refreshList()
-
-        app.projectDetailModule.refreshDetails()
-        # app.testDetailModule
-
-        # Update app state
-        app.sidepanel_projectList.addToList(project.id)
-        app.addProject(project)
-
-        self.window.destroy()
-        del self
-
-class DataMenuElem(object):
-    def __init__(self, importer, menu, menuButton, option, isExporter = False):
-        self.importer = importer
-        self.menuButton = menuButton
-        self.option = option
-        self.isExporter = isExporter
-        menu.add_command(label=option, command=lambda: self.handleMenuSelect())
-
-    def handleMenuSelect(self):
-        self.menuButton.config(text=self.option)
-        if self.isExporter == False:
-            self.importer.updateTable(self.option)
+        return True """

@@ -5,6 +5,7 @@ from objects.app import app
 from objects.project import Project
 from objects.test import Test
 from modules.notification import notification
+from modules.DataImporter import DataImporter
 
 class ProjectList(object):
     def __init__(self, sidePanel):
@@ -29,7 +30,7 @@ class ProjectList(object):
         self.deleteButton = ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteProject())
         self.deleteButton.grid(column=2, row=0)
         
-        ttk.Button(buttonContainer, text='Import...').grid(column=0, row=1)
+        ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
         # Mitä halutaan verrata???
         ttk.Button(buttonContainer, text='Compare', command=lambda: self.showComparisonOptions(), state=DISABLED).grid(column=1, row=1)
         ttk.Button(buttonContainer, text='Plot mean...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)

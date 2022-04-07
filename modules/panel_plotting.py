@@ -950,15 +950,15 @@ class PlotLoadTab(object):
         self.rowElements.append(self.do2Row)
 
         # T
-        tValue = float(self.details['Tc\u209A\u2091\u2090\u2096'])
-        if self.details['Tc\u209A\u2091\u2090\u2096_unit'] == 'F':
+        tValue = float(self.details['T'])
+        if self.details['T_unit'] == 'F':
             tValue = (tValue - 32) / 1.8
-            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (95,110), self.detailsObject)
-        elif self.details['Tc\u209A\u2091\u2090\u2096_unit'] == 'K':
+            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'T', tValue, self.index, self.testId, 14, (95,110), self.detailsObject)
+        elif self.details['T_unit'] == 'K':
             tValue = tValue - 273.15
-            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (300,320), self.detailsObject)
+            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'T', tValue, self.index, self.testId, 14, (300,320), self.detailsObject)
         else:
-            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'Tc\u209A\u2091\u2090\u2096', tValue, self.index, self.testId, 14, (35,42), self.detailsObject)
+            self.tRow = LoadTabRow(self, self.loadDetailsFrame, 'T', tValue, self.index, self.testId, 14, (35,42), self.detailsObject)
         self.rowElements.append(self.tRow)
 
         # pH
@@ -1264,22 +1264,22 @@ class LoadTabRow(ttk.Frame):
         # self.entry.bind('<FocusIn>', entryFocusIn)
         # self.entry.bind('<FocusOut>', entryFocusOut)
         # self.slider.bind('<ButtonRelease-1>', sliderReleased)
+        if self.label != 'pH':
+            units = app.settings.getUnits()[f'{self.label}_units']
+            if len(units) != 1:
+                # Unit entry
+                if self.label != 'pH\u209A\u2091\u2090\u2096':
+                    self.menuButton = ttk.Menubutton(self.parent)
+                    self.menuButton.config(text=self.details[f'{self.label}_unit'])
+                    tempMenu = Menu(self.menuButton, tearoff=False)
 
-        units = app.settings.getUnits()[f'{self.label}_units']
-        if len(units) != 1:
-            # Unit entry
-            if self.label != 'pH\u209A\u2091\u2090\u2096':
-                self.menuButton = ttk.Menubutton(self.parent)
-                self.menuButton.config(text=self.details[f'{self.label}_unit'])
-                tempMenu = Menu(self.menuButton, tearoff=False)
-
-                for i, u in enumerate(units):
-                    LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}')
-                
-                self.menuButton['menu']=tempMenu
-                self.menuButton.grid(column=2, row=row)
-        else:
-            ttk.Label(self.parent, text=units[0]).grid(column=2, row=row)
+                    for i, u in enumerate(units):
+                        LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}')
+                    
+                    self.menuButton['menu']=tempMenu
+                    self.menuButton.grid(column=2, row=row)
+            else:
+                ttk.Label(self.parent, text=units[0]).grid(column=2, row=row)
             
         # M/C Radiobuttons
         self.mcVar = IntVar(value=self.details[f'{self.label}_MC'])

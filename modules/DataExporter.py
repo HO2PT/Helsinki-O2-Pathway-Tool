@@ -22,7 +22,7 @@ class DataExporter(object):
 
         if self.onlyPlots == True and len(app.getPlottingPanel().plots) == 0:
             notification.create('error', 'No created plots to export', '5000')
-        elif app.getActiveProject() == None:
+        elif self.onlyPlots == False and app.getActiveProject() == None:
             notification.create('error', 'No selected project', '5000')
         else:
             self.showOptions()
@@ -33,22 +33,25 @@ class DataExporter(object):
         self.dfs= {}
 
     def showOptions(self):
-        try:
+        # try:
             if self.toNew == False:
                 self.importDataMode = app.getActiveProject().dataMode
                 excel = app.getActiveProject().data
             
-            self.exportOptions = Toplevel()
+            self.exportOptions = Toplevel(borderwidth=10)
             self.exportOptions.title("Export options")
-            self.exportOptions.geometry("500x500")
+            self.exportOptions.geometry("500x450")
 
-            settingsX = app.root.winfo_rootx() + (app.root.winfo_reqwidth()/1.5)
-            settingsY = app.root.winfo_rooty() + (app.root.winfo_reqheight()*0.1)
-            self.exportOptions.geometry("+%d+%d" % ( settingsX, settingsY ))
+            self.exportOptions.update_idletasks()
+            optionsX = int(self.exportOptions.winfo_screenwidth()) * 0.5 - int(self.exportOptions.winfo_width()) * 0.5
+            optionsY = int(self.exportOptions.winfo_screenheight()) * 0.5 - int(self.exportOptions.winfo_height()) * 0.5
+            self.exportOptions.geometry("+%d+%d" % ( optionsX, optionsY ))
 
-            ttk.Label(self.exportOptions, text='Choose values to be exported').pack()
-            container = ttk.Frame(self.exportOptions)
-            container.pack(anchor='center')
+            self.container = ttk.Labelframe(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
+            self.container.pack()
+
+            self.footer = ttk.Frame(self.exportOptions, padding=(10,0))
+            self.footer.pack(side=BOTTOM, fill=X)
 
             self.vars = []
             loadMode = app.settings.getTestDef()['loadMode']
@@ -60,29 +63,38 @@ class DataExporter(object):
                         if key != 'Velocity' and key != 'Incline':
                             var = IntVar(value=1, name=key)
                             self.vars.append(var)
-                            ttk.Checkbutton(container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+                            ttk.Checkbutton(self.container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
                     else: # Velocity&Incline
                         if key != 'Load':
                             var = IntVar(value=1, name=key)
                             self.vars.append(var)
-                            ttk.Checkbutton(container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+                            ttk.Checkbutton(self.container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
 
-            ttk.Button(container, text='Export', command=lambda: getSelected()).grid(column=1, row=15)
-
-            if self.toNew == False:
+            ttk.Button(self.container, text='Select All', command=self.selectAll).grid(column=0, row=len(temp.getWorkLoadDetails().keys()))
+            ttk.Button(self.container, text='Deselect All', command=self.deselectAll).grid(column=1, row=len(temp.getWorkLoadDetails().keys()))
+            
+            ttk.Button(self.footer, text='Cancel', command=self.cancel).pack(side=RIGHT)
+            ttk.Button(self.footer, text='Export', command=lambda: getSelected()).pack(side=RIGHT)
+            
+            # Create the sheet selection dropdown
+            if self.toNew == False and self.onlyPlots == False:
                 self.sheetNames = []
+                sheetSelFrame = ttk.Labelframe(self.exportOptions, text='To sheet', padding=(10,10))
+
                 for key, value in excel.items():
                     self.sheetNames.append(key)
 
                 # Create menubutton for selection of excel sheet
-                self.menuButton = ttk.Menubutton(container, text=self.sheetNames[0])
+                self.menuButton = ttk.Menubutton(sheetSelFrame, text=self.sheetNames[0])
                 menu = Menu(self.menuButton, tearoff=False)
 
                 for s in self.sheetNames:
                     DataMenuElem(self, menu, self.menuButton, s, isExporter=True)
 
                 self.menuButton['menu'] = menu
-                self.menuButton.grid(column=0, row=16)
+                self.container.pack_configure(side=LEFT, padx=10)
+                sheetSelFrame.pack(side=LEFT, fill=X, expand=True, padx=10)
+                self.menuButton.pack()
 
             self.varTemp = []
 
@@ -97,8 +109,19 @@ class DataExporter(object):
                     self.exportToSelected()
                 else:
                     self.exportToNew()
-        except:
-            notification.create('error', 'No imported file detected. Data input by hand?', 5000)
+        # except:
+        #     notification.create('error', 'No imported file detected. Data input by hand?', 5000)
+
+    def selectAll(self):
+        for v in self.vars:
+            v.set(1)
+
+    def deselectAll(self):
+        for v in self.vars:
+            v.set(0)
+
+    def cancel(self):
+        self.exportOptions.destroy()
 
     def exportToNew(self):
         imgs = []
@@ -204,9 +227,9 @@ class DataExporter(object):
             df = self.createProjectPlots('Mean-SD')
             self.dfs['Mean-SD'] = df
 
-            self.images['Mean-IQR'] = []
-            df = self.createProjectPlots('Mean-IQR', iqr=True)
-            self.dfs['Mean-IQR'] = df
+            self.images['Median-IQR'] = []
+            df = self.createProjectPlots('Median-IQR', iqr=True)
+            self.dfs['Median-IQR'] = df
 
             # Create plots for subjects
             for s in subjects:
@@ -349,11 +372,20 @@ class DataExporter(object):
 
                 for t in tests:
                     # plotDf = pd.DataFrame()
-                    loads = t.getWorkLoads()
-                    workLoadObjects = []
-                    for l in loads:
-                        workLoadObjects.append(l.getDetails())
-                    self.createPlot(workLoadObjects, t.id)
+                    loads = t.workLoads
+                    # workLoadObjects = []
+                    # for l in loads:
+                        # workLoadObjects.append(l.getDetails())
+
+                    # Filter possible empty loads
+                    filteredLoads = []
+                    for i, l in enumerate(loads):
+                        detailsDict = l.getDetails().getWorkLoadDetails()
+                        
+                        if i == 0 or detailsDict['Load'] != 0:
+                            filteredLoads.append(l.details)
+
+                    self.createPlot(filteredLoads, t.id)
                     self.images[s.id].append(str(t.id))
 
             excel['Plots'] = plotsDf
@@ -591,7 +623,7 @@ class DataExporter(object):
             if projectPlot == False:
                 app.getPlottingPanel().calc(l.getDetails(), details)
             updatedDetails = l.getDetails().getWorkLoadDetails()
-            print(f'DO2 in updatedDetails: {updatedDetails["DO2"]}')
+            # print(f'DO2 in updatedDetails: {updatedDetails["DO2"]}')
 
             for v in self.vars:
                 value = updatedDetails[v]
