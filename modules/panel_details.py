@@ -82,7 +82,7 @@ class DetailsPanel(ttk.Frame):
             self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
 
     def changeCursor(self, e):
-        if self.detailsPanel.identify(e.x, e.y) == 'border':
+        if e.y > self.detailsPanel.winfo_height() - self.frame_thickness:
             self.detailsPanel.configure(cursor='sb_v_double_arrow')
         else:
             self.detailsPanel.configure(cursor='arrow')

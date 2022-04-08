@@ -47,7 +47,7 @@ class SidePanel(ttk.Frame):
         self.indicator.bind('<Double-Button-1>', self.defSize)
 
     def changeCursor(self, e):
-        if self.sidePanel.identify(e.x, e.y) == 'border':
+        if e.x > self.sidePanel.winfo_width() - self.frame_thickness:
             self.sidePanel.configure(cursor='sb_h_double_arrow')
         else:
             self.sidePanel.configure(cursor='arrow')
