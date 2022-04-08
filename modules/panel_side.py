@@ -10,6 +10,9 @@ class SidePanel(ttk.Frame):
         ttk.Frame.__init__(self, mainFrame, *args, **kwargs)
         self.pack(side=LEFT, fill=Y)
 
+        self.mainFrame = mainFrame
+        self.separator = ttk.Separator(self.mainFrame, style='asd.TSeparator')
+
         sty = ttk.Style()
         sty.configure(
             'sidePanel.TFrame', 
@@ -40,6 +43,7 @@ class SidePanel(ttk.Frame):
 
         self.sidePanel.bind('<Motion>', self.changeCursor)
         self.sidePanel.bind('<B1-Motion>', self.resize)
+        self.sidePanel.bind('<ButtonRelease-1>', self.applyResize)
         self.indicator.bind('<Double-Button-1>', self.defSize)
 
     def changeCursor(self, e):
@@ -50,15 +54,25 @@ class SidePanel(ttk.Frame):
 
     def resize(self, event):
         self.sidePanel.pack_propagate(False)
-        minWidth = app.sidepanel_projectList.container.winfo_reqwidth()
-        containerWidth = self.sidePanel.winfo_width()
+        self.separator.place(height=self.winfo_height(), x=event.x, y=0)
+        self.separator.lift()
+
+    def applyResize(self, event):
+        self.separator.place_forget()
+        
         if event.x > 10:
             self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=event.x)
-        
-        if containerWidth < minWidth:
-            self.indicator.configure(text='\u2B80', foreground='white', background='#4eb1ff')
+            self.update_idletasks()
+            minWidth = app.sidepanel_projectList.container.winfo_reqwidth()
+            containerWidth = self.sidePanel.winfo_width()
+
+            if containerWidth < minWidth:
+                self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
+            else:
+                self.indicator.configure(text='', background=app.root.cget('bg'))
         else:
-            self.indicator.configure(text='', background=app.root.cget('bg'))
+            self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=10)
+            self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
 
     def defSize(self, event):
         self.indicator.configure(text='', background=app.root.cget('bg'))

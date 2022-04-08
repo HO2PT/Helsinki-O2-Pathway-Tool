@@ -1,7 +1,5 @@
-from ctypes import resize
 from tkinter import *
 from tkinter import ttk
-from turtle import width
 from modules.details_env import *
 from modules.details_project import *
 from modules.details_test import *
@@ -11,6 +9,9 @@ class DetailsPanel(ttk.Frame):
     def __init__(self, mainFrame, *args, **kwargs):
         ttk.Frame.__init__(self, mainFrame, *args, **kwargs)
         self.pack(side=TOP, fill=X)
+
+        self.mainFrame = mainFrame
+        self.separator = ttk.Separator(self.mainFrame, style='asd.TSeparator')
 
         sty = ttk.Style()
         sty.configure(
@@ -28,7 +29,6 @@ class DetailsPanel(ttk.Frame):
         if app.settings.visDefaults['allDetails']:
             self.detailsPanel.pack(side=LEFT, fill=X, expand=True)
             # self.detailsPanel.pack_propagate(False)
-
         
         sty.layout('details.TFrame', [
             ('Frame.border', {'sticky': 'swe'})
@@ -51,9 +51,8 @@ class DetailsPanel(ttk.Frame):
 
         self.detailsPanel.bind('<Motion>', self.changeCursor)
         self.detailsPanel.bind('<B1-Motion>', self.resize)
+        self.detailsPanel.bind('<ButtonRelease-1>', self.adjustSize)
         self.indicator.bind('<Double-Button-1>', self.defSize)
-
-        # print(self.testDetails.winfo_width(), self.projectDetails.winfo_width(), self.envDetails.winfo_width())
 
     def plotData(self):
         app.getPlottingPanel().plot()
@@ -62,15 +61,25 @@ class DetailsPanel(ttk.Frame):
 
     def resize(self, event):
         self.detailsPanel.pack_propagate(False)
-        minHeight = self.testDetails.winfo_reqheight()
-        containerHeight = self.detailsPanel.winfo_height()
+        self.separator.place(width=self.winfo_width(), x=app.sidePanel.winfo_width(), y=event.y+20)
+        self.separator.lift()
+
+    def adjustSize(self, event):
+        self.separator.place_forget()
+
         if event.y > 20:
             self.detailsPanel.configure(height=event.y, width=self.detailsPanel.winfo_reqwidth())
-        
-        if containerHeight < minHeight:
-            self.indicator.configure(text='\u2B81', foreground='white', background='#4eb1ff')
+            self.update_idletasks()
+            minHeight = self.testDetails.winfo_reqheight()
+            containerHeight = self.detailsPanel.winfo_height()
+
+            if containerHeight < minHeight:
+                self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
+            else:
+                self.indicator.configure(text='', background=app.root.cget('bg'))
         else:
-            self.indicator.configure(text='', background=app.root.cget('bg'))
+            self.detailsPanel.configure(height=20, width=self.detailsPanel.winfo_reqwidth())
+            self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
 
     def changeCursor(self, e):
         if self.detailsPanel.identify(e.x, e.y) == 'border':

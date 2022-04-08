@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 
 import math
+from turtle import width
 from objects.app import app
 from modules.notification import notification
 from modules.ScrollableNotebook import ScrollableNotebook
@@ -606,6 +607,8 @@ class PlotTab():
         ##
         ## RIGHT SIDE
         ##
+        self.indicator = ttk.Label(self.tabFrame, text='', anchor='center')
+        self.indicator.pack(side=LEFT, fill=Y)
 
         # Create loads notebook frame and loadnotebook
         self.loadNotebookFrame = ttk.Frame(self.tabFrame, style='loadNoteBookFrame.TFrame', borderwidth=10)
@@ -614,10 +617,12 @@ class PlotTab():
         self.loadNotebookFrame.bind('<Motion>', self.changeCursor)
         self.loadNotebookFrame.bind('<B1-Motion>', self.resize)
         self.loadNotebookFrame.bind('<ButtonRelease-1>', self.finishResize)
-        self.loadNotebookFrame.bind('<Double-Button-1>', self.defSize)
+        self.indicator.bind('<Double-Button-1>', self.defSize)
 
         self.loadNotebook = ScrollableNotebook(self.loadNotebookFrame, wheelscroll=True)
         self.loadNotebook.pack(expand=TRUE, fill=BOTH)
+
+        self.separator = ttk.Separator(self.tabFrame, style='asd.TSeparator')
 
         # Create tabs for loads
         for i, details in enumerate(self.workLoadDetailsObjects):
@@ -626,6 +631,17 @@ class PlotTab():
             self.loadNotebook.add(loadTab, text=details.name)
             self.loadTabs.append(loadTabObject)
         # print(self.loadNotebookFrame.winfo_children())
+
+        # self.indicator2 = ttk.Label(self.loadNotebookFrame, text='', anchor='center')
+        # self.indicator2.pack(side=BOTTOM, fill=X, expand=True)
+
+        # def zeTest(*args):
+        #     print('MUUTTU')
+        #     self.indicator2.pl
+        #     pass
+
+        # self.loadNotebookFrame.bind('<Configure>', zeTest)
+        
         return self.tabFrame
 
     def setPlotTitle(self):
@@ -679,28 +695,31 @@ class PlotTab():
             self.plot[1].xaxis.set_major_locator(plt.LinearLocator(numticks=n))
             self.plot[0].canvas.draw()
 
-    def finishResize(self, e):
-        self.loadNotebook.pack(expand=TRUE, fill=BOTH)
-        self.instructions.pack()
-        self.testi.pack(fill=BOTH, expand=1)
-        self.canvasTk.pack(fill=BOTH, expand=1)
-        self.canvas.draw()
-        self.toolbarContainer.pack(side=BOTTOM, fill=BOTH)
+    def finishResize(self, event):
+        width = self.loadNotebookFrame.winfo_width() - event.x
+        self.separator.place_forget()
+
+        if width > 10:
+            self.loadNotebookFrame.configure(width=width)
+            self.loadNotebookFrame.update_idletasks()
+            minWidth = self.loadNotebook.winfo_reqwidth()
+            width = self.loadNotebookFrame.winfo_width()
+
+            if width < minWidth:
+                self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
+            else:
+                self.indicator.configure(text='', background=app.root.cget('bg'))
+        else:
+            self.loadNotebookFrame.configure(width=10)
+            self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
 
     def resize(self, event):
-        # print(event)
         self.loadNotebookFrame.pack_propagate(False)
-        self.testi.pack_forget()
-        self.loadNotebook.pack_forget()
-        self.canvasTk.pack_forget()
-        self.toolbarContainer.pack_forget()
-        self.instructions.pack_forget()
-        
-        # if event.x > 10:
-        self.loadNotebookFrame.configure(height=self.loadNotebookFrame.winfo_height(), width=event.x*(-1))
-            # print(self.loadNotebookFrame.winfo_width())
+        self.separator.place(height=self.loadNotebookFrame.winfo_height(), x=self.canvasFrame.winfo_width()+event.x, y=0)
+        self.separator.lift()
 
     def defSize(self, event):
+        self.indicator.configure(text='', background=app.root.cget('bg'))
         self.loadNotebookFrame.pack_propagate(True)
     
     def setYLim(self):

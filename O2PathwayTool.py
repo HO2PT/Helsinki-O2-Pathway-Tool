@@ -93,6 +93,9 @@ def debug():
 
 root.bind('<Tab>', lambda e: debug())
 
+sepStyle = ttk.Style()
+sepStyle.configure('asd.TSeparator', background = 'dark gray')
+
 def on_closing():
     if askokcancel("Quit", "Do you want to quit?"):
         side = False

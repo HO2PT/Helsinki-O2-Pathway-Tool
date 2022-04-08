@@ -164,6 +164,8 @@ class DataImporter(object):
             # Clear initial selection
             self.dataTable.clearSelected()
             self.dataTable.rowheader.clearSelected()
+            # self.dataTable.currentcol = None
+            # self.dataTable.currentrow = None
             self.dataTable.setSelectedCol(-1)
             self.dataTable.setSelectedRow(-1)
             self.dataTable.multiplerowlist = []
