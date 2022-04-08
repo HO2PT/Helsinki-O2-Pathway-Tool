@@ -1224,8 +1224,9 @@ class DataImporter(object):
         value = self.progressionList.get(from_)
         if '\U0001F878' in value:
             value = value.replace('\U0001F878','')
+            value = value.strip()
         self.progressionList.delete(from_)
-        self.progressionList.insert(from_, value[0:-1])
+        self.progressionList.insert(from_, value)
 
         value = self.progressionList.get(to)
         if '\U0001F878' not in value:
@@ -1236,7 +1237,8 @@ class DataImporter(object):
     def addCheckMark(self, to):
         # print(f'adding mark to {to}')
         value = self.progressionList.get(to)
-        value = f'{value.split(" ")[0]} \u2713'
+        if '\u2713' not in value:
+            value = f'{value} \u2713'
         # print(value)
         self.progressionList.delete(to)
         self.progressionList.insert(to, value)
