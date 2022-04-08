@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import font
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
 import pandas as pd
@@ -68,17 +69,20 @@ class DataImporter(object):
             self.yScroll = ttk.Scrollbar(self.leftPanel, orient=VERTICAL)
             self.yScroll.pack(side=RIGHT, fill=Y)
 
+            ## Font
+            bolded = font.Font(weight='bold')
+
             # Progression
             ttk.Label(self.leftPanel, text='Data import steps').pack()
             self.progressionList = Listbox(self.leftPanel, yscrollcommand=self.yScroll.set)
-            self.progressionList.insert('end', 'ID \U0001F878') # \U0001F878
-            self.progressionList.insert('end', 'Load')
-            self.progressionList.insert('end', 'VO\u2082')
-            self.progressionList.insert('end', 'HR')
-            self.progressionList.insert('end', 'SV')
-            self.progressionList.insert('end', 'Q')
-            self.progressionList.insert('end', 'Hb')
-            self.progressionList.insert('end', 'SaO\u2082')
+            self.progressionList.insert('end', 'ID * \U0001F878')
+            self.progressionList.insert('end', 'Load *')
+            self.progressionList.insert('end', 'VO\u2082 *')
+            self.progressionList.insert('end', 'HR *')
+            self.progressionList.insert('end', 'SV *')
+            self.progressionList.insert('end', 'Q *')
+            self.progressionList.insert('end', 'Hb *')
+            self.progressionList.insert('end', 'SaO\u2082 *')
             self.progressionList.insert('end', 'CaO\u2082')
             self.progressionList.insert('end', 'CvO\u2082')
             self.progressionList.insert('end', 'CavO\u2082')
@@ -157,15 +161,13 @@ class DataImporter(object):
             self.dataTable = Table(dataFrame, dataframe=self.dfList[nameOfFirstSheet], editable=False)
             self.dataTable.show()
 
-            # Make initial selection
+            # Clear initial selection
             self.dataTable.clearSelected()
             self.dataTable.rowheader.clearSelected()
             self.dataTable.setSelectedCol(-1)
             self.dataTable.setSelectedRow(-1)
             self.dataTable.multiplerowlist = []
             self.dataTable.multiplecollist = []
-
-            # self.dataTable.setSelectedCol(col=3)
             
             self.dataTable.tablecolheader.bind('<Button-1>', self.selectCol)
             self.dataTable.tablecolheader.bind('<Control-Button-1>', self.handleColCtrlSelection)
@@ -183,6 +185,46 @@ class DataImporter(object):
             self.dataTable.bind('<Control-Button-1>', self.handleTableCtrlClick)
             self.dataTable.bind('<Shift-Button-1>', self.handleDragSelection)
             self.dataTable.bind('<Button-3>', self.handleRightClick) 
+            self.dataTable.bind('<MouseWheel>', self.handleMouseWheel)
+
+            def set_yviews(*args):
+                """Set the xview of table and row header"""
+
+                self.dataTable.yview(*args)
+                self.dataTable.rowheader.yview(*args)
+                self.dataTable.currentrow = -1
+                self.dataTable.currentcol = -1
+                self.dataTable.redrawVisible()
+                for c in self.dataTable.multiplecollist:
+                    self.dataTable.tablecolheader.drawRect(c, delete=False)
+                
+                for r in self.dataTable.multiplerowlist:
+                    self.dataTable.rowheader.drawRect(r, delete=False)
+                self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
+
+            def set_xviews(*args):
+                """Set the xview of table and col header"""
+
+                self.dataTable.xview(*args)
+                self.dataTable.tablecolheader.xview(*args)
+                self.dataTable.currentrow = -1
+                self.dataTable.currentcol = -1
+                self.dataTable.redrawVisible()
+                for c in self.dataTable.multiplecollist:
+                    self.dataTable.tablecolheader.drawRect(c, delete=False)
+                
+                for r in self.dataTable.multiplerowlist:
+                    self.dataTable.rowheader.drawRect(r, delete=False)
+                self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
+
+            ##
+            self.dataTable.Yscrollbar['command'] = set_yviews
+            self.dataTable.Xscrollbar['command'] = set_xviews
+            # self.Yscrollbar = AutoScrollbar(self.parentframe,orient=VERTICAL,command=self.set_yviews)
+            # self.Yscrollbar.grid(row=1,column=2,rowspan=1,sticky='news',pady=0,ipady=0)
+            # self.Xscrollbar = AutoScrollbar(self.parentframe,orient=HORIZONTAL,command=self.set_xviews)
+            # self.Xscrollbar.grid(row=2,column=1,columnspan=1,sticky='news')
+            ##
 
             self.nextButton = ttk.Button(self.footer, text='Next', command=lambda: self.getInput())
             self.cancelButton = ttk.Button(self.footer, text='Cancel', command=lambda: self.closeImporter())
@@ -191,6 +233,28 @@ class DataImporter(object):
             self.nextButton.pack(side=RIGHT)
         else:
             notification.create('error', 'Error opening file', 5000)
+
+    def handleMouseWheel(self, event):
+        """Handle mouse wheel scroll for windows"""
+
+        if event.num == 5 or event.delta == -120:
+            event.widget.yview_scroll(1, UNITS)
+            self.dataTable.rowheader.yview_scroll(1, UNITS)
+        if event.num == 4 or event.delta == 120:
+            if self.dataTable.canvasy(0) < 0:
+                return
+            event.widget.yview_scroll(-1, UNITS)
+            self.dataTable.rowheader.yview_scroll(-1, UNITS)
+        
+        self.dataTable.currentrow = -1
+        self.dataTable.currentcol = -1
+        self.dataTable.redrawVisible()
+        for c in self.dataTable.multiplecollist:
+            self.dataTable.tablecolheader.drawRect(c, delete=False)
+                
+        for r in self.dataTable.multiplerowlist:
+            self.dataTable.rowheader.drawRect(r, delete=False)
+        self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
 
     def setMassSel(self):
         selMode = self.strVar.get()
@@ -683,6 +747,9 @@ class DataImporter(object):
             try:
                 if len(rowList) > 0: # rows selected
                     if self.stage == 0: # ids
+                        # Reset subjects if returned
+                        self.subjects = {}
+
                         if len(rows) > 1 and col == -1: # multiple rows
                             # print('USEAMPI RIVI')
                             if self.stage == 0: # ids
@@ -801,6 +868,9 @@ class DataImporter(object):
                             # print('USEAMPI SARAKE')
                             
                             if self.stage == 0: # ids
+                                # Reset subjects if returned
+                                self.subjects = {}
+                                
                                 # self.checkDataForm()
                                 for i, id in enumerate(self.columnNames):
                                     # Create subject, set its id, add a test, reset workloads
@@ -949,7 +1019,6 @@ class DataImporter(object):
         self.dataTable.tablecolheader.delete('rect')
         self.updateSelectionText()
 
-
     def customGetSelectionValues(self):
         # Get values for current multiple cell selection
         rows = range(self.dataTable.rows)
@@ -1062,6 +1131,7 @@ class DataImporter(object):
         # self.tempLocData[label] = self.rowNames
 
     def prevStage(self):
+        self.deselectAll()
         to = self.stage - 1
         self.nextStage(to=to)
 
@@ -1153,7 +1223,7 @@ class DataImporter(object):
         if '\U0001F878' in value:
             value = value.replace('\U0001F878','')
         self.progressionList.delete(from_)
-        self.progressionList.insert(from_, value)
+        self.progressionList.insert(from_, value[0:-1])
 
         value = self.progressionList.get(to)
         if '\U0001F878' not in value:
