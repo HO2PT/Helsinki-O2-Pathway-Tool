@@ -267,10 +267,10 @@ class DataImporter(object):
 
         if selMode == 'row':
             if start-1 < 0:
-                self.notif.configure(text='Start row index out of range', background='red')
+                self.notif.configure(text='Start row index out of range', background='red', foreground='#333333')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             elif end > self.dataTable.rows:
-                self.notif.configure(text='End row index out of range', background='red')
+                self.notif.configure(text='End row index out of range', background='red', foreground='#333333')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
                 for i in range(start-1, end):
@@ -279,10 +279,10 @@ class DataImporter(object):
                 self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
         else: # cols
             if start < 0:
-                self.notif.configure(text='Start column index out of range', background='red')
+                self.notif.configure(text='Start column index out of range', background='red', foreground='#333333')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             elif end > self.dataTable.cols:
-                self.notif.configure(text='End column index out of range', background='red')
+                self.notif.configure(text='End column index out of range', background='red', foreground='#333333')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
                 for i in range(start, end):
@@ -738,10 +738,10 @@ class DataImporter(object):
 
         if (len(rowList) < 1 and len(colList) < 1): # nothing selected
             #print('NOTHING SELECTED')
-            s = ttk.Style()
-            s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-            self.notif.configure(style='error.TLabel', text=f'Nothing selected')
-            self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+            # s = ttk.Style()
+            # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+            self.notif.configure(background='red', foreground="#333333", text=f'Nothing selected')
+            self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
         elif self.closedByClick == True:
             pass
         else: # something selected
@@ -860,7 +860,7 @@ class DataImporter(object):
 
                     if success:
                         self.addCheckMark(self.stage)
-                        self.notif.configure(text='OK', background='green')
+                        self.notif.configure(text='OK', background='green', foreground='white')
                         self.notif.after(1000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                         self.nextStage()
 
@@ -977,16 +977,16 @@ class DataImporter(object):
 
                     if success:
                         self.addCheckMark(self.stage)
-                        self.notif.configure(text='OK', background='green')
+                        self.notif.configure(text='OK', background='green', foreground='white')
                         self.notif.after(1000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                         self.nextStage()
 
             except Exception as e:
                 print(f'EXCEPTION {e}')
-                s = ttk.Style()
-                s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                self.notif.configure(style='error.TLabel', text=f'ID information needed to import data')
-                self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+                # s = ttk.Style()
+                # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                self.notif.configure(text=f'ID information needed to import data', background='red', foreground='#333333')
+                self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def closeImporter(self):
         if hasattr(self, 'test'):
@@ -1086,10 +1086,10 @@ class DataImporter(object):
             loads = test.getWorkLoads()
             
             if len(self.colValues) < len(loads) and len(self.colValues) != 1:
-                    s = ttk.Style()
-                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(style='error.TLabel', text=f'You have {len(loads)} loads but only {len(self.colValues)} values given')
-                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+                    # s = ttk.Style()
+                    # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                    self.notif.configure(text=f'You have {len(loads)} loads but only {len(self.colValues)} values given', background='red', foreground='#333333')
+                    self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
                 if len(self.colValues) == 1:
                     for li, l in enumerate(loads):
@@ -1113,10 +1113,10 @@ class DataImporter(object):
             loads = test.getWorkLoads()
             
             if len(self.rowValues) < len(loads) and len(self.rowValues) != 1:
-                    s = ttk.Style()
-                    s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(style='error.TLabel', text=f'You have {len(loads)} loads but only {len(self.rowValues)} values given')
-                    self.notif.after(5000, lambda: self.notif.configure(text='', style='TLabel'))
+                    # s = ttk.Style()
+                    # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                    self.notif.configure(text=f'You have {len(loads)} loads but only {len(self.rowValues)} values given', background='red', foreground='#333333')
+                    self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
                 if len(self.rowValues) == 1:
                     for li, l in enumerate(loads):
