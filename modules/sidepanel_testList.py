@@ -13,6 +13,7 @@ class TestList(object):
     def __init__(self, sidePanel):
         self.container = LabelFrame(sidePanel, text="Tests")
         self.container.pack(fill = BOTH, expand=TRUE)
+        self.container.configure(cursor='arrow')
         self.startSel = None
 
         self.testList = Listbox(self.container, exportselection=FALSE, height=1)
@@ -92,6 +93,12 @@ class TestList(object):
         emptyTest = Test()
         app.plotMean(test=emptyTest, subjects=subjects, iqr=True)
 
+    def plotMean95(self):
+        subjects = []
+        subjects.append(app.getActiveSubject())
+        emptyTest = Test()
+        app.plotMean(test=emptyTest, subjects=subjects, ci95=True)
+
     def handleMultiSelect(self, e):
         index = f'@{e.x},{e.y}'
             
@@ -116,7 +123,7 @@ class TestList(object):
                 test = app.activeSubject.tests[i]
                 testCopy = deepcopy(test)
                 lastWorkLoad = testCopy.workLoads[-1]
-                lastWorkLoad.name = f'Test{j+1}'
+                lastWorkLoad.setName(f'Test{j+1}')
                 comparisonTest.addWorkLoad(lastWorkLoad)
         else:
             for j,i in enumerate(self.testList.curselection()):
@@ -270,7 +277,11 @@ class Options():
         self.mode = mode
         if index != None:
             self.index = index
-        self.height = 3
+        
+        if self.mode == 'mean':
+            self.height = 4
+        else:
+            self.height = 3
 
         self.win = Toplevel(width=self.parent.editButton.winfo_reqwidth() * 3, height=self.parent.editButton.winfo_reqheight() * self.height, bg='#4eb1ff', borderwidth=3)
         self.win.overrideredirect(True)
@@ -298,10 +309,12 @@ class Options():
 
         elif self.mode == 'mean':
             self.var = IntVar(value=0)
-            opt1 = ttk.Radiobutton(container, text='Mean/SD', variable=self.var, value=0)
+            opt1 = ttk.Radiobutton(container, text='Mean (SD)', variable=self.var, value=0)
             opt1.grid(column=1, row=0, sticky='w')
-            opt2 = ttk.Radiobutton(container, text='Mean/IQR', variable=self.var, value=1)
+            opt2 = ttk.Radiobutton(container, text='Median (IQR)', variable=self.var, value=1)
             opt2.grid(column=1, row=1, sticky='w')
+            opt3 = ttk.Radiobutton(container, text='Mean (95% CI)', variable=self.var, value=2)
+            opt3.grid(column=1, row=2, sticky='w')
             ttk.Button(footer, text='Plot', command=self.plotMean).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
 
@@ -337,8 +350,10 @@ class Options():
     def plotMean(self):
         if self.var.get() == 0:
             self.parent.plotMeanSd()
-        else:
+        elif self.var.get() == 1:
             self.parent.plotMeanIqr()
+        else:
+            self.parent.plotMean95()
         self.close()
 
     def close(self):

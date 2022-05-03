@@ -5,6 +5,7 @@ from objects.app import app
 class EnvDetailModule(ttk.Frame):
     def __init__(self, detailsPanel, *args, **kwargs):
         ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
+        self.configure(cursor='arrow')
 
         self.labels = []
         self.detailRows = []

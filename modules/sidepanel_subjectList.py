@@ -12,6 +12,7 @@ class SubjectList(object):
     def __init__(self, sidePanel):
         self.container = LabelFrame(sidePanel, text="Subjects")
         self.container.pack(fill = BOTH, expand=TRUE)
+        self.container.configure(cursor='arrow')
         self.startSel = None
 
         self.subjectList = Listbox(self.container, exportselection=FALSE, height=1)
@@ -87,7 +88,7 @@ class SubjectList(object):
             newTest = deepcopy(app.activeTest)
             app.activeTest = newTest
             if app.activeTest.id != 'Joined subjects':
-                app.activeTest.workLoads[0].name = f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}'
+                app.activeTest.workLoads[0].setName(f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}')
                 app.activeTest.id = 'Joined subjects'
             # else:
             #     app.activeTest.workLoads[0].name = f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].name}'
@@ -114,6 +115,13 @@ class SubjectList(object):
             subjects.append(app.getActiveProject().getSubjects()[i])
         emptyTest = Test()
         app.plotMean(test=emptyTest, subjects=subjects, iqr=True)
+    
+    def plotMean95(self):
+        subjects = []
+        for i in self.subjectList.curselection():
+            subjects.append(app.getActiveProject().getSubjects()[i])
+        emptyTest = Test()
+        app.plotMean(test=emptyTest, subjects=subjects, ci95=True)
 
     def handleShiftSelect(self,e):
         endSel = f'@{e.x},{e.y}'
@@ -138,8 +146,9 @@ class SubjectList(object):
             test = subject.getTests()[n]
             # print( f'index: {i} - {test.id}' )
             lastWorkLoad = test.getWorkLoads()[-1]
-            lastWorkLoad.name = f'{subject.id}-Test{n+1}'
-            comparisonTest.addWorkLoad(lastWorkLoad)
+            loadCopy = deepcopy(lastWorkLoad)
+            loadCopy.setName(f'{subject.id}-Test{n+1}')
+            comparisonTest.addWorkLoad(loadCopy)
 
         # print(comparisonTest.getWorkLoads())
         # print(self.testList.curselection())
@@ -223,6 +232,31 @@ class SubjectList(object):
         self.subjectList.selection_clear(0, 'end')
         self.subjectList.selection_set('end')
 
+    def combineAndAdd(self):
+        project = app.activeProject
+        subjects = []
+        emptyTest = Test(id='Combined subjects')
+        emptyTest.workLoads = []
+
+        for sindex in self.subjectList.curselection():
+            subjects.append(project.getSubjects()[sindex])
+            
+        VO2mean, Qmean, HBmean, SAO2mean = app.getMaxMinAvg(subjects=subjects)
+        # print(VO2mean, Qmean, HBmean, SAO2mean)
+        createdLoad = emptyTest.createLoad()
+        createdLoad.details.setValue('VO2', VO2mean)
+        createdLoad.details.setValue('Q', Qmean)
+        createdLoad.details.setValue('[Hb]', HBmean)
+        createdLoad.details.setValue('SaO2', SAO2mean)
+
+        if app.activeTest == None:
+            app.setActiveTest(emptyTest)
+        else:
+            app.activeTest.addWorkLoad(createdLoad)    
+        
+        app.testDetailModule.refreshTestDetails()
+        app.envDetailModule.refresh()
+
     def updateSelection(self):
         self.subjectList.selection_set('end')
 
@@ -257,7 +291,7 @@ class Options():
         if index != None:
             self.index = index
 
-        if self.mode == 'compare':
+        if self.mode == 'compare' or self.mode == 'mean' or self.mode == 'add':
             self.height = 4
         else:
             self.height = 3
@@ -283,6 +317,8 @@ class Options():
             opt1.grid(column=0, row=0, sticky='w', columnspan=2)
             opt2 = ttk.Radiobutton(container, text="Add last test's final load(s) as tab", variable=self.var, value=1)
             opt2.grid(column=0, row=1, sticky='w', columnspan=2)
+            opt3 = ttk.Radiobutton(container, text="Combine max. loads and add as tab", variable=self.var, value=2)
+            opt3.grid(column=0, row=2, sticky='w', columnspan=2)
             ttk.Button(footer, text='Next', command=self.add).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
         
@@ -301,10 +337,12 @@ class Options():
 
         elif self.mode == 'mean':
             self.var = IntVar(value=0)
-            opt1 = ttk.Radiobutton(container, text='Mean/SD', variable=self.var, value=0)
+            opt1 = ttk.Radiobutton(container, text='Mean (SD)', variable=self.var, value=0)
             opt1.grid(column=1, row=0, sticky='w')
-            opt2 = ttk.Radiobutton(container, text='Mean/IQR', variable=self.var, value=1)
+            opt2 = ttk.Radiobutton(container, text='Median (IQR)', variable=self.var, value=1)
             opt2.grid(column=1, row=1, sticky='w')
+            opt3 = ttk.Radiobutton(container, text='Mean (95% CI)', variable=self.var, value=2)
+            opt3.grid(column=1, row=2, sticky='w')
             ttk.Button(footer, text='Plot', command=self.plotMean).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
         
@@ -324,8 +362,10 @@ class Options():
     def add(self):
         if self.var.get() == 0:
             self.parent.createSubject()
-        else:
+        elif self.var.get() == 1:
             self.parent.addToActiveTest()
+        else:
+            self.parent.combineAndAdd()
         self.close()
         
     def close(self):
@@ -342,8 +382,10 @@ class Options():
     def plotMean(self):
         if self.var.get() == 0:
             self.parent.plotMeanSd()
-        else:
+        elif self.var.get() == 1:
             self.parent.plotMeanIqr()
+        else:
+            self.parent.plotMean95()
         self.close()
 
     def move(self, e):

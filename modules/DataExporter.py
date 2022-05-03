@@ -33,10 +33,13 @@ class DataExporter(object):
         self.dfs= {}
 
     def showOptions(self):
-        # try:
+        try:
             if self.toNew == False:
                 self.importDataMode = app.getActiveProject().dataMode
                 excel = app.getActiveProject().data
+
+                if excel == None:
+                    raise AttributeError
             
             self.exportOptions = Toplevel(borderwidth=10)
             self.exportOptions.title("Export options")
@@ -63,11 +66,19 @@ class DataExporter(object):
                         if key != 'Velocity' and key != 'Incline':
                             var = IntVar(value=1, name=key)
                             self.vars.append(var)
+
+                            if '2' in key:
+                                key = key.replace('2', '\u2082')
+
                             ttk.Checkbutton(self.container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
                     else: # Velocity&Incline
                         if key != 'Load':
                             var = IntVar(value=1, name=key)
                             self.vars.append(var)
+
+                            if '2' in key:
+                                key = key.replace('2', '\u2082')
+
                             ttk.Checkbutton(self.container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
 
             ttk.Button(self.container, text='Select All', command=self.selectAll).grid(column=0, row=len(temp.getWorkLoadDetails().keys()))
@@ -109,8 +120,9 @@ class DataExporter(object):
                     self.exportToSelected()
                 else:
                     self.exportToNew()
-        # except:
-        #     notification.create('error', 'No imported file detected. Data input by hand?', 5000)
+        except:
+            notification.create('error', 'No imported file detected. Data input by hand?', 5000)
+            # self.exportOptions.destroy()
 
     def selectAll(self):
         for v in self.vars:
@@ -176,16 +188,24 @@ class DataExporter(object):
                     ordered = {}
                     for v in self.vars:
                         for key, value in self.temp.items():
-                            if key.split('-')[0] == v:
-                                ordered[key] = value
-                
+                            #print(key, value)
+                            #if key.split('-')[0] == v:
+                            ordered[key] = value
+
                 for key, value in ordered.items():
-                    unit = self.units[f'{key.split("-")[0]}']
-                    mc = self.mcs[f'{key.split("-")[0]}']
+                    # unit = self.units[f'{key.split("-")[0]}']
+                    unit = self.units[key]
+                    # mc = self.mcs[f'{key.split("-")[0]}']
+                    mc = self.units[key]
                     if mc == 1:
                         mc = 'Calculated'
                     else:
                         mc = 'Measured'
+
+                    # Change 2's to subscript
+                    if '2' in key:
+                        key = key.replace('2', '\u2082')
+
                     value.insert(0, f'{key}')
                     value.insert(len(value), f'{unit}')
                     value.insert(len(value), f'{mc}')
@@ -204,10 +224,6 @@ class DataExporter(object):
                         imgDest = f'{os.getcwd()}\plot{i}.png'
                         worksheet.insert_image('N1', imgDest)
 
-                # Delete images
-                # for i, img in enumerate(imgs):
-                #     os.remove(f'{os.getcwd()}\plot{i}.png')
-
                 writer.save()
                 notification.create('info', 'Data successfully exported', 5000)
             except:
@@ -223,13 +239,13 @@ class DataExporter(object):
             subjects = project.getSubjects()
 
             # Create project plots
-            self.images['Mean-SD'] = []
-            df = self.createProjectPlots('Mean-SD')
-            self.dfs['Mean-SD'] = df
+            self.images['Mean(SD)'] = []
+            df = self.createProjectPlots('Mean(SD)')
+            self.dfs['Mean(SD)'] = df
 
-            self.images['Median-IQR'] = []
-            df = self.createProjectPlots('Median-IQR', iqr=True)
-            self.dfs['Median-IQR'] = df
+            self.images['Median(IQR)'] = []
+            df = self.createProjectPlots('Median(IQR)', iqr=True)
+            self.dfs['Median(IQR)'] = df
 
             # Create plots for subjects
             for s in subjects:
@@ -258,14 +274,6 @@ class DataExporter(object):
                                 imgDest = f'{os.getcwd()}\plot{value.iloc[0][1]}.png'
                                 worksheet.insert_image('N1', imgDest)
 
-                # Delete images
-                # for s in subjects:
-                #     tests = s.getTests()
-                #     for t in tests:
-                #         os.remove(f'{os.getcwd()}\plot{t.id}.png')
-                # os.remove(f'{os.getcwd()}\plotProject median-IQR.png')
-                # os.remove(f'{os.getcwd()}\plotProject mean-SD.png')
-
                 writer.save()
                 notification.create('info', 'Data successfully exported', 5000)
             except:
@@ -276,8 +284,8 @@ class DataExporter(object):
                 tests = s.getTests()
                 for t in tests:
                     os.remove(f'{os.getcwd()}\plot{t.id}.png')
-            os.remove(f'{os.getcwd()}\plotProject median-IQR.png')
-            os.remove(f'{os.getcwd()}\plotProject mean-SD.png')
+            os.remove(f'{os.getcwd()}\plotProject median(IQR).png')
+            os.remove(f'{os.getcwd()}\plotProject mean(SD).png')
             self.exportOptions.destroy()
 
     def exportToSelected(self):
@@ -355,13 +363,13 @@ class DataExporter(object):
                 excel[self.selectedSheet] = excelTemp
 
             # Create project plots
-            df = self.createProjectPlots('Mean-SD')
-            excel['Mean-SD'] = df
-            self.sheetNames.append('Mean-SD')
+            df = self.createProjectPlots('Mean(SD)')
+            excel['Mean(SD)'] = df
+            self.sheetNames.append('Mean(SD)')
 
-            df = self.createProjectPlots('Median-IQR', iqr=True)
-            excel['Median-IQR'] = df
-            self.sheetNames.append('Median-IQR')
+            df = self.createProjectPlots('Median(IQR)', iqr=True)
+            excel['Median(IQR)'] = df
+            self.sheetNames.append('Median(IQR)')
 
             # Create plots for subjects
             subjects = app.getActiveProject().getSubjects()
@@ -410,13 +418,13 @@ class DataExporter(object):
                                 else:
                                     worksheet.write('A1', f'Test ID: {value[0]}')
                                     worksheet.insert_image('A2', imgDest)
-                        if sheet == 'Median-IQR':
+                        if sheet == 'Median(IQR)':
                             worksheet = writer.sheets[sheet]
-                            imgDest = f'{os.getcwd()}\plotProject median-IQR.png'
+                            imgDest = f'{os.getcwd()}\plotProject Median(IQR).png'
                             worksheet.insert_image('H1', imgDest)
-                        elif sheet == 'Mean-SD':
+                        elif sheet == 'Mean(SD)':
                             worksheet = writer.sheets[sheet]
-                            imgDest = f'{os.getcwd()}\plotProject mean-SD.png'
+                            imgDest = f'{os.getcwd()}\plotProject Mean(SD).png'
                             worksheet.insert_image('H1', imgDest)
 
                 # # Delete images
@@ -424,8 +432,8 @@ class DataExporter(object):
                 #     tests = s.getTests()
                 #     for t in tests:
                 #         os.remove(f'{os.getcwd()}\plot{t.id}.png')
-                # os.remove(f'{os.getcwd()}\plotProject median-IQR.png')
-                # os.remove(f'{os.getcwd()}\plotProject mean-SD.png')
+                # os.remove(f'{os.getcwd()}\plotProject Median(IQR).png')
+                # os.remove(f'{os.getcwd()}\plotProject Mean(SD).png')
                     
                 writer.save()
                 notification.create('info', 'Data successfully exported', 5000)
@@ -437,8 +445,8 @@ class DataExporter(object):
                 tests = s.getTests()
                 for t in tests:
                     os.remove(f'{os.getcwd()}\plot{t.id}.png')
-            os.remove(f'{os.getcwd()}\plotProject median-IQR.png')
-            os.remove(f'{os.getcwd()}\plotProject mean-SD.png')
+            os.remove(f'{os.getcwd()}\plotProject Median(IQR).png')
+            os.remove(f'{os.getcwd()}\plotProject Mean(SD).png')
             self.exportOptions.destroy()
 
     def getSortedData(self):
@@ -671,6 +679,11 @@ class DataExporter(object):
                 mc = 'Calculated'
             else:
                 mc = 'Measured'
+
+            # Change 2's to subscript
+            if '2' in self.label:
+                self.label_subscripted = self.label.replace('2', '\u2082')
+
             value.insert(0, f'{key}')
             value.insert(len(value), f'{unit}')
             value.insert(len(value), f'{mc}')
@@ -754,6 +767,11 @@ class DataExporter(object):
                     mc = 'Calculated'
                 else:
                     mc = 'Measured'
+
+                # Change 2's to subscript
+                if '2' in key:
+                    key = key.replace('2', '\u2082')
+
                 value.insert(0, f'{key}')
                 value.insert(len(value), f'{unit}')
                 value.insert(len(value), f'{mc}')

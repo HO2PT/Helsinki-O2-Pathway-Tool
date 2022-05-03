@@ -1,8 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-
 import math
-from turtle import width
 from objects.app import app
 from modules.notification import notification
 from modules.ScrollableNotebook import ScrollableNotebook
@@ -207,8 +205,8 @@ class PlottingPanel(object):
             return VO2
     
     def formatHb(self, details):
-        Hb = float(details['Hb'])
-        unit = details['Hb_unit']
+        Hb = float(details['[Hb]'])
+        unit = details['[Hb]_unit']
 
         return Hb
 
@@ -221,7 +219,7 @@ class PlottingPanel(object):
         CvO2unit = details['CvO2_unit']
 
         if CavO2 == 0:
-            w.setMC('CavO2_MC', 1)
+            w.setMC('C(a-v)O2_MC', 1)
 
             # If CaO2 and CvO2 is given
             if CaO2 != 0 and CvO2 != 0:
@@ -262,6 +260,60 @@ class PlottingPanel(object):
                     return VO2 / Q
         else:
             return CavO2
+            # If C(a-v)O2 is given, ensure that it fulfills
+            # the equations.
+            """ print('CAVO2 TARKISTUKSEEN')
+
+            # If CaO2 and CvO2 is given
+            if CaO2 != 0 and CvO2 != 0:
+                if unit == 'ml/l':
+                    if CaO2unit == 'ml/dl': # -> ml/l
+                        CaO2 = CaO2 * 10
+                    if CvO2unit == 'ml/dl': # -> ml/l
+                        CvO2 = CvO2 * 10
+
+                    if CavO2 != (CaO2 - CvO2):
+                        w.setMC('C(a-v)O2_MC', 1)
+                        print('LASKETTU')
+                        return CaO2 - CvO2 # ml/l
+                elif unit == 'ml/dl':
+                    if CaO2unit == 'ml/l': # -> ml/dl
+                        CaO2 = CaO2 / 10
+                    if CvO2unit == 'ml/l': # -> ml/dl
+                        CvO2 = CvO2 / 10
+
+                    if CavO2 != (CaO2 - CvO2):
+                        w.setMC('C(a-v)O2_MC', 1)
+                        print('LASKETTU')
+                        return CaO2 - CvO2 # ml/dl
+
+            else:
+                VO2Unit = details['VO2_unit']
+                QUnit = details['Q_unit']
+                    
+                if unit == 'ml/l':
+                    if VO2Unit == 'l/min': # -> ml/min
+                        VO2 = VO2 * 1000
+                    if QUnit == 'ml/min': # -> l/min
+                        Q = Q / 1000
+                    
+                    if CavO2 != (VO2 / Q):
+                        w.setMC('C(a-v)O2_MC', 1)
+                        print('LASKETTU')
+                        return VO2 / Q
+
+                elif unit == 'ml/dl':
+                    if VO2Unit == 'l/min': # -> ml/min
+                        VO2 = VO2 * 1000
+                    if QUnit == 'l/min': # -> dl/min
+                        Q = Q * 10
+                    elif QUnit == 'ml/min':
+                        Q = Q / 100
+
+                    if CavO2 != (VO2 / Q):
+                        w.setMC('C(a-v)O2_MC', 1)
+                        print('LASKETTU')
+                        return VO2 / Q """
             
     def formatCaO2(self, w, details, Hb, SaO2):
         CaO2 = float(details['CaO2'])
@@ -269,7 +321,7 @@ class PlottingPanel(object):
 
         if CaO2 == 0:
             w.setMC('CaO2_MC', 1) # Mark as calculated
-            HbUnit = details['Hb_unit']
+            HbUnit = details['[Hb]_unit']
 
             if unit == 'ml/l':
                 if HbUnit == 'g/dl': # -> g/l
@@ -287,7 +339,7 @@ class PlottingPanel(object):
 
         if CvO2 == 0:
             w.setMC('CvO2_MC', 1)
-            HbUnit = details['Hb_unit']
+            HbUnit = details['[Hb]_unit']
             
             if unit == 'ml/l':
                 if HbUnit == 'g/dl': # -> g/l
@@ -308,7 +360,7 @@ class PlottingPanel(object):
             w.setMC('SvO2_MC', 1)
             CaO2Unit = details['CaO2_unit']
             CavO2Unit = details['C(a-v)O2_unit']
-            HbUnit = details['Hb_unit']
+            HbUnit = details['[Hb]_unit']
 
             if CaO2Unit == 'ml/l': # -> ml/dl
                 CaO2 = CaO2 / 10
@@ -395,6 +447,10 @@ class PlottingPanel(object):
         validValues = True
         Q = self.formatQ(w, details)
         VO2 = self.formatVO2(w, details, Q)
+        if VO2 == 0 or VO2 == None:
+            print('VO2 NOLLA')
+            validValues = False
+            return validValues
         Hb = self.formatHb(details)
         SaO2 = float(details['SaO2'])
 
@@ -417,6 +473,7 @@ class PlottingPanel(object):
         if PvO2_calc < 0:
             # print('PvO2 negative')
             validValues = False
+            return validValues
 
         # pH + temp correction
         # pH = float(details['pH @ rest'])
@@ -453,7 +510,7 @@ class PlottingPanel(object):
         if details['Q_unit'] == 'ml/min':
             Q = Q / 1000
 
-        if details['Hb_unit'] == 'g/l': # -> g/dl
+        if details['[Hb]_unit'] == 'g/l': # -> g/dl
             Hb = Hb / 10
 
         y2 = Q * ( 1.34 * Hb * ( SaO2/ 100 - SvO2 ) ) * 10
@@ -477,7 +534,7 @@ class PlottingPanel(object):
         yi = float( Q * ( 1.34 * Hb * ( SaO2/ 100 - np.float_power( ( 23400 * np.float_power( (PvO2[idx]+constant)**3 + 150*(PvO2[idx]+constant), -1 ) ) + 1, -1 ) ) ) * 10 )
         xi = float(PvO2[idx]+constant)
 
-        if details['Hb_unit'] == 'g/l': # g/dl -> g/l
+        if details['[Hb]_unit'] == 'g/l': # g/dl -> g/l
             Hb = Hb * 10
 
         SvO2_calc = SvO2_calc * 100
@@ -868,6 +925,7 @@ class PlotLoadTab(object):
     def createLoadTab(self):
         self.loadtab = ttk.Frame(self.parentNotebook)
         self.loadtab.pack()
+        self.loadtab.configure(cursor='arrow')
 
         # Details frame
         self.loadDetailsFrame = ttk.Frame(self.loadtab)
@@ -908,12 +966,12 @@ class PlotLoadTab(object):
         self.rowElements.append(self.qRow)
 
         # Hb
-        hbValue = float(self.details['Hb'])
-        if self.details['Hb_unit'] == 'g/dl':
-            self.hbRow = LoadTabRow(self, self.loadDetailsFrame, 'Hb', hbValue, self.index, self.testId, 5, (0,20), self.detailsObject)
+        hbValue = float(self.details['[Hb]'])
+        if self.details['[Hb]_unit'] == 'g/dl':
+            self.hbRow = LoadTabRow(self, self.loadDetailsFrame, '[Hb]', hbValue, self.index, self.testId, 5, (0,20), self.detailsObject)
         else:
             hbValue = hbValue
-            self.hbRow = LoadTabRow(self, self.loadDetailsFrame, 'Hb', hbValue, self.index, self.testId, 5, (0,200), self.detailsObject)
+            self.hbRow = LoadTabRow(self, self.loadDetailsFrame, '[Hb]', hbValue, self.index, self.testId, 5, (0,200), self.detailsObject)
         self.rowElements.append(self.hbRow)
 
         # SaO2

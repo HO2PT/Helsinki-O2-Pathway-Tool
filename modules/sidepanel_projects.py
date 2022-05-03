@@ -13,6 +13,7 @@ class ProjectList(object):
 
         self.container = LabelFrame(sidePanel, text="Projects")
         self.container.pack(fill = BOTH, expand=TRUE)
+        self.container.configure(cursor='arrow')
 
         self.projectList = Listbox(self.container, exportselection=FALSE, height=1)
         self.projectList.pack(fill = BOTH, expand=TRUE)
@@ -23,7 +24,7 @@ class ProjectList(object):
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
-        self.createButton = ttk.Button(buttonContainer, text='Add', command=lambda: self.createProject())
+        self.createButton = ttk.Button(buttonContainer, text='Add...', command=lambda: self.createProject())
         self.createButton.grid(column=0, row=0)
         self.editButton = ttk.Button(buttonContainer, text='Edit...', command=lambda: self.editProject())
         self.editButton.grid(column=1, row=0)
@@ -42,6 +43,10 @@ class ProjectList(object):
     def plotMeanIqr(self):
         emptyTest = Test()
         app.plotMean(emptyTest, plotProject=True, iqr=True)
+
+    def plotMean95(self):
+        emptyTest = Test()
+        app.plotMean(emptyTest, plotProject=True, ci95=True)
 
     def showMeanOptions(self):
         if len(self.projectList.curselection()) == 1:
@@ -135,7 +140,7 @@ class Options():
         if index != None:
             self.index = index
 
-        if self.mode == 'compare':
+        if self.mode == 'compare' or self.mode == 'mean':
             self.height = 4
         else:
             self.height = 3
@@ -157,10 +162,12 @@ class Options():
 
         if self.mode == 'mean':
             self.var = IntVar(value=0)
-            opt1 = ttk.Radiobutton(container, text='Mean/SD', variable=self.var, value=0)
+            opt1 = ttk.Radiobutton(container, text='Mean (SD)', variable=self.var, value=0)
             opt1.grid(column=1, row=0, sticky='w')
-            opt2 = ttk.Radiobutton(container, text='Mean/IQR', variable=self.var, value=1)
+            opt2 = ttk.Radiobutton(container, text='Median (IQR)', variable=self.var, value=1)
             opt2.grid(column=1, row=1, sticky='w')
+            opt3 = ttk.Radiobutton(container, text='Mean (95% CI)', variable=self.var, value=2)
+            opt3.grid(column=1, row=2, sticky='w')
             ttk.Button(footer, text='Plot', command=self.plotMean).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
 
@@ -200,8 +207,11 @@ class Options():
     def plotMean(self):
         if self.var.get() == 0:
             self.parent.plotMeanSd()
-        else:
+        elif self.var.get() == 1:
             self.parent.plotMeanIqr()
+        else:
+            self.parent.plotMean95()
+        self.close()
     
     def close(self):
         app.root.unbind('<Configure>', self.bindId)

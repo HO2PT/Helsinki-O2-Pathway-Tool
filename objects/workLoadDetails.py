@@ -45,7 +45,7 @@ class WorkLoadDetails(object):
         self.HR_unit = defUnits['HR_unit']
         self.Sv_unit = defUnits['SV_unit']
         self.Q_unit = defUnits['Q_unit']
-        self.Hb_unit = defUnits['Hb_unit']
+        self.Hb_unit = defUnits['[Hb]_unit']
         self.SaO2_unit = defUnits['SaO2_unit']
         self.CaO2_unit = defUnits['CaO2_unit']
         self.SvO2_unit = defUnits['SvO2_unit']
@@ -67,7 +67,7 @@ class WorkLoadDetails(object):
         self.HR_MC = defMc['HR_mc']
         self.Sv_MC = defMc['SV_mc']
         self.Q_MC = defMc['Q_mc']
-        self.Hb_MC = defMc['Hb_mc']
+        self.Hb_MC = defMc['[Hb]_mc']
         self.SaO2_MC = defMc['SaO2_mc']
         self.CaO2_MC = defMc['CaO2_mc']
         self.SvO2_MC = defMc['SvO2_mc']
@@ -104,7 +104,7 @@ class WorkLoadDetails(object):
         if label == 'Q_unit': 
             self.Q_unit = unit
 
-        if label == 'Hb_unit': 
+        if label == '[Hb]_unit': 
             self.Hb_unit = unit
 
         if label == 'SaO2_unit': 
@@ -151,7 +151,7 @@ class WorkLoadDetails(object):
         if label == 'Q_MC': 
             self.Q_MC = value
 
-        if label == 'Hb_MC': 
+        if label == '[Hb]_MC': 
             self.Hb_MC = value
 
         if label == 'SaO2_MC': 
@@ -210,7 +210,7 @@ class WorkLoadDetails(object):
         if label == 'Q': 
             self.Q = value
 
-        if label == 'Hb': 
+        if label == '[Hb]': 
             self.Hb = value
 
         if label == 'SaO2': 
@@ -284,9 +284,9 @@ class WorkLoadDetails(object):
             'Q_unit': self.Q_unit,
             'Q_MC': self.Q_MC,
 
-            'Hb': self.Hb,
-            'Hb_unit': self.Hb_unit,
-            'Hb_MC': self.Hb_MC,
+            '[Hb]': self.Hb,
+            '[Hb]_unit': self.Hb_unit,
+            '[Hb]_MC': self.Hb_MC,
 
             'SaO2': self.SaO2,
             'SaO2_unit': self.SaO2_unit,

@@ -76,8 +76,10 @@ def resize(e):
 # root.bind('<Configure>', lambda e: resize(e))
 
 def debug():
-    for d in app.getActiveTest().getWorkLoads():
-        print(d.getDetails().getWorkLoadDetails())
+    # for d in app.getActiveTest().getWorkLoads():
+    #     print(d.getDetails().getWorkLoadDetails())
+    print(vars(app.activeTest))
+    print(app.activeTest.workLoads[0].details.getWorkLoadDetails())
     # print(app.getActiveTest())
     # print(app.getActiveProject().data)
     
@@ -91,7 +93,11 @@ def debug():
     # print(app.detailsPanel.winfo_reqwidth(), app.detailsPanel.winfo_width())
     # print( app.plottingPanel.plots[0].loadNotebookFrame.winfo_width())
 
+def updateCursor(e):
+    print(mainframe.identify(e.x, e.y))
+
 root.bind('<Tab>', lambda e: debug())
+# mainframe.bind('<Motion>', lambda e: updateCursor(e))
 
 sepStyle = ttk.Style()
 sepStyle.configure('asd.TSeparator', background = 'dark gray')

@@ -32,6 +32,7 @@ class Project(object):
         self.loadLoc = None
 
     def addSubject(self, subject):
+        subject.parentProject = self
         self.subjects.append(subject)
     
     def getSubjects(self):

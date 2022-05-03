@@ -81,10 +81,10 @@ class Load(object):
         else:
             self.details.setValue('Q', 13000)
 
-        if units['Hb_unit'] == 'g/dl':
-            self.details.setValue('Hb', 13)
+        if units['[Hb]_unit'] == 'g/dl':
+            self.details.setValue('[Hb]', 13)
         else: 
-            self.details.setValue('Hb', 130)
+            self.details.setValue('[Hb]', 130)
 
         self.details.setValue('SaO2', 99)
         self.name = 'Demo'

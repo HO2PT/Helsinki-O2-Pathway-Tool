@@ -12,7 +12,7 @@ class NotificationPanel(object):
         if type == 'info':
             style.configure('notif.TLabel', background="green", foreground="white", anchor="CENTER")
         if type == 'error':
-            style.configure('notif.TLabel', background="red", foreground="white", anchor="CENTER")
+            style.configure('notif.TLabel', background="red", foreground='#333333', anchor="CENTER")
 
         self.notif = ttk.Label(self.notifPanel, style='notif.TLabel', text=text)
 

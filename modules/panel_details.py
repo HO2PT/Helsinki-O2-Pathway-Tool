@@ -4,6 +4,7 @@ from modules.details_env import *
 from modules.details_project import *
 from modules.details_test import *
 from objects.app import app
+from modules.notification import notification
 
 class DetailsPanel(ttk.Frame):
     def __init__(self, mainFrame, *args, **kwargs):
@@ -43,8 +44,14 @@ class DetailsPanel(ttk.Frame):
         self.envDetails = EnvDetailModule(self.detailsPanel)
         app.envDetailModule = self.envDetails
 
-        self.plotButton = ttk.Button(self.upPart, text='Plot', command=lambda: self.plotData())
-        self.plotButton.pack(side=RIGHT, fill=Y)
+        self.buttonWrap = ttk.Frame(self.upPart)
+        self.buttonWrap.pack(side=RIGHT, fill=Y)
+
+        self.plotButton = ttk.Button(self.buttonWrap, text='Plot', command=self.plotData)
+        self.plotButton.pack(fill=Y, expand=True)
+
+        self.clearButton = ttk.Button(self.buttonWrap, text='Clear', command=self.clear)
+        self.clearButton.pack(fill=Y, expand=True)
 
         self.indicator = ttk.Label(self, text='', anchor='center')
         self.indicator.pack(side=BOTTOM, fill=X)
@@ -55,10 +62,21 @@ class DetailsPanel(ttk.Frame):
         self.indicator.bind('<Double-Button-1>', self.defSize)
 
     def plotData(self):
-        app.getPlottingPanel().plot()
-        tabCount = app.getPlottingPanel().plotNotebook.index('end')
-        app.getPlottingPanel().plotNotebook.select(tabCount-1)
-
+        if app.activeTest != None:
+            app.getPlottingPanel().plot()
+            tabCount = app.getPlottingPanel().plotNotebook.index('end')
+            app.getPlottingPanel().plotNotebook.select(tabCount-1)
+        else:
+            notification.create('error', 'No active test found', 5000)
+    
+    def clear(self):
+        if app.activeTest != None:
+            app.activeTest = None
+            self.testDetails.testId.pack_forget()
+            self.testDetails.loadsContainer.pack_forget()
+            self.envDetails.container.grid_forget()
+            app.sidepanel_testList.testList.selection_clear(0, 'end')
+            
     def resize(self, event):
         self.detailsPanel.pack_propagate(False)
         self.separator.place(width=self.winfo_width(), x=app.sidePanel.winfo_width(), y=event.y+20)

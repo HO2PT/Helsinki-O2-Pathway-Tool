@@ -45,7 +45,7 @@ class Settings(object):
                     "HR": 'bpm',
                     "SV": 'ml',
                     "Q": 'l/min',
-                    "Hb": 'g/l',
+                    "[Hb]": 'g/l',
                     "SaO2": '%',
                     "CaO2": 'ml/l',
                     "SvO2": '%',
@@ -73,7 +73,7 @@ class Settings(object):
                     "HR": ["bpm"],
                     "SV": ['ml', 'l'],
                     "Q": ['l/min', 'ml/min'],
-                    "Hb": ["g/l", "g/dl"],
+                    "[Hb]": ["g/l", "g/dl"],
                     "SaO2": ["%"],
                     "CaO2": ["ml/l", "ml/dl"],
                     "SvO2": ["%"],
@@ -99,7 +99,7 @@ class Settings(object):
                     "HR": 0,
                     "SV": 0,
                     "Q": 0,
-                    "Hb": 0,
+                    "[Hb]": 0,
                     "SaO2": 0,
                     "CaO2": 0,
                     "SvO2": 0,
@@ -163,7 +163,7 @@ class Settings(object):
             "HR_unit": self.data['unitDefaults']['HR'],
             "SV_unit": self.data['unitDefaults']['SV'],
             "Q_unit": self.data['unitDefaults']['Q'],
-            "Hb_unit": self.data['unitDefaults']['Hb'],
+            "[Hb]_unit": self.data['unitDefaults']['[Hb]'],
             "SaO2_unit": self.data['unitDefaults']['SaO2'],
             "CaO2_unit": self.data['unitDefaults']['CaO2'],
             "SvO2_unit": self.data['unitDefaults']['SvO2'],
@@ -192,7 +192,7 @@ class Settings(object):
             "HR_units": self.data['units']['HR'],
             "SV_units": self.data['units']['SV'],
             "Q_units": self.data['units']['Q'],
-            "Hb_units": self.data['units']['Hb'],
+            "[Hb]_units": self.data['units']['[Hb]'],
             "SaO2_units": self.data['units']['SaO2'],
             "CaO2_units": self.data['units']['CaO2'],
             "SvO2_units": self.data['units']['SvO2'],
@@ -219,7 +219,7 @@ class Settings(object):
             "HR_mc": self.data['mcDefaults']['HR'],
             "SV_mc": self.data['mcDefaults']['SV'],
             "Q_mc": self.data['mcDefaults']['Q'],
-            "Hb_mc": self.data['mcDefaults']['Hb'],
+            "[Hb]_mc": self.data['mcDefaults']['[Hb]'],
             "SaO2_mc": self.data['mcDefaults']['SaO2'],
             "CaO2_mc": self.data['mcDefaults']['CaO2'],
             "SvO2_mc": self.data['mcDefaults']['SvO2'],
@@ -372,7 +372,7 @@ class Settings(object):
                 'HR',
                 'SV',
                 'Q',
-                'Hb',
+                '[Hb]',
                 'SaO2',
                 'CaO2',
                 'SvO2',
@@ -460,8 +460,8 @@ class Settings(object):
             tempMenuButton['menu']=tempMenu
             tempMenuButton.grid(column=2, row=3)
 
-            #### RH%
-            ttk.Label(container, text='RH%').grid(column=0, row=4)
+            #### %RH
+            ttk.Label(container, text='%RH').grid(column=0, row=4)
             self.rhEntry = ttk.Entry(container, width=7)
             self.rhEntry.insert(0, self.envDefaults['Rh'])
             self.rhEntry.grid(column=1, row=4)
@@ -542,7 +542,18 @@ class Settings(object):
         pickle.dump(self.data, settingsFile)
         settingsFile.close()
 
+        # If there is an active test visible in the details panel
+        # refresh its details
         if app.activeTest != None:
+            # Reset the test to ensure the changes are implemented
+            print(f'subject: {app.activeTest.parentSubject.id}')
+            for t in app.activeTest.parentSubject.tests:
+                if app.activeTest.id == t.id:
+                    print('LÖYTYI MATCH')
+                    print(f'loopattu testi {t.workLoads[0].details.getWorkLoadDetails()}')
+                    print(f'aktiivinen testi {app.activeTest.workLoads[0].details.getWorkLoadDetails()}')
+                    app.activeTest = t
+
             app.testDetailModule.refreshTestDetails()
             app.envDetailModule.refresh()
 

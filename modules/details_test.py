@@ -5,9 +5,10 @@ from objects.app import app
 from modules.ScrollableNotebook import ScrollableNotebook
 from objects.test import Test
 
-class TestDetailModule(ttk.Frame):    
+class TestDetailModule(ttk.Frame):
     def __init__(self, detailsPanel, *args, **kwargs):
         ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
+        self.configure(cursor='arrow')
         
         if app.settings.visDefaults['testDetails']:
             self.pack(side = LEFT, fill = BOTH, expand=TRUE)
@@ -104,7 +105,7 @@ class LoadNotebook(object):
 
         # Add/edit button
         self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())
-        self.editButton = ttk.Button(parent, text='Edit', command=lambda: self.editLoad())
+        self.editButton = ttk.Button(parent, text='Edit...', command=lambda: self.editLoad())
 
     def updatePhAndTemp(self):
         activeTest = app.getActiveTest()
@@ -298,7 +299,7 @@ class LoadTab(object):
         ttk.Label(self.loadFrame3, text='Calc.').grid(column=4, row=0)
 
         temp = []
-        items1 = ['VO2','Hb','SaO2']
+        items1 = ['VO2','[Hb]','SaO2']
         items2 = ['CaO2', 'CvO2','C(a-v)O2','QaO2','SvO2','PvO2']
         items3 = ['T', 'pH']
 
@@ -348,7 +349,7 @@ class LoadTab(object):
         a.columnconfigure(1, weight=0)
         a.columnconfigure(2, weight=3)
         ttk.Separator(a).grid(column=0, row=0, sticky='we')
-        ttk.Label(a, text='OR').grid(column=1, row=0)#, columnspan=5)
+        ttk.Label(a, text='Or').grid(column=1, row=0)#, columnspan=5)
         ttk.Separator(a).grid(column=2, row=0, sticky='we')
         
         temp = ['Q', loadDetails['Q'], loadDetails['Q_unit'], loadDetails['Q_MC']]
