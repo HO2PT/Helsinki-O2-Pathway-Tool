@@ -76,10 +76,11 @@ def resize(e):
 # root.bind('<Configure>', lambda e: resize(e))
 
 def debug():
+    print(app.activeSubject.tests[0].workLoads[0].details.getWorkLoadDetails())
     # for d in app.getActiveTest().getWorkLoads():
     #     print(d.getDetails().getWorkLoadDetails())
-    print(vars(app.activeTest))
-    print(app.activeTest.workLoads[0].details.getWorkLoadDetails())
+    # print(vars(app.activeTest))
+    # print(app.activeTest.workLoads[0].details.getWorkLoadDetails())
     # print(app.getActiveTest())
     # print(app.getActiveProject().data)
     

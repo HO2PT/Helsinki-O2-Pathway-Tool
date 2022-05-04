@@ -23,10 +23,8 @@ from objects.subject import Subject
 # Stage 11: QaO2
 # Stage 12: SvO2
 # Stage 13: PvO2
-# Stage 14: Tc @ rest
-# Stage 15: Tc\u209A\u2091\u2090\u2096
-# Stage 16: pH0
-# Stage 17: pH
+# Stage 14: T
+# Stage 15: pH
 
 # Luo vaihtoehdot tuo projekti, tuo käyttäjä, tuo testi
 # tuodessa testiä lisätään aktiivisen käyttäjän alle jnejne.
@@ -41,6 +39,25 @@ class DataImporter(object):
         self.currentDf = None
         self.tempLocData = {}
         self.dataMode = None
+        self.addLinearDist = False
+        self.imported = {
+            0: False,
+            1: False,
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+            6: False,
+            7: False,
+            8: False,
+            9: False,
+            10: False,
+            11: False,
+            12: False,
+            13: False,
+            14: False,
+            15: False
+        }
 
         file = askopenfile(mode ='r')
         if file is not None:
@@ -733,7 +750,7 @@ class DataImporter(object):
         # print(rows)
         
         # print(f'Current selections: R{row}, C{col} - ROWS{rows.index}')
-        print(f'Current list selections: R{rowList}, C{colList}')
+        # print(f'Current list selections: R{rowList}, C{colList}')
         # print(f'STAGE {self.stage}')
         # print(f'DATAMODE: {self.dataMode}')
 
@@ -861,11 +878,11 @@ class DataImporter(object):
                         success = self.getRowValues('pH')
 
                     if success:
-                        print(f'dataMode: {self.dataMode}')
+                        # print(f'dataMode: {self.dataMode}')
                         self.addCheckMark(self.stage)
                         self.notif.configure(text='OK', background='green', foreground='white')
                         self.notif.after(1000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
-                        self.nextStage()
+                        self.nextStage(imported=self.stage)
 
                 if len(colList) > 0: # cols selected
                     if self.stage == 0: #ids
@@ -886,7 +903,7 @@ class DataImporter(object):
                                 colIndex = colList[i]
                                 self.subjects[colIndex] = subject
 
-                            print(self.subjects)
+                            # print(self.subjects)
                             success = True
                             self.dataMode = 'wide'
                             # self.tempLocData['id'] = self.columnNames
@@ -916,7 +933,7 @@ class DataImporter(object):
                                     colIndex = colList[i]
                                     self.subjects[colIndex] = subject
 
-                            print(self.subjects)
+                            # print(self.subjects)
                             success = True
                             # self.tempLocData['id'] = self.colValues[0][1:]
                         
@@ -983,7 +1000,7 @@ class DataImporter(object):
                         self.addCheckMark(self.stage)
                         self.notif.configure(text='OK', background='green', foreground='white')
                         self.notif.after(1000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
-                        self.nextStage()
+                        self.nextStage(imported=self.stage)
 
             except Exception as e:
                 print(f'EXCEPTION {e}')
@@ -1141,7 +1158,11 @@ class DataImporter(object):
         to = self.stage - 1
         self.nextStage(to=to)
 
-    def nextStage(self, to=None):
+    def nextStage(self, to=None, imported=None, skipped=None):
+        if imported != None:
+            self.imported[imported] = True
+            print(f'IMPORTED SUCCESSFULLY: {self.imported}')
+
         if to == None:
             # self.stage += 1 
             to = self.stage + 1
@@ -1163,10 +1184,13 @@ class DataImporter(object):
             self.doneBtn.pack(side=RIGHT)
             self.prevBtn = ttk.Button(self.footer, text='Prev', command=lambda: self.prevStage())
             self.prevBtn.pack(side=RIGHT)
-            self.passBtn = ttk.Button(self.footer, text='Skip', command=lambda: self.nextStage())
+            self.passBtn = ttk.Button(self.footer, text='Skip', command=lambda: self.nextStage(skipped=self.stage))
             self.passBtn.pack(side=RIGHT)
             self.nextButton.pack(side=RIGHT)
             
+        if skipped == 14 or skipped == 15:
+            self.addLinearDist = True
+
         self.deselectAll()
 
         if to == 0:
@@ -1259,51 +1283,29 @@ class DataImporter(object):
         project.dataMode = self.dataMode
         project.idLoc = self.tempLocData.get('id', None)
         project.loadLoc = self.tempLocData.get('Load', None)
-        project.vo2Loc = self.tempLocData.get('VO2', None)
-        project.hrLoc = self.tempLocData.get('HR', None)
-        project.svLoc = self.tempLocData.get('SV', None)
+        # project.vo2Loc = self.tempLocData.get('VO2', None)
+        # project.hrLoc = self.tempLocData.get('HR', None)
+        # project.svLoc = self.tempLocData.get('SV', None)
 
-        project.qLoc = self.tempLocData.get('Q', None)
-        project.hbLoc = self.tempLocData.get('[Hb]', None)
-        project.sao2Loc = self.tempLocData.get('SaO2', None)
-        project.cao2Loc = self.tempLocData.get('CaO2', None)
-        project.cvo2Loc = self.tempLocData.get('CvO2', None)
+        # project.qLoc = self.tempLocData.get('Q', None)
+        # project.hbLoc = self.tempLocData.get('[Hb]', None)
+        # project.sao2Loc = self.tempLocData.get('SaO2', None)
+        # project.cao2Loc = self.tempLocData.get('CaO2', None)
+        # project.cvo2Loc = self.tempLocData.get('CvO2', None)
 
-        project.cavo2Loc = self.tempLocData.get('C(a-v)O2', None)
-        project.qao2Loc = self.tempLocData.get('QaO2', None)
-        project.svo2Loc = self.tempLocData.get('SvO2', None)
-        project.pvo2Loc = self.tempLocData.get('PvO2', None)
+        # project.cavo2Loc = self.tempLocData.get('C(a-v)O2', None)
+        # project.qao2Loc = self.tempLocData.get('QaO2', None)
+        # project.svo2Loc = self.tempLocData.get('SvO2', None)
+        # project.pvo2Loc = self.tempLocData.get('PvO2', None)
 
-        project.tcRestLoc = self.tempLocData.get('Tc @ rest', None)
-        project.tcLoc = self.tempLocData.get('Tc\u209A\u2091\u2090\u2096', None)
-        project.phRestLoc = self.tempLocData.get('pH @ rest', None) 
-        project.phLoc = self.tempLocData.get('pH\u209A\u2091\u2090\u2096', None)
+        # project.tcRestLoc = self.tempLocData.get('Tc @ rest', None)
+        # project.tcLoc = self.tempLocData.get('Tc\u209A\u2091\u2090\u2096', None)
+        # project.phRestLoc = self.tempLocData.get('pH @ rest', None) 
+        # project.phLoc = self.tempLocData.get('pH\u209A\u2091\u2090\u2096', None)
         
         # for key, value in self.dfList.items():
         #     print(key)
         #     print(value)
-
-        """ print(project.idLoc)
-        print(project.loadLoc)
-        print(project.vo2Loc)
-        print(project.hrLoc)
-        print(project.svLoc)
-
-        print(project.qLoc)
-        print(project.hbLoc)
-        print(project.sao2Loc)
-        print(project.cao2Loc)
-        print(project.cvo2Loc)
-
-        print(project.cavo2Loc)
-        print(project.qao2Loc)
-        print(project.svo2Loc)
-        print(project.pvo2Loc)
-
-        print(project.tcRestLoc)
-        print(project.tcLoc)
-        print(project.phRestLoc)
-        print(project.phLoc) """
 
         if type(self.subjects) is dict:
             for s in self.subjects.values():
@@ -1323,8 +1325,56 @@ class DataImporter(object):
         app.sidepanel_projectList.addToList(project.id)
         app.addProject(project)
 
+        if self.imported[14] == False or self.imported[15] == False:
+            self.addLinearDist = True
+
+        # Add linear distribution of pH and T
+        if self.addLinearDist:
+            for s in project.subjects:
+                for t in s.tests:
+                    self.updatePhAndTemp(t)
+
         self.window.destroy()
         del self
+
+    def updatePhAndTemp(self, test):
+        # Add linear change in pH and T
+        pHrest = float(app.settings.testDefaults['pH @ rest'])
+        Trest = float(app.settings.testDefaults['Tc @ rest'])
+        pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
+        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
+        pHDif = float(pHrest) - float(pHpeak)
+        Tdif = float(Tpeak) - float(Trest)
+
+        # Filter possible empty loads
+        nFilteredLoads = 0
+        for i, l in enumerate(test.workLoads):
+            detailsDict = l.getDetails().getWorkLoadDetails()
+                        
+            if i == 0 or detailsDict['Load'] != 0:
+                nFilteredLoads += 1
+
+        if nFilteredLoads > 1:
+            if pHrest != pHpeak:
+                test.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
+
+            if Trest != Tpeak:
+                test.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
+
+            pHstep = pHDif / (nFilteredLoads-1)
+            Tstep = Tdif / (nFilteredLoads-1)
+        else:
+            pHstep = 0
+            Tstep = 0
+
+        # Add linear change
+        for i, w in enumerate(test.getWorkLoads()):
+            details = w.getDetails()
+            pHValue = pHrest - (i * pHstep)
+            details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')
+
+            Tvalue = Trest + (i * Tstep)
+            details.setValue('T', f'{"{0:.1f}".format(Tvalue)}')
 
 class DataMenuElem(object):
     def __init__(self, importer, menu, menuButton, option, isExporter = False):

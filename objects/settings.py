@@ -543,16 +543,15 @@ class Settings(object):
         settingsFile.close()
 
         # If there is an active test visible in the details panel
-        # refresh its details
+        # refresh its details as well, as it is in some cases a
+        # deepcopy of the original test or constructed by the user
         if app.activeTest != None:
-            # Reset the test to ensure the changes are implemented
-            print(f'subject: {app.activeTest.parentSubject.id}')
-            for t in app.activeTest.parentSubject.tests:
-                if app.activeTest.id == t.id:
-                    print('LÖYTYI MATCH')
-                    print(f'loopattu testi {t.workLoads[0].details.getWorkLoadDetails()}')
-                    print(f'aktiivinen testi {app.activeTest.workLoads[0].details.getWorkLoadDetails()}')
-                    app.activeTest = t
+            for l in app.activeTest.workLoads:
+                for key, val in self.unitDefaults.items():
+                    l.getDetails().setUnit(key, val)
+                for key, val in self.testDefaults.items():
+                    l.getDetails().setValue(key, val)
+            self.updatePhAndTemp(app.activeTest)
 
             app.testDetailModule.refreshTestDetails()
             app.envDetailModule.refresh()
@@ -568,15 +567,23 @@ class Settings(object):
         pHDif = float(pHrest) - float(pHpeak)
         Tdif = float(Tpeak) - float(Trest)
 
-        if len(test.getWorkLoads()) > 1:
+        # Filter possible empty loads
+        nFilteredLoads = 0
+        for i, l in enumerate(test.workLoads):
+            detailsDict = l.getDetails().getWorkLoadDetails()
+                        
+            if i == 0 or detailsDict['Load'] != 0:
+                nFilteredLoads += 1
+
+        if nFilteredLoads > 1:
             if pHrest != pHpeak:
                 test.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
 
             if Trest != Tpeak:
                 test.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
 
-            pHstep = pHDif / (len(test.getWorkLoads())-1)
-            Tstep = Tdif / (len(test.getWorkLoads())-1)
+            pHstep = pHDif / (nFilteredLoads-1)
+            Tstep = Tdif / (nFilteredLoads-1)
         else:
             pHstep = 0
             Tstep = 0
@@ -675,38 +682,3 @@ class SettingsRow(object):
             settings.mcs[f'{label}_mc'] = self.intVar
         except KeyError:
             pass
-
-""" class UserMode(object):
-    def __init__(self, settings, parent):
-        # Measured/Calculated
-        ttk.Label(parent, text='User mode').grid(column=0, row=0)
-        self.intVar = IntVar(value=settings.userMode, name=f'userMode')
-        if self.intVar not in app.intVars:
-            app.intVars.append(self.intVar)
-
-        self.radio1 = ttk.Radiobutton(parent, value=0, variable=self.intVar, text='Basic mode')
-        self.radio1.grid(column=1, row=1, sticky='W')
-
-        self.radio2 = ttk.Radiobutton(parent, value=1, variable=self.intVar, text='Advanced mode')
-        self.radio2.grid(column=1, row=2, sticky='W')
-    
-        ttk.Button(parent, text='Save', command=lambda: self.saveSettings(settings)).grid(column=1, row=3, sticky='E')
-
-    def saveSettings(self, settings):
-        # Apply change to layout
-        if self.intVar.get() == 0: # Basic
-            app.menu.showBasicLayout()
-        else: # Advanced
-            app.menu.showAdvLayout()
-
-        settings.userMode = self.intVar.get()
-        settings.data['userMode'] = self.intVar.get()
-
-        settingsFile = open('settings.pkl', 'wb')
-        pickle.dump(settings.data, settingsFile)
-        settingsFile.close()
-
-        if self.intVar.get() == 0:
-            settings.createNotification('info', f'Usermode set to Basic', 5000)
-        else:
-            settings.createNotification('info', f'Usermode set to Advanced', 5000) """
