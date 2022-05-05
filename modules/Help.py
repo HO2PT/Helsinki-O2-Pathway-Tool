@@ -85,11 +85,15 @@ class Help():
 
         self.canvas = Canvas(wrapper)
             
-        scrollbar = Scrollbar(wrapper)
-        scrollbar.pack(side=RIGHT, fill=Y)
-        scrollbar.config(command=self.canvas.yview)
+        scrollbarY = Scrollbar(wrapper)
+        scrollbarY.pack(side=RIGHT, fill=Y)
+        scrollbarY.config(command=self.canvas.yview)
 
-        self.canvas.config(yscrollcommand=scrollbar.set)
+        scrollbarX = Scrollbar(wrapper, orient=HORIZONTAL)
+        scrollbarX.pack(side=BOTTOM, fill=X, )
+        scrollbarX.config(command=self.canvas.xview)
+
+        self.canvas.config(yscrollcommand=scrollbarY.set, xscrollcommand=scrollbarX.set)
         self.canvas.pack(fill=BOTH, expand=True)
 
         self.content.bind('<Configure>', self.scale)

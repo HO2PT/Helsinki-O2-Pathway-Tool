@@ -162,9 +162,8 @@ class LoadNotebook(object):
         self.loadbook.select(tabCount) 
 
         for i, l in enumerate(self.loadTabs):
-            if i != 0 and i != len(self.loadTabs)-1:
-                l.updateValues('pH', pHvalues[i])
-                l.updateValues('T', Tvalues[i])
+            l.updateValues('pH', pHvalues[i])
+            l.updateValues('T', Tvalues[i])
 
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
@@ -413,15 +412,15 @@ class TestDetailRow(ttk.Frame):
         except:
             self.radio = None
 
-
         if '2' in self.label:
             self.label_subscripted = self.label.replace('2', '\u2082')
             ttk.Label(rowFrame, text=self.label_subscripted, anchor='w').grid(column=0, row=row, sticky='we')
         else:
             ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row, sticky='we')
-            
+
         #Value
         self.valueVar = StringVar(value=self.value)
+        # self.valueVar = StringVar(value=f'{"{0:.2f}".format(float(self.value))}')
         self.vars.append(self.valueVar)
         self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
         self.valueEntry.grid(column=1, row=row, sticky='we')

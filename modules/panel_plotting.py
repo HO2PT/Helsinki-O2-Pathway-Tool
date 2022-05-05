@@ -1296,7 +1296,9 @@ class LoadTabRow(ttk.Frame):
         self.detailsObject = detailsObject
         self.details = detailsObject.getWorkLoadDetails()
 
-        #print(f'VALUE: {self.value}')
+        # Adjust the number of decimal according to the used unit
+        # print(self.details[f'{self.label}_unit'])
+
         self.var = DoubleVar(self.parent, value=f'{"{0:.1f}".format(float(self.value))}')
 
         # Label
@@ -1309,6 +1311,7 @@ class LoadTabRow(ttk.Frame):
         # Slider
         # self.slider = ttk.Scale(self.parent, from_=self.scale[0], to=self.scale[1], command=lambda e: formatSlider(e),  orient=HORIZONTAL, value=self.value, variable=self.var)
         # self.slider.grid(column=1, row=row)
+
         # Entry
         self.entry = ttk.Label(self.parent, textvariable=self.var, width=7, anchor='center')
         self.entry.grid(column=1, row=row)
