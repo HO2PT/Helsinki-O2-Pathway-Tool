@@ -110,7 +110,10 @@ class ScrollableNotebook(ttk.Frame):
                     # plot.destroy()    
                     del plot
                     del plots[clickedTabIndex]
-                    self.parentObj.plotNotebook.pack_forget()
+
+                    # Hide plot panel if the last tab is closed
+                    if len(plots) == 0:
+                        self.parentObj.plotNotebook.pack_forget()
 
     def _wheelscroll(self, event):
         if event.delta > 0:

@@ -537,6 +537,9 @@ class PlottingPanel(object):
         if details['[Hb]_unit'] == 'g/l': # g/dl -> g/l
             Hb = Hb * 10
 
+        if details['Q_unit'] == 'ml/min': # l/min -> ml/min
+            Q = Q * 1000
+
         SvO2_calc = SvO2_calc * 100
 
         w.setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2_calc, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_calc, DO2)
