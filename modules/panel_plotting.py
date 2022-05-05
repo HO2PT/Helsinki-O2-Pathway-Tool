@@ -831,7 +831,7 @@ class PlotTab():
         self.ax.set_ylim(top=ylim, bottom=0)
 
         self.leg = self.ax.legend(handles=self.handles , loc='upper right',
-            fancybox=True, shadow=True, ncol=2)
+            fancybox=True, shadow=True, ncol=3)
 
         # we will set up a dict mapping legend line to orig line, and enable
         # picking on the legend line
@@ -858,6 +858,7 @@ class PlotTab():
     def onpick(self, event):
         # on the pick event, find the orig line corresponding to the
         # legend proxy line, and toggle the visibility
+        print('ON PICK')
         origline = []
         legline = event.artist
         index = None
@@ -890,6 +891,9 @@ class PlotTab():
 
     def on_click(self, event):
         # If middle or righbutton is pressed -> show/hide all lines
+        print('ON CLICK')
+        # print(vars(self.leg))
+        # print(vars(self.leg._legend_title_box))
         if event.guiEvent.num == 3:
             visible = False
             alpha = 0.2

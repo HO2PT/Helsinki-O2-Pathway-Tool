@@ -47,8 +47,19 @@ class DetailsPanel(ttk.Frame):
         self.buttonWrap = ttk.Frame(self.upPart)
         self.buttonWrap.pack(side=RIGHT, fill=Y)
 
-        self.plotButton = ttk.Button(self.buttonWrap, text='Plot', command=self.plotData)
-        self.plotButton.pack(fill=Y, expand=True)
+        s = ttk.Style()
+        s.configure('plotButton.TButton', background='red')
+
+        self.plotButton = Button(self.buttonWrap,
+            text='PLOT', 
+            bg='#1d7eb5',
+            fg = 'white',
+            font='Helvetica 9 bold',
+            bd= 5,
+            relief='raised',
+            command=self.plotData
+        )
+        self.plotButton.pack(fill=BOTH, expand=True)
 
         self.clearButton = ttk.Button(self.buttonWrap, text='Clear', command=self.clear)
         self.clearButton.pack(fill=Y, expand=True)

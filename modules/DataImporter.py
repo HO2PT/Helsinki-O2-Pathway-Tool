@@ -675,7 +675,7 @@ class DataImporter(object):
         colList = self.dataTable.multiplecollist
         rowList = self.dataTable.multiplerowlist
 
-        print(f'nextOptions {colList, rowList}')
+        # print(f'nextOptions {colList, rowList}')
         if len(colList) > 0: # Column selected
             if value == 0: # Single id
                 self.dataMode = 'wide'
@@ -1261,7 +1261,7 @@ class DataImporter(object):
             if askokcancel('Quit data import?', 'Have you imported everything?', parent=self.window):
                 self.importData()
             else:
-                self.nextStage(to=18)
+                to = 18
 
         self.stage = to
 

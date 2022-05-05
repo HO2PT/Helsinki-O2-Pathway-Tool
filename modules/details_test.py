@@ -43,6 +43,7 @@ class TestDetailModule(ttk.Frame):
             app.setActiveTest(emptyTest)
             self.testId.config(text=f'Id: {app.getActiveTest().id}')
 
+        self.testId.pack()
         self.loadsContainer.pack(side=LEFT, fill=BOTH)#, expand=TRUE)
         self.loadNotebook.refresh()
         
