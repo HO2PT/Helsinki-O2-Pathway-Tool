@@ -78,7 +78,7 @@ class PlottingPanel(object):
             #print('VALIDATION ERROR')
             notification.create('error', f'Invalid values. Please check the units and values of {i+1}. load and try again.', 5000)
     
-    def plotDemo(self):
+    """ def plotDemo(self):
         workLoadDetailsObjects = []
         workLoadDetailsObjects.append(app.getActiveTest().getWorkLoads()[0].getDetails())
         details = workLoadDetailsObjects[0].getWorkLoadDetails()
@@ -95,7 +95,7 @@ class PlottingPanel(object):
 
         # Add plot to the notebook and objects list of plots
         self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
-        self.plots.append(plotTabObject)
+        self.plots.append(plotTabObject) """
 
     def plotProject(self):
         ##
