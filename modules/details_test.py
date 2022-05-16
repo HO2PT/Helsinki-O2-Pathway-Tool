@@ -5,20 +5,19 @@ from objects.app import app
 from modules.ScrollableNotebook import ScrollableNotebook
 from objects.test import Test
 
-class TestDetailModule(ttk.Frame):
+class TestDetailModule(ttk.Labelframe):
     def __init__(self, detailsPanel, *args, **kwargs):
-        ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
+        ttk.Labelframe.__init__(self, detailsPanel, text="Test details", borderwidth=5)
         self.configure(cursor='arrow')
-        
+        # self.pack(side = LEFT, fill = X, expand=TRUE)
+
         if app.settings.visDefaults['testDetails']:
-            self.pack(side = LEFT, fill = BOTH, expand=TRUE)
+            self.pack(side = LEFT, fill = BOTH, expand=TRUE, padx=(5,5))
 
         self.configure(borderwidth=5)
-        self.container = ttk.Labelframe(self, text="Test details", borderwidth=5)
-        self.container.pack(fill = BOTH, expand=TRUE)
 
         ## Details frame
-        details = ttk.Frame(self.container)
+        details = ttk.Frame(self)
         details.pack(side=LEFT, fill = BOTH)#, expand=TRUE)
         
         details.pack_configure(padx=5)
@@ -27,7 +26,7 @@ class TestDetailModule(ttk.Frame):
         self.testId.pack()
 
         ## Load notebook
-        self.loadsContainer = ttk.Frame(self.container)
+        self.loadsContainer = ttk.Frame(self)
         self.loadNotebook = LoadNotebook(self.loadsContainer)
 
     def addLoad(self):
@@ -168,7 +167,7 @@ class LoadNotebook(object):
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
 
-    def refresh(self):
+    def refresh(self, index=None):
         for t in self.loadbook.tabs():
             self.loadbook.forget(t)
 
@@ -207,7 +206,6 @@ class LoadNotebook(object):
                     self.loadTabs.append(newLoad)
                     tabCount = self.loadbook.index('end')
                     self.loadbook.add(newLoad.loadFrame, text=l.getName())
-                    self.loadbook.select(tabCount)
                 else:
                     continue
             else:
@@ -217,46 +215,72 @@ class LoadNotebook(object):
                 self.loadTabs.append(newLoad)
                 tabCount = self.loadbook.index('end')
                 self.loadbook.add(newLoad.loadFrame, text=l.getName())
-                self.loadbook.select(tabCount)
+        
+        # If the index of a tab is given, select the tab
+        if index != None:
+            self.loadbook.select(index)
+        else:
+            self.loadbook.select(tabCount)
 
         try:
             self.loadbook.pack_info()
         except:
-            self.loadbook.pack(fill="both",expand=True)
+            self.loadbook.pack(fill=BOTH,expand=True)
             self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
             self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
             
     def editLoad(self):
         index = self.loadbook.index('current')
+        load = app.getActiveTest().getWorkLoads()[index]
 
         # Create edit popup
-        editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*2.6, height=self.editButton.winfo_reqheight()*3)
-        editscreen.title('Edit')
-        editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth()*1.45
-        ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
+        editscreen = Toplevel(width=self.editButton.winfo_width(), height=self.editButton.winfo_height()*4, bg='#4eb1ff', borderwidth=3)
+        editscreen.overrideredirect(True)
+        editscreen.focus_force()
+        editscreenX = self.loadbook.winfo_rootx() + (self.loadbook.winfo_width()/2 - editscreen.cget('width')/2)
+        ediscreenY = self.editButton.winfo_rooty() - (self.loadbook.winfo_height()/2 + editscreen.cget('height')/2)
         editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
         editscreen.pack_propagate(False)
-        
-        ttk.Label(editscreen, text='Load name').pack()
-        nameEntry = ttk.Entry(editscreen)
-        nameEntry.pack(expand=TRUE)
-        ttk.Button(editscreen, text='Save', command=lambda: edit()).pack(side=BOTTOM,anchor='e')
 
-        def edit():
-            load = app.getActiveTest().getWorkLoads()[index]
+        def move(e):
+            winX = self.loadbook.winfo_rootx() + (self.loadbook.winfo_width()/2 - editscreen.cget('width')/2)
+            winY = self.editButton.winfo_rooty() - (self.loadbook.winfo_height()/2 + editscreen.cget('height')/2)
+            editscreen.geometry("+%d+%d" % ( winX, winY ))
+            editscreen.configure(width=self.editButton.winfo_width())
+            editscreen.lift()
+
+        self.bindId = app.root.bind('<Configure>', move)
+
+        container = Frame(editscreen, bd=0, padx=10, pady=10)
+        container.pack(fill=BOTH, expand=True)
+        
+        footer = Frame(editscreen, bd=0, padx=10)
+        footer.pack(fill=BOTH, expand=True)
+        ttk.Label(container, text='Set load name').pack()
+        nameEntry = ttk.Entry(container, width=30)
+        nameEntry.focus_force()
+        nameEntry.pack(expand=TRUE)
+        nameEntry.insert(0, load.name)
+
+        def edit(e=None):
             load.setName( nameEntry.get() )
-            self.refresh()
+            self.refresh(index)
             editscreen.destroy()
+            app.root.unbind('<Configure>', self.bindId)
+
+        def close(*args):
+            editscreen.destroy()
+            app.root.unbind('<Configure>', self.bindId)
+
+        ttk.Button(footer, text='Save', command=edit).pack(side=LEFT, fill=X, expand=True)
+        ttk.Button(footer, text='Close', command=close).pack(side=LEFT, fill=X, expand=True)
+        editscreen.bind('<KeyPress-Return>', edit)
+        editscreen.bind('<KeyPress-Escape>', close)
 
 class LoadTab(object):
     def __init__(self, index, load, details, notebook):
-        if 'Load' in load.getName():
-            self.name = f'Load{index+1}'
-            load.setName(self.name)
-        else:
-            self.name = load.getName()
+        self.name = load.getName()
         self.details = details
-        # self.notebook = notebook
         self.detailRows = []
         
         self.loadFrame = ttk.Frame(notebook)
@@ -349,7 +373,7 @@ class LoadTab(object):
         a.columnconfigure(1, weight=0)
         a.columnconfigure(2, weight=3)
         ttk.Separator(a).grid(column=0, row=0, sticky='we')
-        ttk.Label(a, text='Or').grid(column=1, row=0)#, columnspan=5)
+        ttk.Label(a, text='Or').grid(column=1, row=0)
         ttk.Separator(a).grid(column=2, row=0, sticky='we')
         
         temp = ['Q', loadDetails['Q'], loadDetails['Q_unit'], loadDetails['Q_MC']]
@@ -360,12 +384,12 @@ class LoadTab(object):
         extra2.grid(column=0, row=4, columnspan=5, sticky='we', pady=(30,0), padx=5)
         
         if app.settings.getTestDef()['loadMode'] == 0:
-            temp = ['Load', loadDetails['Load']]
+            temp = ['Load', loadDetails['Load'], loadDetails['Load_unit']]
             self.detailRows.append( TestDetailRow(extra2, temp, self.details, 3) )
         else:
-            temp = ['Velocity', loadDetails['Velocity']]
+            temp = ['Velocity', loadDetails['Velocity'], loadDetails['Velocity_unit']]
             self.detailRows.append( TestDetailRow(extra2, temp, self.details, 3) )
-            temp = ['Incline', loadDetails['Incline']]
+            temp = ['Incline', loadDetails['Incline'], loadDetails['Incline_unit']]
             self.detailRows.append( TestDetailRow(extra2, temp, self.details, 4) )
     
     def getName(self):
@@ -403,10 +427,8 @@ class TestDetailRow(ttk.Frame):
 
         self.label = temp[0]
         self.value = temp[1]
-        try:
-            self.unit = temp[2]
-        except:
-            self.unit = 0
+        self.unit = temp[2]
+
         try:
             self.radio = temp[3]
         except:
@@ -418,9 +440,8 @@ class TestDetailRow(ttk.Frame):
         else:
             ttk.Label(rowFrame, text=self.label, anchor='w').grid(column=0, row=row, sticky='we')
 
-        #Value
+        # Value
         self.valueVar = StringVar(value=self.value)
-        # self.valueVar = StringVar(value=f'{"{0:.2f}".format(float(self.value))}')
         self.vars.append(self.valueVar)
         self.valueEntry = ttk.Entry(rowFrame, width=5, textvariable=self.valueVar)
         self.valueEntry.grid(column=1, row=row, sticky='we')
@@ -431,9 +452,8 @@ class TestDetailRow(ttk.Frame):
         units = app.settings.getUnits()[f'{self.label}_units']
         if len(units) != 1:
             if self.label != 'pH':
-                units = app.settings.getUnits()[f'{self.label}_units']
                 self.tempMenuButton = ttk.Menubutton(rowFrame)
-                self.tempMenuButton.config(text=app.settings.getUnitDef()[f'{self.label}_unit'])
+                self.tempMenuButton.config(text=self.unit)
 
                 tempMenu = Menu(self.tempMenuButton, tearoff=False)
                 for i, u in enumerate(units):
@@ -444,8 +464,8 @@ class TestDetailRow(ttk.Frame):
         else:
             ttk.Label(rowFrame, text=units[0]).grid(column=2, row=row)
 
+        # Measured/Calculated
         if self.radio != None:
-            # Measured/Calculated
             self.mcVar = IntVar(value=self.radio)
             self.vars.append(self.mcVar)
             self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)
@@ -457,34 +477,24 @@ class TestDetailRow(ttk.Frame):
             self.traceids.append(mctraceid)
         
     def updateValue(self, name, index, mode):
-        # name = name.split('-')[0]
         self.workLoadObject.setValue(self.label, self.valueVar.get())
-        # setattr(self.workLoadObject, name, self.valueVar.get())
 
     def updateUnit(self, name, index, mode):
-        # name = name.split('-')[0]
         # Update unit change to every load
         for l in app.getActiveTest().getWorkLoads():
-            #print(l)
             l.setUnit(self.label, self.unitVar.get())
-        # self.workLoadObject.setUnit(name, self.unitVar.get())
-        # setattr(self.workLoadObject, name, self.unitVar.get())
     
     def updateMC(self, name, index, mode):
-        # name = name.split('-')[0]
         self.workLoadObject.setMC(f'{self.label}_MC', self.mcVar.get())
 
         # Update every load
         for l in app.getActiveTest().getWorkLoads():
             l.getDetails().setMC(f'{self.label}_MC', self.mcVar.get())
-            # print(l.getDetails().getWorkLoadDetails())
 
         loadTabs = app.testDetailModule.loadNotebook.loadTabs
 
         for l in loadTabs:
             l.updateMCs(f'{self.label}_MC', self.mcVar.get())
-
-        # setattr(self.workLoadObject, name, self.mcVar.get())
 
 class TestDetailMenuElem(object):
     def __init__(self, menu, menuButton, label, index, elems, name, workload):
@@ -497,18 +507,16 @@ class TestDetailMenuElem(object):
         # self.workLoad = workload
 
         # self.menu.add_command(label=self.label, command=lambda: self.updateValue())
-        menu.add_command(label=label, command=lambda: self.updateValue())
+        menu.add_command(label=label, command=self.updateValue)
 
     def updateValue(self):
         self.menuButton.config(text=self.elems[self.index])
+
         for l in app.getActiveTest().getWorkLoads():
             l.getDetails().setUnit(self.name, self.elems[self.index])
-            # print(l.getDetails().getWorkLoadDetails())
 
         loadTabs = app.testDetailModule.loadNotebook.loadTabs
 
         for l in loadTabs:
             l.updateUnitButtons(self.name, self.elems[self.index])
-        
-        # self.workLoad.setUnit(self.name, self.elems[self.index])
         

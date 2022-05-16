@@ -22,7 +22,7 @@ class WorkLoadDetails(object):
         self.CvO2 = 0
         self.CavO2 = 0
         self.QaO2 = 0
-        self.T0 = testDefaults['Tc @ rest']
+        self.Trest = testDefaults['Tc @ rest']
         self.pHrest = testDefaults['pH @ rest']
         self.T = testDefaults['Tc\u209A\u2091\u2090\u2096']
         self.pH = testDefaults['pH\u209A\u2091\u2090\u2096']
@@ -52,7 +52,7 @@ class WorkLoadDetails(object):
         self.CvO2_unit = defUnits['CvO2_unit']
         self.CavO2_unit = defUnits['C(a-v)O2_unit']
         self.QaO2_unit = defUnits['QaO2_unit']
-        self.T0_unit = defUnits['Tc @ rest_unit']
+        self.Trest_unit = defUnits['Tc @ rest_unit']
         self.T_unit = defUnits['Tc\u209A\u2091\u2090\u2096_unit']
         self.pHrest_unit = 0
         self.pH_unit = 0
@@ -74,7 +74,7 @@ class WorkLoadDetails(object):
         self.CvO2_MC = defMc['CvO2_mc']
         self.CavO2_MC = defMc['C(a-v)O2_mc']
         self.QaO2_MC = defMc['QaO2_mc']
-        self.T0_MC = defMc['Tc @ rest_mc']
+        self.Trest_MC = defMc['Tc @ rest_mc']
         self.T_MC = defMc['Tc\u209A\u2091\u2090\u2096_mc']
         self.pHrest_MC = defMc['pH @ rest_mc']
         self.pH_MC = defMc['pH\u209A\u2091\u2090\u2096_mc']
@@ -125,8 +125,11 @@ class WorkLoadDetails(object):
         if label == 'QaO2_unit': 
             self.QaO2_unit = unit
 
-        if label == 'Tc @ rest_unit': 
+        if label == 'T_unit': 
             self.T_unit = unit
+
+        if label == 'Tc @ rest_unit': 
+            self.Trest_unit = unit
 
         if label == 'Tc\u209A\u2091\u2090\u2096_unit': 
             self.T_unit = unit
@@ -172,8 +175,8 @@ class WorkLoadDetails(object):
         if label == 'QaO2_MC': 
             self.QaO2_MC = value
 
-        if label == 'T0_MC': 
-            self.T_MC = value
+        if label == 'Trest_MC': 
+            self.Trest_MC = value
 
         if label == 'T_MC': 
             self.T_MC = value
@@ -232,7 +235,7 @@ class WorkLoadDetails(object):
             self.QaO2 = value
 
         if label == 'Tc @ rest': 
-            self.T0 = value
+            self.Trest = value
 
         if label == 'Tc\u209A\u2091\u2090\u2096': 
             self.T = value
@@ -320,9 +323,9 @@ class WorkLoadDetails(object):
             'T_unit': self.T_unit,
             'T_MC': self.T_MC,
 
-            'Tc @ rest': self.T0,
-            'Tc @ rest_unit': self.T0_unit,
-            'Tc @ rest_MC': self.T0_MC,
+            'Tc @ rest': self.Trest,
+            'Tc @ rest_unit': self.Trest_unit,
+            'Tc @ rest_MC': self.Trest_MC,
 
             # 'Tc\u209A\u2091\u2090\u2096': self.T,
             # 'Tc\u209A\u2091\u2090\u2096_unit': self.T_unit,
@@ -353,7 +356,7 @@ class WorkLoadDetails(object):
             'yi': self.yi
         }
 
-    def setCalcResults(self, y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pHrest, pH, PvO2, DO2):
+    def setCalcResults(self, y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, Trest, T, pHrest, pH, PvO2, DO2):
         self.y = y
         self.y2 = y2
         self.xi = xi
@@ -368,7 +371,7 @@ class WorkLoadDetails(object):
         self.CvO2 = CvO2
         self.CavO2 = CavO2
         self.QaO2 = QaO2
-        self.T0 = T0
+        self.Trest = Trest
         self.T = T
         self.pHrest = pHrest
         self.pH = pH

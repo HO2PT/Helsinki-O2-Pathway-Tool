@@ -12,7 +12,7 @@ from modules.panel_plotting import PlottingPanel
 # from objects.workLoadDetails import WorkLoadDetails
 
 root = Tk()
-root.title("O2 Pathway Tool")
+root.title("O\u2082 Pathway Tool")
 root.geometry('750x500')
 # print(f' init: {initWidth, initHeight}')
 # root.pack_propagate(False)
@@ -56,31 +56,17 @@ root.geometry("+%d+%d" % ( initX, initY ))
 loaded = False
 
 def resize(e):
-    print(e)
     width = root.winfo_width()
     height = root.winfo_height()
-    print(width, height)
-    # if e.width != root.winfo_reqwidth() or e.height != root.winfo_reqheight():
-    #     print('resize')
-    sidePanelMinWidth = app.sidePanel.sidePanel.winfo_reqwidth()
-    detailsPanelMinWidth = app.detailsPanel.detailsPanel.winfo_reqwidth()
-    print( sidePanelMinWidth )
-    print( detailsPanelMinWidth )
-    if width < sidePanelMinWidth + detailsPanelMinWidth:
-        print('HOOLLD UP')
-        # root.resizable(False, True)
-    # else:
-    #     root.resizable(True, True)
-    # app.sidepanel_projectList.container.configure(height=100)
+    plottingPanel.plotNotebook.pack_forget()
+    root.after(500, lambda: plottingPanel.plotNotebook.pack(expand=TRUE, fill=BOTH))
 
 # root.bind('<Configure>', lambda e: resize(e))
 
 def debug():
     # print(app.activeSubject.tests[0].workLoads[0].details.getWorkLoadDetails())
-    for d in app.getActiveTest().getWorkLoads():
-        print(d.getDetails().getWorkLoadDetails())
     # print(vars(app.activeTest))
-    # print(app.activeTest.workLoads[0].details.getWorkLoadDetails())
+    print(app.activeTest.workLoads[0].details.getWorkLoadDetails())
     # print(app.getActiveTest())
     # print(app.getActiveProject().data)
     
@@ -93,6 +79,9 @@ def debug():
     # print(f'button visible? {app.detailsPanel.plotButton.winfo_ismapped()}')
     # print(app.detailsPanel.winfo_reqwidth(), app.detailsPanel.winfo_width())
     # print( app.plottingPanel.plots[0].loadNotebookFrame.winfo_width())
+    # for d in app.getActiveTest().getWorkLoads():
+    #     print(d.getDetails().getWorkLoadDetails())
+    # print(plottingPanel.plots[0].workLoadDetailsObjects[0].getWorkLoadDetails())
 
 def updateCursor(e):
     print(mainframe.identify(e.x, e.y))

@@ -1,8 +1,9 @@
 from objects.test import Test
+from objects.app import app
 
 class Project(object):
     def __init__(self):
-        self.id = 'Project'
+        self.id = f'Project-{len(app.projects)+1}'
         self.subjects = []
         self.data = None
         self.VO2max = 0

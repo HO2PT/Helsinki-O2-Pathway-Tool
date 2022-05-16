@@ -28,7 +28,10 @@ class Test(object):
 
     def createLoad(self):
         newLoad = Load(self)
-        # newLoad = Load(self)
+        # Use the same units as the other loads
+        for key, value in self.workLoads[0].details.getWorkLoadDetails().items():
+            if '_unit' in key:
+                newLoad.details.setUnit(key, value)
         self.workLoads.append( newLoad )
         return newLoad
 
@@ -68,7 +71,6 @@ class Load(object):
         self.details.name = name
     
     def setDemoDetails(self):
-        #print('Setting demo details')
         units = app.settings.getUnitDef()
 
         if units['VO2_unit'] == 'l/min':

@@ -483,7 +483,7 @@ Test-settings contain default values and units for the test parameters. The defa
             self.view.entryconfigure(4, label='Hide all details')
         detailsPanel = app.detailsPanel.detailsPanel
         notifPanel = notification.notifPanel
-        plottingPanel = app.plottingPanel.container
+        plottingPanel = app.plottingPanel
 
         if detailsPanel.winfo_manager():
             detailsPanel.pack_forget()
@@ -505,7 +505,7 @@ Test-settings contain default values and units for the test parameters. The defa
         sidePanel = app.sidePanel.sidePanel
         notifPanel = notification.notifPanel
         detailsPanel = app.detailsPanel.detailsPanel
-        plottingPanel = app.plottingPanel.container
+        plottingPanel = app.plottingPanel
 
         if sidePanel.winfo_manager(): # if visible -> hide
             sidePanel.pack_forget()
@@ -554,9 +554,9 @@ Test-settings contain default values and units for the test parameters. The defa
             self.view.entryconfigure(2, label='Show test details')
         else:
             self.view.entryconfigure(2, label='Hide test details')
-        testContainer = app.testDetailModule #app.testDetailModule.container
+        testContainer = app.testDetailModule
         envContainer = app.envDetailModule
-        projectContainer = app.projectDetailModule #app.projectDetailModule.container
+        projectContainer = app.projectDetailModule
         
         if testContainer.winfo_manager():
             testContainer.pack_forget()

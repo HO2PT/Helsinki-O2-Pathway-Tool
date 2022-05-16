@@ -32,7 +32,7 @@ class TestList(object):
         
         ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare...', command=self.showComparisonOptions).grid(column=1, row=1)
-        ttk.Button(buttonContainer, text='Plot mean...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
+        ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
 
     def setStartSel(self, e):
         self.startSel = f'@{e.x},{e.y}'
@@ -147,25 +147,28 @@ class TestList(object):
             notification.create('error', 'Select only 1 test to edit', 5000)
 
     def deleteTest(self):
-        subject = app.getActiveSubject()
-        tests = subject.getTests()
-        toBeDeleted = []
+        if len(self.testList.curselection()) > 0:
+            subject = app.getActiveSubject()
+            tests = subject.getTests()
+            toBeDeleted = []
 
-        for i in self.testList.curselection():
-            toBeDeleted.append(i)
+            for i in self.testList.curselection():
+                toBeDeleted.append(i)
 
-        # If one of the deleted test is set as active test
-        # refresh app state and details panel
-        for t in toBeDeleted:
-            if app.activeTest == tests[t]:
-                app.setActiveTest(None)
-                app.testDetailModule.refreshTestDetails()
-            
-        sortedToBeDeleted = sorted(toBeDeleted, reverse=True)
-        for i in sortedToBeDeleted:
-            subject.deleteTest(i)
+            # If one of the deleted test is set as active test
+            # refresh app state and details panel
+            for t in toBeDeleted:
+                if app.activeTest == tests[t]:
+                    app.setActiveTest(None)
+                    app.testDetailModule.refreshTestDetails()
+                
+            sortedToBeDeleted = sorted(toBeDeleted, reverse=True)
+            for i in sortedToBeDeleted:
+                subject.deleteTest(i)
 
-        self.refreshList()
+            self.refreshList()
+        else:
+            notification.create('error', 'Select test to be deleted', 5000)
 
     def createTest(self):
         # Check if there is an active subject or should subject be created
@@ -237,17 +240,19 @@ class TestList(object):
         self.testList.selection_clear(0, 'end')
         self.testList.selection_set('end')
 
-    def refreshList(self):
+    def refreshList(self, index=None):
         self.testList.delete(0, 'end')
         activeSubject = app.getActiveSubject()
         try:
             tests = activeSubject.getTests()
         except AttributeError:
             tests = []
-        #print(tests)
-        #self.testList.delete(0, 'end')
+
         for t in tests:
             self.testList.insert('end', t.id)
+
+        if index != None:
+            self.testList.select_set(index)
 
     def handleListboxSelect(self, e):
         self.testList.selection_clear(0, 'end')
@@ -285,6 +290,7 @@ class Options():
 
         self.win = Toplevel(width=self.parent.editButton.winfo_reqwidth() * 3, height=self.parent.editButton.winfo_reqheight() * self.height, bg='#4eb1ff', borderwidth=3)
         self.win.overrideredirect(True)
+        self.win.focus_force()
         winX = self.parent.editButton.winfo_rootx() - self.parent.editButton.winfo_width()
         winY = self.parent.editButton.winfo_rooty() - (self.parent.editButton.winfo_height() * self.height)
         self.win.geometry("+%d+%d" % ( winX, winY ))
@@ -331,13 +337,17 @@ class Options():
             ttk.Label(container, text='Test name').pack()
             self.nameEntry = ttk.Entry(container)
             self.nameEntry.pack(expand=TRUE)
+            self.nameEntry.insert(0, self.parent.testList.get(self.index))
             ttk.Button(footer, text='Save', command=self.edit).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+            self.win.bind('<KeyPress-Return>', self.edit)
 
-    def edit(self):
+        self.win.bind('<KeyPress-Escape>', self.close)
+
+    def edit(self, *args):
         test = app.activeSubject.tests[self.index]
         test.setId(self.nameEntry.get())
-        self.parent.refreshList()
+        self.parent.refreshList(self.index)
         self.close()
 
     def add(self):
@@ -356,7 +366,7 @@ class Options():
             self.parent.plotMean95()
         self.close()
 
-    def close(self):
+    def close(self, *args):
         app.root.unbind('<Configure>', self.bindId)
         self.win.destroy()
         

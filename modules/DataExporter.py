@@ -88,24 +88,26 @@ class DataExporter(object):
             ttk.Button(self.footer, text='Export', command=lambda: getSelected()).pack(side=RIGHT)
             
             # Create the sheet selection dropdown
-            if self.toNew == False and self.onlyPlots == False:
+            if self.toNew == False:
                 self.sheetNames = []
-                sheetSelFrame = ttk.Labelframe(self.exportOptions, text='To sheet', padding=(10,10))
 
                 for key, value in excel.items():
                     self.sheetNames.append(key)
 
-                # Create menubutton for selection of excel sheet
-                self.menuButton = ttk.Menubutton(sheetSelFrame, text=self.sheetNames[0])
-                menu = Menu(self.menuButton, tearoff=False)
+                if self.onlyPlots == False:
+                    sheetSelFrame = ttk.Labelframe(self.exportOptions, text='To sheet', padding=(10,10))
 
-                for s in self.sheetNames:
-                    DataMenuElem(self, menu, self.menuButton, s, isExporter=True)
+                    # Create menubutton for selection of excel sheet
+                    self.menuButton = ttk.Menubutton(sheetSelFrame, text=self.sheetNames[0])
+                    menu = Menu(self.menuButton, tearoff=False)
 
-                self.menuButton['menu'] = menu
-                self.container.pack_configure(side=LEFT, padx=10)
-                sheetSelFrame.pack(side=LEFT, fill=X, expand=True, padx=10)
-                self.menuButton.pack()
+                    for s in self.sheetNames:
+                        DataMenuElem(self, menu, self.menuButton, s, isExporter=True)
+
+                    self.menuButton['menu'] = menu
+                    self.container.pack_configure(side=LEFT, padx=10)
+                    sheetSelFrame.pack(side=LEFT, fill=X, expand=True, padx=10)
+                    self.menuButton.pack()
 
             self.varTemp = []
 
@@ -114,9 +116,10 @@ class DataExporter(object):
                     if v.get() == 1:
                         self.varTemp.append(str(v))
                 self.vars = self.varTemp
-                print(f'params to export {self.vars}')
+                # print(f'params to export {self.vars}')
                 if self.toNew == False:
-                    self.selectedSheet = self.menuButton.cget('text')
+                    if self.onlyPlots == False:
+                        self.selectedSheet = self.menuButton.cget('text')
                     self.exportToSelected()
                 else:
                     self.exportToNew()
@@ -142,6 +145,7 @@ class DataExporter(object):
         if self.onlyPlots == True:
             print('EXPORT TO NEW - ONLY PLOTS')
             for i, p in enumerate(app.getPlottingPanel().plots):
+                p.plot[0].set(figwidth=5.4, figheight=4)
                 img = p.plot[0].savefig(f'plot{i}.png')
                 imgs.append( img )
                 columns = []
@@ -169,6 +173,7 @@ class DataExporter(object):
 
                 for li, l in enumerate(p.workLoadDetailsObjects):
                     details = l.getWorkLoadDetails()
+                    print(f'details from export {details}')
 
                     for v in self.vars:
                         value = details[v]
@@ -196,7 +201,7 @@ class DataExporter(object):
                     # unit = self.units[f'{key.split("-")[0]}']
                     unit = self.units[key]
                     # mc = self.mcs[f'{key.split("-")[0]}']
-                    mc = self.units[key]
+                    mc = self.mcs[key]
                     if mc == 1:
                         mc = 'Calculated'
                     else:
@@ -291,6 +296,7 @@ class DataExporter(object):
     def exportToSelected(self):
         excel = app.getActiveProject().data
         ordered, units, mcs = self.getSortedData()
+        # print(f'START: {ordered, units, mcs}')
 
         if self.onlyPlots == True: # Export only created plots
             print('TO SELECTED - ONLY PLOTS')
@@ -335,8 +341,13 @@ class DataExporter(object):
             print('TO SELECTED - WHOLE PROJECT')
             if self.importDataMode == 'long':
                 for key, value in ordered.items():
-                    unit = units[f'{key.split("-")[0]}']
-                    mc = mcs[f'{key.split("-")[0]}']
+                    # print(f'1 key, value: {key, value}')
+                    if 'C(a-v)O2' in key:
+                        unit = units['C(a-v)O2']
+                        mc = mcs['C(a-v)O2']
+                    else:
+                        unit = units[f'{key.split("-")[0]}']
+                        mc = mcs[f'{key.split("-")[0]}']
                     # unit = units[key]
                     # mc = mcs[key]
                     if mc == 1:
@@ -349,9 +360,14 @@ class DataExporter(object):
                 excelTemp = pd.DataFrame.from_dict(excel[self.selectedSheet])
 
                 for key, value in ordered.items():
-                    # print(key, value)
-                    unit = units[f'{key.split("-")[0]}']
-                    mc = mcs[f'{key.split("-")[0]}']
+                    # print(f'2 key, value: {key, value}')
+                    if 'C(a-v)O2' in key:
+                        unit = units['C(a-v)O2']
+                        mc = mcs['C(a-v)O2']
+                    else:
+                        unit = units[f'{key.split("-")[0]}']
+                        mc = mcs[f'{key.split("-")[0]}']
+
                     if mc == 1:
                         mc = 'Calculated'
                     else:
@@ -473,6 +489,8 @@ class DataExporter(object):
             for v in self.vars:
                 temp[f'{v}-{i+1}'] = []
 
+        # print(f'TEMP: {temp}')
+
         subjects = p.getSubjects()
         for s in subjects:
             tests = s.getTests()
@@ -487,7 +505,7 @@ class DataExporter(object):
                         app.getPlottingPanel().calc(workLoadObjects[i], details)
                         updatedDetails = workLoadObjects[i].getWorkLoadDetails()
                         # print(updatedDetails)
-
+                        # print(f'SELF VARS: {self.vars}')
                         for v in self.vars:
                             value = updatedDetails[v]
                             unit = updatedDetails[f'{v}_unit']
@@ -518,9 +536,13 @@ class DataExporter(object):
         ordered = {}
         for v in self.vars:
             for key, value in temp.items():
-                # print(f'from ordered: {key, value}')
-                if key.split('-')[0] == v:
-                    ordered[key] = value
+                if v == 'C(a-v)O2':
+                    str = f'{key.split("-")[0]}-{key.split("-")[1]}'
+                    if str == v:
+                        ordered[key] = value
+                else:
+                    if key.split('-')[0] == v:
+                        ordered[key] = value
 
         return ordered, units, mcs
 
@@ -681,8 +703,8 @@ class DataExporter(object):
                 mc = 'Measured'
 
             # Change 2's to subscript
-            if '2' in self.label:
-                self.label_subscripted = self.label.replace('2', '\u2082')
+            if '2' in key:
+                key = key.replace('2', '\u2082')
 
             value.insert(0, f'{key}')
             value.insert(len(value), f'{unit}')
@@ -757,12 +779,14 @@ class DataExporter(object):
                 ordered = {}
                 for v in self.vars:
                     for key, value in self.temp.items():
-                        if key.split('-')[0] == v:
-                            ordered[key] = value
+                        ordered[key] = value
                 
             for key, value in ordered.items():
-                unit = self.units[f'{key.split("-")[0]}']
-                mc = self.mcs[f'{key.split("-")[0]}']
+                # unit = self.units[f'{key.split("-")[0]}']
+                unit = self.units[key]
+                # mc = self.mcs[f'{key.split("-")[0]}']
+                mc = self.mcs[key]
+                
                 if mc == 1:
                     mc = 'Calculated'
                 else:

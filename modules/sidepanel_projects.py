@@ -32,9 +32,8 @@ class ProjectList(object):
         self.deleteButton.grid(column=2, row=0)
         
         ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
-        # Mitä halutaan verrata???
         ttk.Button(buttonContainer, text='Compare', command=lambda: self.showComparisonOptions(), state=DISABLED).grid(column=1, row=1)
-        ttk.Button(buttonContainer, text='Plot mean...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
+        ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
 
     def plotMeanSd(self):
         emptyTest = Test()
@@ -75,23 +74,30 @@ class ProjectList(object):
     def editProject(self):
         if len(self.projectList.curselection()) < 2:
             index = self.projectList.curselection()[0]
-            Options(self, 'edit', index)            
+            Options(self, 'edit', index)
         else:
             notification.create('error', 'Select only 1 project to edit', 5000)
 
     def deleteProject(self):
-        index = self.projectList.curselection()[0]
-        app.deleteProject(index)
-        self.refreshList()
-        app.setActiveProject(None)
-        app.sidepanel_subjectList.refreshList()
-        app.sidepanel_testList.refreshList()
+        if len(self.projectList.curselection()) > 0:
+            index = self.projectList.curselection()[0]
+            app.deleteProject(index)
+            self.refreshList()
+            app.setActiveProject(None)
+            app.sidepanel_subjectList.refreshList()
+            app.sidepanel_testList.refreshList()
+        else:
+            notification.create('error', 'Select project to be deleted', 5000)
 
-    def refreshList(self):
+    def refreshList(self, index=None):
         projects = app.getProjects()
         self.projectList.delete(0, 'end')
         for p in projects:
             self.projectList.insert('end', p.id)
+
+        # If the index of current selection is given, use it
+        if index != None:
+            self.projectList.select_set(index)
 
     def addToList(self, id):
         self.projectList.insert('end', id)
@@ -147,6 +153,7 @@ class Options():
 
         self.win = Toplevel(width=(self.parent.editButton.winfo_width() * 3), height=self.parent.editButton.winfo_height() * self.height, bg='#4eb1ff', borderwidth=3)
         self.win.overrideredirect(True)
+        self.win.focus_force()
         winX = self.parent.editButton.winfo_rootx() - self.parent.editButton.winfo_width()
         winY = self.parent.editButton.winfo_rooty() - (self.parent.editButton.winfo_height() * self.height)
         self.win.geometry("+%d+%d" % ( winX, winY ))
@@ -175,8 +182,10 @@ class Options():
             ttk.Label(container, text='Project name').pack()
             self.nameEntry = ttk.Entry(container)
             self.nameEntry.pack(expand=TRUE)
+            self.nameEntry.insert(0, app.getProjects()[self.index].id)
             ttk.Button(footer, text='Save', command=self.edit).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+            self.win.bind('<KeyPress-Return>', self.edit)
 
         elif self.mode == 'compare':
             self.var = IntVar(value=0)
@@ -190,6 +199,8 @@ class Options():
             self.opt32.grid(column=2, row=2, sticky='w')
             ttk.Button(footer, text='Save', command=lambda: None).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+        
+        self.win.bind('<KeyPress-Escape>', self.close)
 
     def close(self):
         if self.var.get() == -999:
@@ -198,10 +209,10 @@ class Options():
             self.compareSubjects(self.var.get())
         self.close()
 
-    def edit(self):
+    def edit(self, *args):
         project = app.getProjects()[self.index]
         project.setId(self.nameEntry.get())
-        self.parent.refreshList()
+        self.parent.refreshList(self.index)
         self.close()
 
     def plotMean(self):
@@ -213,7 +224,7 @@ class Options():
             self.parent.plotMean95()
         self.close()
     
-    def close(self):
+    def close(self, *args):
         app.root.unbind('<Configure>', self.bindId)
         self.win.destroy()
 

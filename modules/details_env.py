@@ -2,9 +2,9 @@ from tkinter import *
 from tkinter import ttk
 from objects.app import app
 
-class EnvDetailModule(ttk.Frame):
+class EnvDetailModule(ttk.Labelframe):
     def __init__(self, detailsPanel, *args, **kwargs):
-        ttk.Frame.__init__(self, detailsPanel, *args, **kwargs)
+        ttk.Labelframe.__init__(self, detailsPanel, text="Environment details", borderwidth=5)
         self.configure(cursor='arrow')
 
         self.labels = []
@@ -12,16 +12,14 @@ class EnvDetailModule(ttk.Frame):
         self.vars = ['Elevation', 'ATM', 'FiO2', 'Temp', 'Rh']
 
         if app.settings.visDefaults['envDetails']:
-            self.pack(side = LEFT, fill = Y)
+            self.pack(side = LEFT, fill = Y, padx=(5,5))
         
         self.configure(borderwidth=5)
-        self.frame = ttk.Labelframe(self, text="Environment details", borderwidth=5)
-        self.frame.pack(fill=Y, expand=True)
 
-        self.dummy = ttk.Label(self.frame, text='')
+        self.dummy = ttk.Label(self, text='')
         self.dummy.pack()
 
-        self.container = ttk.Frame(self.frame, height=10)        
+        self.container = ttk.Frame(self, height=10)        
 
         self.elevLabel = ttk.Label(self.container, text='')
         self.elevDetail = envDetailRow(self.container, 'Elevation', 1, 0)

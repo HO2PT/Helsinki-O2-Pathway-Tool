@@ -30,7 +30,7 @@ class SubjectList(object):
         
         ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare...', command=lambda: self.showComparisonOptions()).grid(column=1, row=1)
-        ttk.Button(buttonContainer, text='Plot mean...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
+        ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
 
     def showCreateOptions(self):
         Options(self, 'add')
@@ -165,20 +165,23 @@ class SubjectList(object):
             notification.create('error', 'Select only 1 subject to edit', 5000)
 
     def deleteSubject(self):
-        project = app.getActiveProject()
-        subjects = project.getSubjects()
-        toBeDeleted = []
+        if len(self.subjectList.curselection()) > 0:
+            project = app.getActiveProject()
+            subjects = project.getSubjects()
+            toBeDeleted = []
 
-        for i in self.subjectList.curselection():
-            toBeDeleted.append(i)
+            for i in self.subjectList.curselection():
+                toBeDeleted.append(i)
 
-        sortedToBeDeleted = sorted(toBeDeleted, reverse=True)
-        for i in sortedToBeDeleted:
-            del subjects[i]
+            sortedToBeDeleted = sorted(toBeDeleted, reverse=True)
+            for i in sortedToBeDeleted:
+                del subjects[i]
 
-        app.setActiveSubject(None)
-        self.refreshList()
-        app.sidepanel_testList.refreshList()
+            app.setActiveSubject(None)
+            self.refreshList()
+            app.sidepanel_testList.refreshList()
+        else:
+            notification.create('error', 'Select subject to be deleted', 5000)
 
     def createSubject(self):
         if app.getActiveProject() == None:
@@ -260,7 +263,7 @@ class SubjectList(object):
     def updateSelection(self):
         self.subjectList.selection_set('end')
 
-    def refreshList(self):
+    def refreshList(self, index=None):
         activeProject = app.getActiveProject()
         try:
             subjects = activeProject.getSubjects()
@@ -270,6 +273,10 @@ class SubjectList(object):
         self.subjectList.delete(0, 'end')
         for s in subjects:
             self.subjectList.insert('end', s.id)
+
+        # If the index of current selection is given, use it
+        if index != None:
+            self.subjectList.select_set(index)
 
     def handleListboxSelect(self):
         # Set selected subject as active subject by index
@@ -298,6 +305,7 @@ class Options():
 
         self.win = Toplevel(width=(self.parent.editButton.winfo_width() * 3), height=self.parent.editButton.winfo_height() * self.height, bg='#4eb1ff', borderwidth=3)
         self.win.overrideredirect(True)
+        self.win.focus_force()
         winX = self.parent.editButton.winfo_rootx() - self.parent.editButton.winfo_width()
         winY = self.parent.editButton.winfo_rooty() - (self.parent.editButton.winfo_height() * self.height)
         self.win.geometry("+%d+%d" % ( winX, winY ))
@@ -350,13 +358,25 @@ class Options():
             ttk.Label(container, text='Subject name').pack()
             self.nameEntry = ttk.Entry(container)
             self.nameEntry.pack(expand=TRUE)
+            self.nameEntry.insert(0, self.parent.subjectList.get(self.index))
             ttk.Button(footer, text='Save', command=self.edit).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+            self.win.bind('<KeyPress-Return>', self.edit)
+            
+        self.win.bind('<KeyPress-Escape>', self.close)
 
-    def edit(self):
+    def edit(self, *args):
+        oldName = self.parent.subjectList.get(self.index)
         subject = app.getActiveSubject()
         subject.setId(self.nameEntry.get())
-        self.parent.refreshList()
+        self.parent.refreshList(self.index)
+
+        # If the subject's name is used in naming the tests, update tests as well
+        for t in subject.tests:
+            if oldName in t.id:
+                t.id = t.id.replace(oldName, self.nameEntry.get())
+        app.sidepanel_testList.refreshList()
+
         self.close()
 
     def add(self):
@@ -368,7 +388,7 @@ class Options():
             self.parent.combineAndAdd()
         self.close()
         
-    def close(self):
+    def close(self, *args):
         app.root.unbind('<Configure>', self.bindId)
         self.win.destroy()
 
