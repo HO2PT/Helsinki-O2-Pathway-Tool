@@ -29,9 +29,12 @@ class Test(object):
     def createLoad(self):
         newLoad = Load(self)
         # Use the same units as the other loads
-        for key, value in self.workLoads[0].details.getWorkLoadDetails().items():
-            if '_unit' in key:
-                newLoad.details.setUnit(key, value)
+        try:
+            for key, value in self.workLoads[0].details.getWorkLoadDetails().items():
+                if '_unit' in key:
+                    newLoad.details.setUnit(key, value)
+        except:
+            pass
         self.workLoads.append( newLoad )
         return newLoad
 

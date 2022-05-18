@@ -56,17 +56,17 @@ root.geometry("+%d+%d" % ( initX, initY ))
 loaded = False
 
 def resize(e):
-    width = root.winfo_width()
-    height = root.winfo_height()
-    plottingPanel.plotNotebook.pack_forget()
-    root.after(500, lambda: plottingPanel.plotNotebook.pack(expand=TRUE, fill=BOTH))
+    detailsPanelW = detailsPanel.detailsPanel.winfo_width()
+    contentW = detailsPanel.projectDetails.winfo_width() + detailsPanel.testDetails.winfo_width() + detailsPanel.envDetails.winfo_width()
+    diff = detailsPanelW-contentW
+    print(diff)
 
-# root.bind('<Configure>', lambda e: resize(e))
+# root.bind('<Configure>', resize)
 
 def debug():
     # print(app.activeSubject.tests[0].workLoads[0].details.getWorkLoadDetails())
     # print(vars(app.activeTest))
-    print(app.activeTest.workLoads[0].details.getWorkLoadDetails())
+    # print(app.activeTest.workLoads[0].details.getWorkLoadDetails())
     # print(app.getActiveTest())
     # print(app.getActiveProject().data)
     
@@ -82,6 +82,10 @@ def debug():
     # for d in app.getActiveTest().getWorkLoads():
     #     print(d.getDetails().getWorkLoadDetails())
     # print(plottingPanel.plots[0].workLoadDetailsObjects[0].getWorkLoadDetails())
+    print(f'DETAILSPANEL: {detailsPanel.detailsPanel.winfo_width()}')
+    print(f'projectpanel: {detailsPanel.projectDetails.winfo_width()}')
+    print(f'testpanel: {detailsPanel.testDetails.winfo_width()}')
+    print(f'envpanel: {detailsPanel.envDetails.winfo_width()}')
 
 def updateCursor(e):
     print(mainframe.identify(e.x, e.y))

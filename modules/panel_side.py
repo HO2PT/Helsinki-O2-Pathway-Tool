@@ -41,7 +41,11 @@ class SidePanel(ttk.Frame):
         self.indicator = ttk.Label(self, text='', anchor='center')
         self.indicator.pack(side=RIGHT, fill=Y)
 
+        # Helper variable to improve panel resizing
+        self.posX = None
+
         self.sidePanel.bind('<Motion>', self.changeCursor)
+        self.sidePanel.bind('<1>', self.setPosX)
         self.sidePanel.bind('<B1-Motion>', self.resize)
         self.sidePanel.bind('<ButtonRelease-1>', self.applyResize)
         self.indicator.bind('<Double-Button-1>', self.defSize)
@@ -52,27 +56,31 @@ class SidePanel(ttk.Frame):
         else:
             self.sidePanel.configure(cursor='arrow')
 
+    def setPosX(self, e):
+        self.posX = e.x
+
     def resize(self, event):
         self.sidePanel.pack_propagate(False)
         self.separator.place(height=self.winfo_height(), x=event.x, y=0)
         self.separator.lift()
 
     def applyResize(self, event):
-        self.separator.place_forget()
-        
-        if event.x > 10:
-            self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=event.x)
-            self.update_idletasks()
-            minWidth = app.sidepanel_projectList.container.winfo_reqwidth()
-            containerWidth = self.sidePanel.winfo_width()
+        if event.x != self.posX:
+            self.separator.place_forget()
+            
+            if event.x > 10:
+                self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=event.x)
+                self.update_idletasks()
+                minWidth = app.sidepanel_projectList.container.winfo_reqwidth()
+                containerWidth = self.sidePanel.winfo_width()
 
-            if containerWidth < minWidth:
-                self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
+                if containerWidth < minWidth:
+                    self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
+                else:
+                    self.indicator.configure(text='', background=app.root.cget('bg'))
             else:
-                self.indicator.configure(text='', background=app.root.cget('bg'))
-        else:
-            self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=10)
-            self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
+                self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=10)
+                self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
 
     def defSize(self, event):
         self.indicator.configure(text='', background=app.root.cget('bg'))

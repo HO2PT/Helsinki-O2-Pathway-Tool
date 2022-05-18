@@ -553,17 +553,8 @@ class PlotTab(ttk.Frame):
         # Load details and line options container
         self.createRightSide()
 
-        self.fixLegend()
-
-    def fixLegend(self):
-        self.update_idletasks()
-        legSize = self.leg._legend_box.get_window_extent(self.fig.canvas.get_renderer())
-        ratio = legSize.width/self.plotFrame.winfo_width()
-        print(f'width of plotframe: {self.plotFrame.winfo_width()}')
-        print(f'width of canvastk: {self.canvasTk.winfo_width()}')
-        print(f'width of canvasframe: {self.canvasFrame.winfo_width()}')
-        print(ratio)
-        # plt.subplots_adjust(right=0.965-ratio)
+        # Helper variable to improve panel resizing
+        self.posX = None
 
     def createLeftSide(self):
         # Plot canvasframe
@@ -617,7 +608,7 @@ class PlotTab(ttk.Frame):
         setYLimFrame = ttk.Labelframe(self.toolbarWrapper, text='Set Y-axis max. value', padding=(5,5))
         setYLimFrame.grid(column=0, row=0, padx=(5,5))
         self.yValue = StringVar(setYLimFrame, value=yLimit)
-        self.yEntry = ttk.Entry(setYLimFrame, textvariable=self.yValue, width=6)
+        self.yEntry = ttk.Entry(setYLimFrame, textvariable=self.yValue, width=8)
         self.yEntry.grid(column=0, row=1)
         ttk.Button(setYLimFrame, text='Set', command=lambda: self.setYLim()).grid(column=1, row=1)
 
@@ -657,6 +648,7 @@ class PlotTab(ttk.Frame):
         self.loadNotebookFrame.pack(side=RIGHT, fill=Y)
 
         self.loadNotebookFrame.bind('<Motion>', self.changeCursor)
+        self.loadNotebookFrame.bind('<1>', self.setPosX)
         self.loadNotebookFrame.bind('<B1-Motion>', self.resize)
         self.loadNotebookFrame.bind('<ButtonRelease-1>', self.finishResize)
         self.indicator.bind('<Double-Button-1>', self.defSize)
@@ -693,15 +685,12 @@ class PlotTab(ttk.Frame):
     def hideLegend(self):
         legend = self.plot[1].get_legend()
         legSize = self.leg._legend_box.get_window_extent(self.fig.canvas.get_renderer())
-        ratio = legSize.width/self.plotFrame.winfo_width()
 
         vis = legend.get_visible()
         if vis:
             legend.set_visible(False)
-            plt.subplots_adjust(right=0.925)
         else:
             legend.set_visible(True)
-            plt.subplots_adjust(right=0.965-ratio)
         self.plot[0].canvas.draw()
 
     def incTicks(self, axis):
@@ -729,27 +718,31 @@ class PlotTab(ttk.Frame):
             self.plot[0].canvas.draw()
 
     def finishResize(self, event):
-        width = self.loadNotebookFrame.winfo_width() - event.x
-        self.separator.place_forget()
+        if event.x != self.posX:
+            width = self.loadNotebookFrame.winfo_width() - event.x
+            self.separator.place_forget()
 
-        if width > 10:
-            self.loadNotebookFrame.configure(width=width)
-            self.loadNotebookFrame.update_idletasks()
-            minWidth = self.loadNotebook.winfo_reqwidth()
-            width = self.loadNotebookFrame.winfo_width()
+            if width > 10:
+                self.loadNotebookFrame.configure(width=width)
+                self.loadNotebookFrame.update_idletasks()
+                minWidth = self.loadNotebook.winfo_reqwidth()
+                width = self.loadNotebookFrame.winfo_width()
 
-            if width < minWidth:
-                self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
+                if width < minWidth:
+                    self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
+                else:
+                    self.indicator.configure(text='', background=app.root.cget('bg'))
             else:
-                self.indicator.configure(text='', background=app.root.cget('bg'))
-        else:
-            self.loadNotebookFrame.configure(width=10)
-            self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
+                self.loadNotebookFrame.configure(width=10)
+                self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
 
     def resize(self, event):
         self.loadNotebookFrame.pack_propagate(False)
         self.separator.place(height=self.loadNotebookFrame.winfo_height(), x=self.canvasFrame.winfo_width()+event.x, y=0)
         self.separator.lift()
+    
+    def setPosX(self, e):
+        self.posX = e.x
 
     def defSize(self, event):
         self.indicator.configure(text='', background=app.root.cget('bg'))
@@ -767,13 +760,12 @@ class PlotTab(ttk.Frame):
 
     def createPlot(self):
         PvO2 = np.arange(0,100,1)
-        self.plot = plt.subplots()
+        self.plot = plt.subplots(constrained_layout=True)
         self.fig, self.ax = self.plot
 
         self.ax.set_title('O\u2082 Pathway')
         self.ax.set_xlabel('PvO\u2082 (mmHg)')
         self.ax.set_xlim(left=0, right=100)
-        plt.subplots_adjust(bottom=0.175)
         self.handles = []
         ylim = []
 
@@ -803,18 +795,8 @@ class PlotTab(ttk.Frame):
 
         self.ax.set_ylim(top=ylim, bottom=0)
 
-        # self.leg = self.ax.legend(handles=self.handles , loc='upper right',
-        #     fancybox=True, shadow=True, ncol=3)
-
-        # plt.subplots_adjust(right=0.8)
         self.leg = self.ax.legend(handles=self.handles , loc='upper left', bbox_to_anchor=(1.01, 1),
             fancybox=True, shadow=True, ncol=1)
-
-        self.leg.set_visible(False)
-        
-        # print(type(self.fig))
-        # plt.subplots_adjust(right=0.8-legSize.width/1000)
-        # self.fig.set(figwidth=figSize.width-legSize.width/100)
 
         # we will set up a dict mapping legend line to orig line, and enable
         # picking on the legend line
@@ -1219,7 +1201,6 @@ class PlotOptions(object):
 class LoadTabRow(ttk.Frame):
     def __init__(self, parentObject, parentFrame, label, value, index, id, row, scale, detailsObject, *args, **kwargs):
         ttk.Frame.__init__(self, parentFrame, *args, **kwargs)
-        # self.grid()
         self.parentObject = parentObject
         self.parent = parentFrame
         self.label = label

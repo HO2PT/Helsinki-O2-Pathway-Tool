@@ -125,19 +125,22 @@ class ProjectList(object):
 
     def handleListboxSelect(self):
         # Set selected project as active project by clicked index
-        index = self.projectList.curselection()[0]
-        self.startSel = index
-        project = app.projects[index]
-        app.setActiveProject(project)
+        try:
+            index = self.projectList.curselection()[0]
+            self.startSel = index
+            project = app.projects[index]
+            app.setActiveProject(project)
 
-        # Refresh app state
-        app.setActiveSubject(None)
-        # app.setActiveTest(None)
+            # Refresh app state
+            app.setActiveSubject(None)
+            # app.setActiveTest(None)
 
-        # Refresh views
-        app.sidepanel_subjectList.refreshList()
-        app.sidepanel_testList.refreshList()
-        app.projectDetailModule.refreshDetails()
+            # Refresh views
+            app.sidepanel_subjectList.refreshList()
+            app.sidepanel_testList.refreshList()
+            app.projectDetailModule.refreshDetails()
+        except IndexError:
+            pass
 
 class Options():
     def __init__(self, parent, mode, index=None):

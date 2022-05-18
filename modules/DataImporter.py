@@ -773,7 +773,7 @@ class DataImporter(object):
             pass
         else: # something selected
             # print('SOMETHING SELECTED')
-            try:
+            # try:
                 if len(rowList) > 0: # rows selected
                     if self.stage == 0: # ids
                         # Reset subjects if returned
@@ -1009,12 +1009,12 @@ class DataImporter(object):
                         self.notif.after(1000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                         self.nextStage(imported=self.stage)
 
-            except Exception as e:
-                print(f'EXCEPTION {e}')
-                # s = ttk.Style()
-                # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                self.notif.configure(text=f'ID information needed to import data', background='red', foreground='#333333')
-                self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+            # except Exception as e:
+            #     print(f'EXCEPTION {e}')
+            #     # s = ttk.Style()
+            #     # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+            #     self.notif.configure(text=f'ID information needed to import data', background='red', foreground='#333333')
+            #     self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def closeImporter(self):
         if hasattr(self, 'test'):

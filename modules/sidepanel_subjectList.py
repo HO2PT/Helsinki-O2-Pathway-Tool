@@ -1,3 +1,4 @@
+from cmath import exp
 from copy import deepcopy
 from tkinter import *
 from tkinter import ttk
@@ -279,18 +280,21 @@ class SubjectList(object):
             self.subjectList.select_set(index)
 
     def handleListboxSelect(self):
-        # Set selected subject as active subject by index
-        index = self.subjectList.curselection()[0]
-        self.startSel = index
-        subject = app.getActiveProject().getSubjects()[index]
+        try:
+            # Set selected subject as active subject by index
+            index = self.subjectList.curselection()[0]
+            self.startSel = index
+            subject = app.getActiveProject().getSubjects()[index]
+            
+            # Refresh app state
+            app.setActiveSubject(subject)
+            # app.setActiveTest(None)
+
+            # Refresh views
+            app.sidepanel_testList.refreshList()
+        except IndexError:
+            pass
         
-        # Refresh app state
-        app.setActiveSubject(subject)
-        # app.setActiveTest(None)
-
-        # Refresh views
-        app.sidepanel_testList.refreshList()
-
 class Options():
     def __init__(self, parent, mode, index = None):
         self.parent = parent

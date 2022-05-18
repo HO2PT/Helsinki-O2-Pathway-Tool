@@ -12,7 +12,7 @@ class EnvDetailModule(ttk.Labelframe):
         self.vars = ['Elevation', 'ATM', 'FiO2', 'Temp', 'Rh']
 
         if app.settings.visDefaults['envDetails']:
-            self.pack(side = LEFT, fill = Y, padx=(5,5))
+            self.pack(side = LEFT, padx=(5,5), anchor='n')
         
         self.configure(borderwidth=5)
 

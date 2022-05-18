@@ -34,84 +34,87 @@ class ScrollableNotebook(ttk.Frame):
         self.parentObj = parentObj
 
     def handleTabClick(self, e):
-        clickedTabIndex = self.notebookTab.index(f'@{e.x},{e.y}')
-        clickedObject = type(self.parentObj).__name__
+        try:
+            clickedTabIndex = self.notebookTab.index(f'@{e.x},{e.y}')
+            clickedObject = type(self.parentObj).__name__
 
-        if self.notebookTab.identify(e.x, e.y) == 'close':
-            if clickedObject == 'LoadNotebook': # If tab in details panel
-                if askokcancel("Confirm", "Do you want to remove the tab?"):
+            if self.notebookTab.identify(e.x, e.y) == 'close':
+                if clickedObject == 'LoadNotebook': # If tab in details panel
+                    if askokcancel("Confirm", "Do you want to remove the tab?"):
 
-                    tab_id = self.notebookTab.tabs()[clickedTabIndex]
-                    content_id = self.notebookContent.tabs()[clickedTabIndex]
+                        tab_id = self.notebookTab.tabs()[clickedTabIndex]
+                        content_id = self.notebookContent.tabs()[clickedTabIndex]
 
-                    self.notebookTab.forget(clickedTabIndex)
-                    self.notebookContent.forget(clickedTabIndex)
+                        self.notebookTab.forget(clickedTabIndex)
+                        self.notebookContent.forget(clickedTabIndex)
 
-                    for c in self.notebookTab.winfo_children():
-                        if str(tab_id) == str(c):
-                            c.destroy()
-                            del c
-                        
-                    for c in self.winfo_children():
-                        if str(content_id) == str(c):
-                            c.destroy()
-                            del c
+                        for c in self.notebookTab.winfo_children():
+                            if str(tab_id) == str(c):
+                                c.destroy()
+                                del c
+                            
+                        for c in self.winfo_children():
+                            if str(content_id) == str(c):
+                                c.destroy()
+                                del c
 
-                    tab = self.parentObj.loadTabs[clickedTabIndex]
-                    for r in tab.detailRows:
-                        if len(r.objects) != 0:
-                            for o in r.objects:
-                                del o
-                        for i, v in enumerate(r.vars):
-                            v.trace_vdelete('w', r.traceids[i] )
-                            del v
-                        r.destroy()
-                        del r
-                    tab.loadFrame.destroy()
-                    del self.parentObj.loadTabs[clickedTabIndex]
-                    del app.getActiveTest().workLoads[clickedTabIndex]
-                        
-                if len(self.notebookTab.tabs()) == 0:
-                    app.activeTest = None
-                    app.testDetailModule.testId.pack_forget()
-                    app.testDetailModule.loadsContainer.pack_forget()
-                    app.sidepanel_testList.testList.selection_clear(0, 'end')
-
-            else: # If tab in plotting panel
-                if askokcancel("Confirm", "Do you want to remove the tab?"):
-                    tab_id = self.notebookTab.tabs()[clickedTabIndex]
-                    content_id = self.notebookContent.tabs()[clickedTabIndex]
-
-                    self.notebookTab.forget(clickedTabIndex)
-                    self.notebookContent.forget(clickedTabIndex)
-
-                    for c in self.notebookTab.winfo_children():
-                        if str(tab_id) == str(c):
-                            c.destroy()
-                            del c
-                        
-                    for c in self.winfo_children():
-                        if str(content_id) == str(c):
-                            c.destroy()
-                            del c
-
-                    plots = self.parentObj.plots # PlotTab objects
-                    plot = plots[clickedTabIndex]
-                    loadTabs = plot.loadTabs # PlotLoadTab objects
-                    for t in loadTabs: # PlotLoadTab object
-                        for r in t.rowElements:
+                        tab = self.parentObj.loadTabs[clickedTabIndex]
+                        for r in tab.detailRows:
+                            if len(r.objects) != 0:
+                                for o in r.objects:
+                                    del o
+                            for i, v in enumerate(r.vars):
+                                v.trace_vdelete('w', r.traceids[i] )
+                                del v
                             r.destroy()
                             del r
-                        t.destroy()
-                        del t
+                        tab.loadFrame.destroy()
+                        del self.parentObj.loadTabs[clickedTabIndex]
+                        del app.getActiveTest().workLoads[clickedTabIndex]
+                            
+                    if len(self.notebookTab.tabs()) == 0:
+                        app.activeTest = None
+                        app.testDetailModule.testId.pack_forget()
+                        app.testDetailModule.loadsContainer.pack_forget()
+                        app.sidepanel_testList.testList.selection_clear(0, 'end')
 
-                    plot.destroy()  
-                    del plot
-                    del plots[clickedTabIndex]
+                else: # If tab in plotting panel
+                    if askokcancel("Confirm", "Do you want to remove the tab?"):
+                        tab_id = self.notebookTab.tabs()[clickedTabIndex]
+                        content_id = self.notebookContent.tabs()[clickedTabIndex]
 
-                    # Hide plot panel if the last tab is closed
-                    if len(plots) == 0:
-                        self.parentObj.plotNotebook.pack_forget()
+                        self.notebookTab.forget(clickedTabIndex)
+                        self.notebookContent.forget(clickedTabIndex)
+
+                        for c in self.notebookTab.winfo_children():
+                            if str(tab_id) == str(c):
+                                c.destroy()
+                                del c
+                            
+                        for c in self.winfo_children():
+                            if str(content_id) == str(c):
+                                c.destroy()
+                                del c
+
+                        plots = self.parentObj.plots # PlotTab objects
+                        plot = plots[clickedTabIndex]
+                        loadTabs = plot.loadTabs # PlotLoadTab objects
+                        for t in loadTabs: # PlotLoadTab object
+                            for r in t.rowElements:
+                                r.destroy()
+                                del r
+                            t.destroy()
+                            del t
+
+                        plot.destroy()  
+                        del plot
+                        del plots[clickedTabIndex]
+
+                        # Hide plot panel if the last tab is closed
+                        if len(plots) == 0:
+                            self.parentObj.plotNotebook.pack_forget()
+        except TclError:
+            pass
 
     def _wheelscroll(self, event):
         if event.delta > 0:

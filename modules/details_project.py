@@ -8,7 +8,7 @@ class ProjectDetailsModule(ttk.Labelframe):
         self.configure(cursor='arrow')
         
         if app.settings.visDefaults['projectDetails']:
-            self.pack(side = LEFT, fill=BOTH, padx=(5,5))
+            self.pack(side = LEFT, padx=(5,5), anchor='n')
 
         self.configure(borderwidth=5)
 

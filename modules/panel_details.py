@@ -11,8 +11,7 @@ class DetailsPanel(ttk.Frame):
         ttk.Frame.__init__(self, mainFrame, *args, **kwargs)
         self.pack(side=TOP, fill=X)
 
-        self.mainFrame = mainFrame
-        self.separator = ttk.Separator(self.mainFrame, style='asd.TSeparator')
+        self.separator = ttk.Separator(mainFrame, style='asd.TSeparator')
 
         sty = ttk.Style()
         sty.configure(
@@ -29,7 +28,6 @@ class DetailsPanel(ttk.Frame):
         self.detailsPanel = ttk.Frame(self.upPart, height=self.defHeight, style="details.TFrame", borderwidth=self.frame_thickness)
         if app.settings.visDefaults['allDetails']:
             self.detailsPanel.pack(side=LEFT, fill=X, expand=True)
-            # self.detailsPanel.pack_propagate(False)
         
         sty.layout('details.TFrame', [
             ('Frame.border', {'sticky': 'swe'})
@@ -67,7 +65,11 @@ class DetailsPanel(ttk.Frame):
         self.indicator = ttk.Label(self, text='', anchor='center')
         self.indicator.pack(side=BOTTOM, fill=X)
 
+        # Helper variable to improve panel resizing
+        self.posY = None
+
         self.detailsPanel.bind('<Motion>', self.changeCursor)
+        self.detailsPanel.bind('<1>', self.setPosY)
         self.detailsPanel.bind('<B1-Motion>', self.resize)
         self.detailsPanel.bind('<ButtonRelease-1>', self.adjustSize)
         self.indicator.bind('<Double-Button-1>', self.defSize)
@@ -87,6 +89,9 @@ class DetailsPanel(ttk.Frame):
             self.testDetails.loadsContainer.pack_forget()
             self.envDetails.container.grid_forget()
             app.sidepanel_testList.testList.selection_clear(0, 'end')
+
+    def setPosY(self, e):
+        self.posY = e.y
             
     def resize(self, event):
         self.detailsPanel.pack_propagate(False)
@@ -94,21 +99,22 @@ class DetailsPanel(ttk.Frame):
         self.separator.lift()
 
     def adjustSize(self, event):
-        self.separator.place_forget()
+        if event.y != self.posY:
+            self.separator.place_forget()
 
-        if event.y > 20:
-            self.detailsPanel.configure(height=event.y, width=self.detailsPanel.winfo_reqwidth())
-            self.update_idletasks()
-            minHeight = self.testDetails.winfo_reqheight()
-            containerHeight = self.detailsPanel.winfo_height()
+            if event.y > 20:
+                self.detailsPanel.configure(height=event.y, width=self.detailsPanel.winfo_reqwidth())
+                self.update_idletasks()
+                minHeight = self.testDetails.winfo_reqheight()
+                containerHeight = self.detailsPanel.winfo_height()
 
-            if containerHeight < minHeight:
-                self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
+                if containerHeight < minHeight:
+                    self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
+                else:
+                    self.indicator.configure(text='', background=app.root.cget('bg'))
             else:
-                self.indicator.configure(text='', background=app.root.cget('bg'))
-        else:
-            self.detailsPanel.configure(height=20, width=self.detailsPanel.winfo_reqwidth())
-            self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
+                self.detailsPanel.configure(height=20, width=self.detailsPanel.winfo_reqwidth())
+                self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
 
     def changeCursor(self, e):
         if e.y > self.detailsPanel.winfo_height() - self.frame_thickness:

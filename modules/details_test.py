@@ -9,16 +9,15 @@ class TestDetailModule(ttk.Labelframe):
     def __init__(self, detailsPanel, *args, **kwargs):
         ttk.Labelframe.__init__(self, detailsPanel, text="Test details", borderwidth=5)
         self.configure(cursor='arrow')
-        # self.pack(side = LEFT, fill = X, expand=TRUE)
 
         if app.settings.visDefaults['testDetails']:
-            self.pack(side = LEFT, fill = BOTH, expand=TRUE, padx=(5,5))
+            self.pack(side = LEFT, padx=(5,5), anchor='n')
 
         self.configure(borderwidth=5)
 
         ## Details frame
         details = ttk.Frame(self)
-        details.pack(side=LEFT, fill = BOTH)#, expand=TRUE)
+        details.pack(side=LEFT, fill = BOTH)
         
         details.pack_configure(padx=5)
 
@@ -498,15 +497,11 @@ class TestDetailRow(ttk.Frame):
 
 class TestDetailMenuElem(object):
     def __init__(self, menu, menuButton, label, index, elems, name, workload):
-        # self.menu = menu
         self.menuButton = menuButton
-        # self.label = label
         self.index = index
         self.elems = elems
         self.name = name
-        # self.workLoad = workload
 
-        # self.menu.add_command(label=self.label, command=lambda: self.updateValue())
         menu.add_command(label=label, command=self.updateValue)
 
     def updateValue(self):

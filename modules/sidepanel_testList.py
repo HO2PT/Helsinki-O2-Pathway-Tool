@@ -255,26 +255,29 @@ class TestList(object):
             self.testList.select_set(index)
 
     def handleListboxSelect(self, e):
-        self.testList.selection_clear(0, 'end')
-
-        newIndex= f'@{e.x},{e.y}'
-        self.testList.selection_set(newIndex)
-
-        test = app.getActiveSubject().tests[self.testList.curselection()[0]]
         try:
-            if test.workLoads[0].details.isImported == True:
-                testCopy = deepcopy(test)
-                app.setActiveTest(testCopy)
-            else:
-                app.setActiveTest(test)
+            self.testList.selection_clear(0, 'end')
 
-            time.sleep(0.05)
+            newIndex= f'@{e.x},{e.y}'
+            self.testList.selection_set(newIndex)
 
-            # Refresh views
-            app.testDetailModule.refreshTestDetails()
-            app.envDetailModule.refresh()
-        except:
-            notification.create('error', 'No workloads found', 5000)
+            test = app.getActiveSubject().tests[self.testList.curselection()[0]]
+            try:
+                if test.workLoads[0].details.isImported == True:
+                    testCopy = deepcopy(test)
+                    app.setActiveTest(testCopy)
+                else:
+                    app.setActiveTest(test)
+
+                time.sleep(0.05)
+
+                # Refresh views
+                app.testDetailModule.refreshTestDetails()
+                app.envDetailModule.refresh()
+            except:
+                notification.create('error', 'No workloads found', 5000)
+        except AttributeError:
+            pass
 
 class Options():
     def __init__(self, parent, mode, index = None):
