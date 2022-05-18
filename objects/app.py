@@ -1,6 +1,7 @@
 import numpy as np
 from copy import deepcopy
 from modules.notification import notification
+from modules.O2PTSolver import O2PTSolver
 
 class App(object):
 
@@ -116,7 +117,8 @@ class App(object):
                 workLoadObject = w.getDetails()
                 details = w.getDetails().getWorkLoadDetails()
 
-                validValues = app.getPlottingPanel().calc(workLoadObject, details)
+                solver = O2PTSolver(workLoadObject, details)
+                validValues = solver.calc()
                 if validValues == False:
                     notification.create('error', f"Couldn't calculate project metrics. Check values of subject: {s.id} test: {t.id}", '5000')
                 details = w.getDetails().getWorkLoadDetails()

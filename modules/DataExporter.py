@@ -2,6 +2,7 @@ import os
 import math
 from tkinter import *
 from tkinter import ttk
+from modules.O2PTSolver import O2PTSolver
 from objects.test import Test
 from objects.app import app
 from objects.workLoadDetails import WorkLoadDetails
@@ -512,8 +513,6 @@ class DataExporter(object):
             for v in self.vars:
                 temp[f'{v}-{i+1}'] = []
 
-        # print(f'TEMP: {temp}')
-
         subjects = p.getSubjects()
         for s in subjects:
             tests = s.getTests()
@@ -525,7 +524,7 @@ class DataExporter(object):
                 for i in range(nLoads):
                     try:
                         details = workLoadObjects[i].getWorkLoadDetails()
-                        app.getPlottingPanel().calc(workLoadObjects[i], details)
+                        O2PTSolver(workLoadObjects[i], details).calc()
                         updatedDetails = workLoadObjects[i].getWorkLoadDetails()
                         # print(updatedDetails)
                         # print(f'SELF VARS: {self.vars}')
@@ -670,7 +669,8 @@ class DataExporter(object):
         for li, l in enumerate(filteredLoads):
             details = l.getDetails().getWorkLoadDetails()
             if projectPlot == False:
-                app.getPlottingPanel().calc(l.getDetails(), details)
+                O2PTSolver(l.getDetails(), details).calc()
+                # app.getPlottingPanel().calc(l.getDetails(), details)
             updatedDetails = l.getDetails().getWorkLoadDetails()
 
             for v in self.vars:
