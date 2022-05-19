@@ -1,3 +1,4 @@
+from this import d
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
@@ -1361,11 +1362,13 @@ class DataImporter(object):
 
         # Filter possible empty loads
         nFilteredLoads = 0
+        filteredLoads = []
         for i, l in enumerate(test.workLoads):
             detailsDict = l.getDetails().getWorkLoadDetails()
                         
             if i == 0 or detailsDict['Load'] != 0:
                 nFilteredLoads += 1
+                filteredLoads.append(l)
 
         if nFilteredLoads > 1:
             if pHrest != pHpeak:
@@ -1381,7 +1384,7 @@ class DataImporter(object):
             Tstep = 0
 
         # Add linear change
-        for i, w in enumerate(test.getWorkLoads()):
+        for i, w in enumerate(filteredLoads):
             details = w.getDetails()
             pHValue = pHrest - (i * pHstep)
             details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')

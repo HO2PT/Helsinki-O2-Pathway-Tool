@@ -14,12 +14,8 @@ from modules.panel_plotting import PlottingPanel
 root = Tk()
 root.title("O\u2082 Pathway Tool")
 root.geometry('750x500')
-# print(f' init: {initWidth, initHeight}')
-# root.pack_propagate(False)
 
 app.root = root
-# app.strVars = []
-# app.intVars = []
 
 # Load settings
 settings = Settings()
@@ -61,31 +57,9 @@ def resize(e):
     diff = detailsPanelW-contentW
     print(diff)
 
-# root.bind('<Configure>', resize)
-
 def debug():
-    # print(app.activeSubject.tests[0].workLoads[0].details.getWorkLoadDetails())
-    # print(vars(app.activeTest))
-    # print(app.activeTest.workLoads[0].details.getWorkLoadDetails())
-    # print(app.getActiveTest())
-    # print(app.getActiveProject().data)
-    
-    # a = WorkLoadDetails(name='dummy')
-    # for key in a.getWorkLoadDetails().keys():
-    #     print(key)
-
-    # print(app.getActiveTest().envDetails.getDetails())
-    # print(root.winfo_children())
-    # print(f'button visible? {app.detailsPanel.plotButton.winfo_ismapped()}')
-    # print(app.detailsPanel.winfo_reqwidth(), app.detailsPanel.winfo_width())
-    # print( app.plottingPanel.plots[0].loadNotebookFrame.winfo_width())
-    # for d in app.getActiveTest().getWorkLoads():
-    #     print(d.getDetails().getWorkLoadDetails())
-    # print(plottingPanel.plots[0].workLoadDetailsObjects[0].getWorkLoadDetails())
-    print(f'DETAILSPANEL: {detailsPanel.detailsPanel.winfo_width()}')
-    print(f'projectpanel: {detailsPanel.projectDetails.winfo_width()}')
-    print(f'testpanel: {detailsPanel.testDetails.winfo_width()}')
-    print(f'envpanel: {detailsPanel.envDetails.winfo_width()}')
+    for d in app.getActiveTest().getWorkLoads():
+        print(d.getDetails().getWorkLoadDetails())
 
 def updateCursor(e):
     print(mainframe.identify(e.x, e.y))

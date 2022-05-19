@@ -70,9 +70,6 @@ class PlottingPanel(ttk.Frame):
             notification.create('error', f'Invalid values. Please check the units and values of {i+1}. load and try again.', 5000)
 
     def plotProject(self):
-        ##
-        ## INFO: Pitäiskö filteröidä tyhjät pois?
-        ##
         workLoadDetailsObjects = []
         for w in app.getActiveTest().getWorkLoads():
             w = w.getDetails()
@@ -85,10 +82,9 @@ class PlottingPanel(ttk.Frame):
 
         # Create tab for the plot
         plotTabObject = PlotTab(self.plotNotebook, workLoadDetailsObjects)
-        plotTab = plotTabObject.createPlotTab()
 
         # Add plot to the notebook and objects list of plots
-        self.plotNotebook.add(plotTab, text=app.getActiveTest().id)
+        self.plotNotebook.add(plotTabObject, text=app.getActiveTest().id)
         self.plots.append(plotTabObject)
 
 class PlotTab(ttk.Frame):

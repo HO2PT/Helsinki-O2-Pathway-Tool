@@ -61,12 +61,6 @@ class DataExporter(object):
             
             self.exportOptions = Toplevel(borderwidth=10)
             self.exportOptions.title("Export options")
-            self.exportOptions.geometry("500x450")
-
-            self.exportOptions.update_idletasks()
-            optionsX = int(self.exportOptions.winfo_screenwidth()) * 0.5 - int(self.exportOptions.winfo_width()) * 0.5
-            optionsY = int(self.exportOptions.winfo_screenheight()) * 0.5 - int(self.exportOptions.winfo_height()) * 0.5
-            self.exportOptions.geometry("+%d+%d" % ( optionsX, optionsY ))
 
             self.container = ttk.Labelframe(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
             self.container.pack()
@@ -79,7 +73,7 @@ class DataExporter(object):
 
             temp = WorkLoadDetails(name='dummy')
             for i, key in enumerate(temp.getWorkLoadDetails().keys()):
-                if '_unit' not in key and '_MC' not in key and key != 'id' and key != 'Tc\u209A\u2091\u2090\u2096' and key != 'pH\u209A\u2091\u2090\u2096' and key != 'Tc @ rest' and key != 'pH @ rest':
+                if '_unit' not in key and '_MC' not in key and key != 'id' and key != 'Tc @ rest' and key != 'pH @ rest':
                     if loadMode == 0: # Loads
                         if key != 'Velocity' and key != 'Incline':
                             var = IntVar(value=1, name=key)
@@ -103,17 +97,22 @@ class DataExporter(object):
             ttk.Button(self.container, text='Deselect All', command=self.deselectAll).grid(column=1, row=len(temp.getWorkLoadDetails().keys()))
             
             ttk.Button(self.footer, text='Cancel', command=self.cancel).pack(side=RIGHT)
-            ttk.Button(self.footer, text='Export', command=lambda: getSelected()).pack(side=RIGHT)
+            ttk.Button(self.footer, text='Export', command=self.getSelected).pack(side=RIGHT)
             
-            # Create the sheet selection dropdown
+            # If exporting to imported file
             if self.toNew == False:
                 self.sheetNames = []
 
                 for key, value in excel.items():
                     self.sheetNames.append(key)
 
+                # Create the sheet selection dropdown where the data is appended to
                 if self.onlyPlots == False:
-                    sheetSelFrame = ttk.Labelframe(self.exportOptions, text='To sheet', padding=(10,10))
+                    self.container.pack_configure(side=LEFT, padx=10)
+                    self.rightContainer = ttk.Frame(self.exportOptions)
+                    self.rightContainer.pack(side=RIGHT, fill=X, expand=True)
+
+                    sheetSelFrame = ttk.Labelframe(self.rightContainer, text='To sheet', padding=(10,10))
 
                     # Create menubutton for selection of excel sheet
                     self.menuButton = ttk.Menubutton(sheetSelFrame, text=self.sheetNames[0])
@@ -123,27 +122,66 @@ class DataExporter(object):
                         DataMenuElem(self, menu, self.menuButton, s, isExporter=True)
 
                     self.menuButton['menu'] = menu
-                    self.container.pack_configure(side=LEFT, padx=10)
-                    sheetSelFrame.pack(side=LEFT, fill=X, expand=True, padx=10)
+                    
+                    sheetSelFrame.pack(fill=X, expand=True, padx=10)
                     self.menuButton.pack()
+
+                    expOptions = ttk.Labelframe(self.rightContainer, text='Options', padding=(10,10))
+                    expOptions.pack(fill=X, expand=True, padx=10)
+
+                    self.statsVar0 = IntVar(value=0)
+                    self.statsVar1 = IntVar(value=0)
+                    self.statsVar2 = IntVar(value=0)
+                    ttk.Checkbutton(expOptions, text='Create mean (SD) graph', variable=self.statsVar0).grid(column=0, row=0, sticky='nw')
+                    ttk.Checkbutton(expOptions, text='Create median (IQR) graph', variable=self.statsVar1).grid(column=0, row=1, sticky='nw')
+                    ttk.Checkbutton(expOptions, text='Create mean (CI95%) graph', variable=self.statsVar2).grid(column=0, row=2, sticky='nw')
+
+                    expOptions.grid_rowconfigure(3, minsize=15)
+
+                    self.plotVar = IntVar(value=0)
+                    ttk.Radiobutton(expOptions, text='Create graph for every test on a separate sheet', variable=self.plotVar, value=0).grid(column=0, row=4, sticky='nw')
+                    ttk.Radiobutton(expOptions, text='Export only quantitative results', variable=self.plotVar, value=1).grid(column=0, row=5, sticky='nw')
+                else:
+                    self.exportOptions.geometry("550x450")
+            # If exporting to a new file
+            else:
+                if self.onlyPlots == False:
+                    self.container.pack_configure(side=LEFT, padx=10)
+                    expOptions = ttk.Labelframe(self.exportOptions, text='Options')
+                    expOptions.pack(side=LEFT, fill=X, expand=True, padx=10)
+
+                    self.statsVar0 = IntVar(value=0)
+                    self.statsVar1 = IntVar(value=0)
+                    self.statsVar2 = IntVar(value=0)
+                    ttk.Checkbutton(expOptions, text='Create mean (SD) plot', variable=self.statsVar0).grid(column=0, row=0, sticky='nw')
+                    ttk.Checkbutton(expOptions, text='Create median (IQR) plot', variable=self.statsVar1).grid(column=0, row=1, sticky='nw')
+                    ttk.Checkbutton(expOptions, text='Create mean (CI95%) plot', variable=self.statsVar2).grid(column=0, row=2, sticky='nw')
+                else:
+                    self.exportOptions.geometry("550x450")
+
+            self.exportOptions.update_idletasks()
+            optionsX = int(self.exportOptions.winfo_screenwidth()) * 0.5 - int(self.exportOptions.winfo_width()) * 0.5
+            optionsY = int(self.exportOptions.winfo_screenheight()) * 0.5 - int(self.exportOptions.winfo_height()) * 0.5
+            self.exportOptions.geometry("+%d+%d" % ( optionsX, optionsY ))
 
             self.varTemp = []
 
-            def getSelected():
-                for v in self.vars:
-                    if v.get() == 1:
-                        self.varTemp.append(str(v))
-                self.vars = self.varTemp
-                # print(f'params to export {self.vars}')
-                if self.toNew == False:
-                    if self.onlyPlots == False:
-                        self.selectedSheet = self.menuButton.cget('text')
-                    self.exportToSelected()
-                else:
-                    self.exportToNew()
         except:
             notification.create('error', 'No imported file detected. Data input by hand?', 5000)
             # self.exportOptions.destroy()
+    
+    def getSelected(self):
+        for v in self.vars:
+            if v.get() == 1:
+                self.varTemp.append(str(v))
+        self.vars = self.varTemp
+
+        if self.toNew == False:
+            if self.onlyPlots == False:
+                self.selectedSheet = self.menuButton.cget('text')
+            self.exportToSelected()
+        else:
+            self.exportToNew()
 
     def selectAll(self):
         for v in self.vars:
@@ -272,13 +310,20 @@ class DataExporter(object):
             subjects = project.getSubjects()
 
             # Create project plots
-            self.images['Mean(SD)'] = []
-            df = self.createProjectPlots('Mean(SD)')
-            self.dfs['Mean(SD)'] = df
+            if self.statsVar0.get() == 1:
+                self.images['Mean(SD)'] = []
+                df = self.createProjectPlots('Mean(SD)')
+                self.dfs['Mean(SD)'] = df
 
-            self.images['Median(IQR)'] = []
-            df = self.createProjectPlots('Median(IQR)', iqr=True)
-            self.dfs['Median(IQR)'] = df
+            if self.statsVar1.get() == 1:
+                self.images['Median(IQR)'] = []
+                df = self.createProjectPlots('Median(IQR)', iqr=True)
+                self.dfs['Median(IQR)'] = df
+
+            if self.statsVar2.get() == 1:
+                self.images['Mean(CI95%)'] = []
+                df = self.createProjectPlots('Mean(CI95%)', ci95=True)
+                self.dfs['Mean(CI95%)'] = df
 
             # Create plots for subjects
             for s in subjects:
@@ -316,8 +361,16 @@ class DataExporter(object):
                 tests = s.getTests()
                 for t in tests:
                     os.remove(f'{os.getcwd()}\plot{t.id}.png')
-            os.remove(f'{os.getcwd()}\plotProject median(IQR).png')
-            os.remove(f'{os.getcwd()}\plotProject mean(SD).png')
+            
+            if self.statsVar0.get() == 1:
+                os.remove(f'{os.getcwd()}\plotProject mean(SD).png')
+                
+            if self.statsVar1.get() == 1:
+                os.remove(f'{os.getcwd()}\plotProject median(IQR).png')
+
+            if self.statsVar2.get() == 1:
+                os.remove(f'{os.getcwd()}\plotProject mean(95% CI).png')
+
             self.exportOptions.destroy()
 
     def exportToSelected(self):
@@ -416,37 +469,45 @@ class DataExporter(object):
                 excel[self.selectedSheet] = excelTemp
 
             # Create project plots
-            df = self.createProjectPlots('Mean(SD)')
-            excel['Mean(SD)'] = df
-            self.sheetNames.append('Mean(SD)')
+            if self.statsVar0.get() == 1:
+                df = self.createProjectPlots('Mean(SD)')
+                excel['Mean(SD)'] = df
+                self.sheetNames.append('Mean(SD)')
 
-            df = self.createProjectPlots('Median(IQR)', iqr=True)
-            excel['Median(IQR)'] = df
-            self.sheetNames.append('Median(IQR)')
+            if self.statsVar1.get() == 1:
+                df = self.createProjectPlots('Median(IQR)', iqr=True)
+                excel['Median(IQR)'] = df
+                self.sheetNames.append('Median(IQR)')
+
+            if self.statsVar2.get() == 1:
+                df = self.createProjectPlots('Mean(CI95%)', ci95=True)
+                excel['Mean(CI95%)'] = df
+                self.sheetNames.append('Mean(CI95%)')
 
             # Create plots for subjects
-            subjects = app.getActiveProject().getSubjects()
-            plotsDf = pd.DataFrame()
-            for s in subjects:
-                tests = s.getTests()
-                self.images[s.id] = []
+            if self.plotVar.get() == 0:
+                subjects = app.getActiveProject().getSubjects()
+                plotsDf = pd.DataFrame()
+                for s in subjects:
+                    tests = s.getTests()
+                    self.images[s.id] = []
 
-                for t in tests:
-                    loads = t.workLoads
+                    for t in tests:
+                        loads = t.workLoads
 
-                    # Filter possible empty loads
-                    filteredLoads = []
-                    for i, l in enumerate(loads):
-                        detailsDict = l.getDetails().getWorkLoadDetails()
-                        
-                        if i == 0 or detailsDict['Load'] != 0:
-                            filteredLoads.append(l.details)
+                        # Filter possible empty loads
+                        filteredLoads = []
+                        for i, l in enumerate(loads):
+                            detailsDict = l.getDetails().getWorkLoadDetails()
+                            
+                            if i == 0 or detailsDict['Load'] != 0:
+                                filteredLoads.append(l.details)
 
-                    self.createPlot(filteredLoads, t.id)
-                    self.images[s.id].append(str(t.id))
+                        self.createPlot(filteredLoads, t.id)
+                        self.images[s.id].append(str(t.id))
 
-            excel['Plots'] = plotsDf
-            self.sheetNames.append('Plots')
+                excel['Plots'] = plotsDf
+                self.sheetNames.append('Plots')
 
             try:
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
@@ -475,18 +536,29 @@ class DataExporter(object):
                             worksheet = writer.sheets[sheet]
                             imgDest = f'{os.getcwd()}\plotProject Mean(SD).png'
                             worksheet.insert_image('H1', imgDest)
+                        elif sheet == 'Mean(CI95%)':
+                            worksheet = writer.sheets[sheet]
+                            imgDest = f'{os.getcwd()}\plotProject mean(95% CI).png'
+                            worksheet.insert_image('H1', imgDest)
                     
                 notification.create('info', 'Data successfully exported', 5000)
             except:
                 notification.create('error', 'Data not exported', 5000)
 
             # Delete images
-            for s in subjects:
-                tests = s.getTests()
-                for t in tests:
-                    os.remove(f'{os.getcwd()}\plot{t.id}.png')
-            os.remove(f'{os.getcwd()}\plotProject Median(IQR).png')
-            os.remove(f'{os.getcwd()}\plotProject Mean(SD).png')
+            if self.plotVar.get() == 0:
+                for s in subjects:
+                    tests = s.getTests()
+                    for t in tests:
+                        os.remove(f'{os.getcwd()}\plot{t.id}.png')
+
+            if self.statsVar0.get() == 1:
+                os.remove(f'{os.getcwd()}\plotProject Mean(SD).png')
+            if self.statsVar1.get() == 1:
+                os.remove(f'{os.getcwd()}\plotProject Median(IQR).png')
+            if self.statsVar2.get() == 1:
+                os.remove(f'{os.getcwd()}\plotProject mean(95% CI).png')
+            
             self.exportOptions.destroy()
 
     def getSortedData(self):
@@ -732,11 +804,11 @@ class DataExporter(object):
 
         return df
 
-    def createProjectPlots(self, label=None, iqr=False):
+    def createProjectPlots(self, label=None, iqr=False, ci95=False):
         dummyTest = Test()
         subjects = app.getActiveProject().getSubjects()
         
-        app.plotMean(test=dummyTest, subjects=subjects, plotProject=True, iqr=iqr, export=True)
+        app.plotMean(test=dummyTest, subjects=subjects, plotProject=True, iqr=iqr, ci95=ci95, export=True)
         workLoadDetailObjects = []
         for w in dummyTest.getWorkLoads():
             workLoadDetailObjects.append(w.getDetails())
