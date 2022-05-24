@@ -2,12 +2,13 @@ from copy import deepcopy
 from tkinter import *
 from tkinter import ttk
 import time
+from modules.TestDataImporter import TestDataImporter
 from objects.project import Project
 from objects.subject import Subject
 from objects.test import Test
 from objects.app import app
 from modules.notification import notification
-from modules.DataImporter import DataImporter
+
 
 class TestList(object):
     def __init__(self, sidePanel):
@@ -30,9 +31,20 @@ class TestList(object):
         self.editButton.grid(column=1, row=0)
         ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteTest()).grid(column=2, row=0)
         
-        ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
+        ttk.Button(buttonContainer, text='Import...', command=self.testImport).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare...', command=self.showComparisonOptions).grid(column=1, row=1)
-        ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
+        ttk.Button(buttonContainer, text='Statistics...', command=self.showMeanOptions).grid(column=2, row=1)
+
+    def testImport(self):
+        if len(self.testList.curselection()) == 1:
+            print('TESTIN MUOKKAUS')
+            subject = app.getActiveSubject()
+            tindex = self.testList.curselection()[0]
+            test = subject.tests[tindex]
+            TestDataImporter(test)
+        else: 
+            print('UUSI TESTI')
+            TestDataImporter()
 
     def setStartSel(self, e):
         self.startSel = f'@{e.x},{e.y}'

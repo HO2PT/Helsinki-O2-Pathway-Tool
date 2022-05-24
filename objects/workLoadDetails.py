@@ -1,11 +1,8 @@
 from objects.app import app
-import uuid
 
 class WorkLoadDetails(object):
     def __init__(self, name):
         testDefaults = app.settings.getTestDef()
-
-        # self.id = uuid.uuid1()
         self.name = name
         self.isImported = False
         self.Load = 0

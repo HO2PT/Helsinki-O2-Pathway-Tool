@@ -51,12 +51,6 @@ root.geometry("+%d+%d" % ( initX, initY ))
 
 loaded = False
 
-def resize(e):
-    detailsPanelW = detailsPanel.detailsPanel.winfo_width()
-    contentW = detailsPanel.projectDetails.winfo_width() + detailsPanel.testDetails.winfo_width() + detailsPanel.envDetails.winfo_width()
-    diff = detailsPanelW-contentW
-    print(diff)
-
 def debug():
     for d in app.getActiveTest().getWorkLoads():
         print(d.getDetails().getWorkLoadDetails())
@@ -65,7 +59,6 @@ def updateCursor(e):
     print(mainframe.identify(e.x, e.y))
 
 root.bind('<Tab>', lambda e: debug())
-# mainframe.bind('<Motion>', lambda e: updateCursor(e))
 
 sepStyle = ttk.Style()
 sepStyle.configure('asd.TSeparator', background = 'dark gray')

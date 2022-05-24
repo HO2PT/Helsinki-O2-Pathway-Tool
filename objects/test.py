@@ -38,6 +38,9 @@ class Test(object):
         self.workLoads.append( newLoad )
         return newLoad
 
+    def removeLoad(self, index):
+        del self.workLoads[index]
+
     def nWorkLoads(self):
         return len(self.workLoads)
 

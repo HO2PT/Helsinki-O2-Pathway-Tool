@@ -1,4 +1,3 @@
-from this import d
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
@@ -29,9 +28,6 @@ from objects.subject import Subject
 # Stage 16: PvO2
 # Stage 17: T
 # Stage 18: pH
-
-# Luo vaihtoehdot tuo projekti, tuo käyttäjä, tuo testi
-# tuodessa testiä lisätään aktiivisen käyttäjän alle jnejne.
 
 class DataImporter(object):
     def __init__(self):
@@ -75,7 +71,7 @@ class DataImporter(object):
                 self.dfList[sheet] = pd.read_excel(self.data, sheet, header=None)
 
             self.window = Toplevel()
-            self.window.title('Import')
+            self.window.title('Project import')
             self.window.geometry('750x500')
             self.window.update_idletasks()
             windowX = int(self.window.winfo_screenwidth()) * 0.5 - int(self.window.winfo_width()) * 0.5
@@ -91,7 +87,7 @@ class DataImporter(object):
             self.yScroll.pack(side=RIGHT, fill=Y)
 
             # Progression
-            ttk.Label(self.leftPanel, text='Data import steps').pack()
+            ttk.Label(self.leftPanel, text='Project import steps').pack()
             self.progressionList = Listbox(self.leftPanel, yscrollcommand=self.yScroll.set, activestyle='none')
             options = [
                 'ID * \U0001F878',
@@ -134,7 +130,7 @@ class DataImporter(object):
             # Notification bar
             notifFrame = ttk.Frame(self.rightPanel)
             notifFrame.pack(fill=X)
-            self.notif = ttk.Label(notifFrame, text='', anchor='center', foreground='white')
+            self.notif = ttk.Label(notifFrame, text='', anchor='center', foreground='white', font=('TkDefaultFont', 12))
             self.notif.pack(fill=X)
 
             # Instructions
@@ -519,9 +515,13 @@ class DataImporter(object):
             else:
                 self.dataTable.multiplecollist=list(range(startcol, self.dataTable.endcol+1))
 
-        for c in self.dataTable.multiplecollist:
-            self.dataTable.drawSelectedCol(c, delete=False)
-            self.dataTable.tablecolheader.drawRect(c, delete=False)
+        for i, c in enumerate(self.dataTable.multiplecollist):
+            if i == 0:
+                self.dataTable.drawSelectedCol(c)
+                self.dataTable.tablecolheader.drawRect(c)
+            else:
+                self.dataTable.drawSelectedCol(c, delete=False)
+                self.dataTable.tablecolheader.drawRect(c, delete=False)
 
         # self.updateColumnText()
         self.updateSelectionText()

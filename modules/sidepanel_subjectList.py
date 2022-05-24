@@ -1,4 +1,3 @@
-from cmath import exp
 from copy import deepcopy
 from tkinter import *
 from tkinter import ttk

@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import ttk
-from modules.details_env import *
-from modules.details_project import *
-from modules.details_test import *
+from modules.details_env import EnvDetailModule
+from modules.details_project import ProjectDetailsModule
+from modules.details_test import TestDetailModule
 from objects.app import app
 from modules.notification import notification
 

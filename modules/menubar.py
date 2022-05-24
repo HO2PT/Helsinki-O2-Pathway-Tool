@@ -5,6 +5,7 @@ from modules.notification import notification
 from objects.test import Test
 from modules.DataImporter import DataImporter
 from modules.DataExporter import DataExporter
+from modules.TestDataImporter import TestDataImporter
 
 class MenuBar(object):
     def __init__(self, root):
@@ -17,7 +18,7 @@ class MenuBar(object):
         importFile = Menu(self.menuBar, tearoff = 0)
         importFile.add_command(label ='Project...', command = lambda: DataImporter())
         importFile.add_command(label ='Subject...', command = lambda: DataImporter())
-        importFile.add_command(label ='Test...', command = lambda: DataImporter())
+        importFile.add_command(label ='Test...', command = lambda: TestDataImporter())
         file.add_cascade(label ='Import...', menu = importFile)
 
         exportMenu = Menu(self.menuBar, tearoff=0)

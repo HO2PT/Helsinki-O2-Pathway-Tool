@@ -4,7 +4,6 @@ from modules.notification import notification
 from modules.O2PTSolver import O2PTSolver
 
 class App(object):
-
     def __init__(self):
         self.activeProject = None
         self.activeSubject = None
@@ -14,30 +13,19 @@ class App(object):
         self.settings = None
 
         self.sidePanel = None
-        # self.sidePanelVis = None
-        
         self.sidepanel_projectList = None
         self.sidepanel_subjectList = None
         self.sidepanel_testList = None
 
         self.detailsPanel = None
-        # self.detailsVis = None
-
         self.projectDetailModule = None
-        # self.projectDetailsVis = None
-
         self.testDetailModule = None
-        # self.testDetailsVis = None
-
         self.envDetailModule = None
-        # self.envDetailsVis = None
 
         self.plottingPanel = None
-        self.menu = None
 
+        self.menu = None
         self.root = None
-        # self.strVars = None
-        # self.intVars = None
 
     def setActiveTest(self, test):
         self.activeTest = test
@@ -58,19 +46,10 @@ class App(object):
         return self.activeProject
 
     def deleteProject(self, index):
-        #print(f'list before {self.projects}')
-        #print(f'deleting project {index}')
         del(self.projects[index])
-        #print(f'list after {self.projects}')
     
     def addProject(self, project):
         self.projects.append(project)
-
-    # def getActiveMode(self):
-    #     return self.activeMode
-
-    # def setActiveMode(self, mode):
-    #     self.activeMode = mode
 
     def getPlottingPanel(self):
         return self.plottingPanel
@@ -80,8 +59,7 @@ class App(object):
 
     def getMaxMinAvg(self, plotProject=False, subjects=None):
         if plotProject == True:
-            activeProject = app.getActiveProject()
-            subjects = activeProject.getSubjects()
+            subjects = self.activeProject.getSubjects()
 
         self.vo2List = []
         self.hrList = []
@@ -138,24 +116,9 @@ class App(object):
                 self.do2List.append(float(details['DO2']))
                 self.qao2List.append(float(details['QaO2']))
 
-        # print(f'vo2 {self.vo2List}')
-        # print(f'hr {self.hrList}')
-        # print(f'sv {self.svList}')
-        # print(f'q {self.qList}')
-        # print(f'hb {self.hbList}')
-        # print(f'sao2 {self.sao2List}')
-        # print(f'do2 {self.do2List}')
-        # print(f'qao2 {self.qao2List}')
-        # print(f'cao2 {self.cao2List}')
-        # print(f'svo2 {self.svo2List}')
-        # print(f'cvo2 {self.cvo2List}')
-        # print(f'cavo2 {self.cavo2List}')
-        # print(f'pvo2 {self.pvo2List}')
-
         self.VO2mean = np.mean(self.vo2List)
         self.VO2q75, self.VO2q50, self.VO2q25 = np.percentile(self.vo2List, [75, 50, 25])
-        # print(f'mean {self.VO2mean}, avg {np.average(self.vo2List)}, median {np.median(self.vo2List)}, q50 {self.VO2q50}')
-        
+
         self.HRmean = np.mean(self.hrList)
         self.HRq75, self.HRq50, self.HRq25 = np.percentile(self.hrList, [75, 50, 25])
         
@@ -207,22 +170,17 @@ class App(object):
         self.PVO2std = np.std(self.pvo2List)
 
         if plotProject == True:
-            activeProject.VO2max = max(self.vo2List)
-            activeProject.VO2min = min(self.vo2List)
-            activeProject.VO2mean = self.VO2mean
+            self.activeProject.VO2max = max(self.vo2List)
+            self.activeProject.VO2min = min(self.vo2List)
+            self.activeProject.VO2mean = self.VO2mean
 
-            activeProject.DO2max = max(self.do2List)
-            activeProject.DO2min = min(self.do2List)
-            activeProject.DO2mean = self.DO2mean
+            self.activeProject.DO2max = max(self.do2List)
+            self.activeProject.DO2min = min(self.do2List)
+            self.activeProject.DO2mean = self.DO2mean
 
-            activeProject.QaO2max = max(self.qao2List)
-            activeProject.QaO2min = min(self.qao2List)
-            activeProject.QaO2mean = self.QAO2mean
-        
-        # self.QAO2q75, self.QAO2q50, self.QAO2q25 = np.percentile(self.qao2List, [75, 50, 25])
-        # self.QAO2iqr = self.QAO2q75 - self.QAO2q25
-
-        # print(f'q75: {self.QAO2q75}, q50: {self.QAO2q50} q25: {self.QAO2q25}, iqr {self.QAO2iqr}')
+            self.activeProject.QaO2max = max(self.qao2List)
+            self.activeProject.QaO2min = min(self.qao2List)
+            self.activeProject.QaO2mean = self.QAO2mean
 
         if plotProject == True:
             self.projectDetailModule.refreshDetails()
@@ -276,11 +234,8 @@ class App(object):
             self.maxLoad = self.meanTestObject.createLoad()
             self.maxLoad.setName('+1 SD')
 
-        # project = app.getActiveProject()
-        # projectTest = project.getMetricsTestObject()
-        # app.setActiveTest(projectTest)
         if export == False:
-            app.setActiveTest(self.meanTestObject)
+            self.activeTest = self.meanTestObject
 
         self.getMaxMinAvg(plotProject, subjects)
 
@@ -303,7 +258,7 @@ class App(object):
         self.calcCoords(maxLoad)
 
         if export == False:
-            app.getPlottingPanel().plotProject()
+            self.plottingPanel.plotProject()
 
     def updateMC(self, load):
         load.getDetails().setMC('VO2_MC', 1)
@@ -320,7 +275,6 @@ class App(object):
         load.getDetails().setMC('QaO2_MC', 1)
 
     def setValues(self, load, mode, iqr, ci95):
-
         if mode == 'min':
             if iqr == True:
                 load.getDetails().setValue('VO2', self.VO2q25)
@@ -444,7 +398,6 @@ class App(object):
                 load.getDetails().setValue('QaO2', self.QAO2mean + self.QAO2std)
                 load.getDetails().setValue('DO2', self.DO2mean + self.DO2std)
                 
-
     def calcCoords(self, load):
         temp = load.getDetails().getWorkLoadDetails()
         PvO2 = np.arange(0,100,1)

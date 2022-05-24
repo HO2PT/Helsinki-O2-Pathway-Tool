@@ -8,11 +8,12 @@ class NotificationPanel(object):
 
     def create(self, type, text, timeout):
         style = ttk.Style()
+        style.configure('notif.TLabel', font=('TkDefaultFont', 12))
         
         if type == 'info':
             style.configure('notif.TLabel', background="green", foreground="white", anchor="CENTER")
         if type == 'error':
-            style.configure('notif.TLabel', background="red", foreground='#333333', anchor="CENTER")
+            style.configure('notif.TLabel', background="red", foreground='white', anchor="CENTER")
 
         self.notif = ttk.Label(self.notifPanel, style='notif.TLabel', text=text)
 
@@ -27,7 +28,8 @@ class NotificationPanel(object):
 
     def setParent(self, parent):
         self.parent = parent
-        self.notifPanel = ttk.Frame(self.parent,height=20)
+        # self.notifPanel = ttk.Frame(self.parent,height=20)
+        self.notifPanel = ttk.Frame(self.parent)
         self.notifPanel.pack(fill=X)
 
 notification = NotificationPanel()
