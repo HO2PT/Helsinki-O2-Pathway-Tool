@@ -3,9 +3,10 @@ from modules.Help import Help
 from objects.app import app
 from modules.notification import notification
 from objects.test import Test
-from modules.DataImporter import DataImporter
+from modules.ProjectDataImporter import ProjectDataImporter
 from modules.DataExporter import DataExporter
 from modules.TestDataImporter import TestDataImporter
+from modules.SubjectDataImporter import SubjectDataImporter
 
 class MenuBar(object):
     def __init__(self, root):
@@ -16,8 +17,8 @@ class MenuBar(object):
         self.menuBar.add_cascade(label ='File', menu = file)
 
         importFile = Menu(self.menuBar, tearoff = 0)
-        importFile.add_command(label ='Project...', command = lambda: DataImporter())
-        importFile.add_command(label ='Subject...', command = lambda: DataImporter())
+        importFile.add_command(label ='Project...', command = lambda: ProjectDataImporter())
+        importFile.add_command(label ='Subject...', command = lambda: SubjectDataImporter())
         importFile.add_command(label ='Test...', command = lambda: TestDataImporter())
         file.add_cascade(label ='Import...', menu = importFile)
 

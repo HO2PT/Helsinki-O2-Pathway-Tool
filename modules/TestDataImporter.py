@@ -91,7 +91,7 @@ class TestDataImporter():
                 self.treeView.insert('', END, text='VO\u2082 *', iid=f'{i}{treeId}', open=False)
                 self.treeView.move(f'{i}{treeId}', i, treeId)
 
-                self.treeView.insert('', END, text='\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015', iid=f'{i}{treeId+1}', open=False)
+                self.treeView.insert('', END, text='\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015', iid=f'{i}{treeId+1}', open=False, tags='hrLine')
                 self.treeView.move(f'{i}{treeId+1}', i, treeId+1)
 
                 self.treeView.insert('', END, text='HR *', iid=f'{i}{treeId+2}', open=False)
@@ -100,37 +100,37 @@ class TestDataImporter():
                 self.treeView.insert('', END, text='SV *', iid=f'{i}{treeId+3}', open=False)
                 self.treeView.move(f'{i}{treeId+3}', i, treeId+3)
 
-                self.treeView.insert('', END, text='\u2015 or \u2015\u2015\u2015\u2015\u2015\u2015\u2015', iid=f'{i}{treeId+4}', open=False)
+                self.treeView.insert('', END, text='\u2015 or \u2015\u2015\u2015\u2015\u2015\u2015\u2015', iid=f'{i}{treeId+4}', open=False, tags='hrLine')
                 self.treeView.move(f'{i}{treeId+4}', i, treeId+4)
 
                 self.treeView.insert('', END, text='Q *', iid=f'{i}{treeId+5}', open=False)
                 self.treeView.move(f'{i}{treeId+5}', i, treeId+5)
 
-                self.treeView.insert('', END, text='\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015', iid=f'{i}{treeId+6}', open=False)
+                self.treeView.insert('', END, text='\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015', iid=f'{i}{treeId+6}', open=False, tags='hrLine')
                 self.treeView.move(f'{i}{treeId+6}', i, treeId+6)
 
                 self.treeView.insert('', END, text='[Hb] *', iid=f'{i}{treeId+7}', open=False)
                 self.treeView.move(f'{i}{treeId+7}', i, treeId+7)
 
-                self.treeView.insert('', END, text='SaO2 *', iid=f'{i}{treeId+8}', open=False)
+                self.treeView.insert('', END, text='SaO\u2082 *', iid=f'{i}{treeId+8}', open=False)
                 self.treeView.move(f'{i}{treeId+8}', i, treeId+8)
 
-                self.treeView.insert('', END, text='CaO2', iid=f'{i}{treeId+9}', open=False)
+                self.treeView.insert('', END, text='CaO\u2082', iid=f'{i}{treeId+9}', open=False)
                 self.treeView.move(f'{i}{treeId+9}', i, treeId+9)
 
-                self.treeView.insert('', END, text='CvO2', iid=f'{i}{treeId+10}', open=False)
+                self.treeView.insert('', END, text='CvO\u2082', iid=f'{i}{treeId+10}', open=False)
                 self.treeView.move(f'{i}{treeId+10}', i, treeId+10)
 
-                self.treeView.insert('', END, text='C(a-v)O2', iid=f'{i}{treeId+11}', open=False)
+                self.treeView.insert('', END, text='C(a-v)O\u2082', iid=f'{i}{treeId+11}', open=False)
                 self.treeView.move(f'{i}{treeId+11}', i, treeId+11)
 
-                self.treeView.insert('', END, text='QaO2', iid=f'{i}{treeId+12}', open=False)
+                self.treeView.insert('', END, text='QaO\u2082', iid=f'{i}{treeId+12}', open=False)
                 self.treeView.move(f'{i}{treeId+12}', i, treeId+12)
 
-                self.treeView.insert('', END, text='SvO2', iid=f'{i}{treeId+13}', open=False)
+                self.treeView.insert('', END, text='SvO\u2082', iid=f'{i}{treeId+13}', open=False)
                 self.treeView.move(f'{i}{treeId+13}', i, treeId+13)
 
-                self.treeView.insert('', END, text='PvO2', iid=f'{i}{treeId+14}', open=False)
+                self.treeView.insert('', END, text='PvO\u2082', iid=f'{i}{treeId+14}', open=False)
                 self.treeView.move(f'{i}{treeId+14}', i, treeId+14)
 
                 self.treeView.insert('', END, text='T', iid=f'{i}{treeId+15}', open=False)
@@ -139,8 +139,10 @@ class TestDataImporter():
                 self.treeView.insert('', END, text='pH', iid=f'{i}{treeId+16}', open=False)
                 self.treeView.move(f'{i}{treeId+16}', i, treeId+16)
 
-                self.treeView.pack(fill=Y, expand=True)
+            # self.treeView.tag_configure('hrLine', background='red')
+            # print(self.treeView.tag_configure('hrLine'))
 
+            self.treeView.pack(fill=Y, expand=True)
             self.treeView.selection_set(('00'))
 
             # Add / Delete load buttons
@@ -164,7 +166,7 @@ class TestDataImporter():
             # Instructions
             headerFrame = ttk.Frame(self.rightPanel)
             headerFrame.pack(fill=X)
-            self.instructionText = ttk.Label(headerFrame, text='Define column(s)/row(s)/cell(s) containing value for VO\u2082 on 1. load.')
+            self.instructionText = ttk.Label(headerFrame, text='Define column(s)/row(s)/cell(s) containing value(s) for VO\u2082 on 1. load.')
             self.instructionText.pack()
 
             # Create menubutton for selection of excel sheet
@@ -251,9 +253,9 @@ class TestDataImporter():
             self.dataTable.bind('<B1-Motion>', self.handle_table_mouse_drag)
             self.dataTable.bind('<Control-Button-1>', lambda e: None)
             self.dataTable.bind('<Shift-Button-1>', lambda e: None)
-
             self.dataTable.bind('<Button-3>', self.handleRightClick)
             self.dataTable.bind('<MouseWheel>', self.handleMouseWheel)
+            self.dataTable.bind('<Configure>', self.handleResize)
 
             self.treeView.bind('<<TreeviewSelect>>', self.updateInstructions)
 
@@ -301,6 +303,17 @@ class TestDataImporter():
         else:
             notification.create('error', 'Error opening file', 5000)
     
+    def handleResize(self, event):
+        self.dataTable.currentrow = -1
+        self.dataTable.currentcol = -1
+        self.dataTable.redrawVisible()
+        for c in self.dataTable.multiplecollist:
+            self.dataTable.tablecolheader.drawRect(c, delete=False)
+                
+        for r in self.dataTable.multiplerowlist:
+            self.dataTable.rowheader.drawRect(r, delete=False)
+        self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
+
     def handleMouseWheel(self, event):
         """Handle mouse wheel scroll for windows"""
 
@@ -480,6 +493,7 @@ class TestDataImporter():
         else:
             self.dataTable.setSelectedRow(rowover)
             self.dataTable.rowheader.drawSelectedRows(rowover)
+            self.dataTable.drawSelectedRow()
             self.dataTable.drawMultipleCells()
         
         self.updateSelectionText()
@@ -554,10 +568,8 @@ class TestDataImporter():
                 return
             if len(self.treeView.selection()[0]) > 1:
                 text =  self.treeView.item(self.treeView.selection()[0])['text']
-                # Remove asterisk
-                if '*' in text:
-                    text = text.replace('*', '')
-                self.instructionText.configure(text=f'Define column(s)/row(s)/cell(s) containing value for {text} on {int(self.treeView.selection()[0][0])+1}. load.')
+                text = text.split(' ')[0]
+                self.instructionText.configure(text=f'Define column(s)/row(s)/cell(s) containing value(s) for {text} on {int(self.treeView.selection()[0][0])+1}. load.')
             else:
                 self.instructionText.configure(text='')
         except IndexError:
@@ -756,8 +768,48 @@ class TestDataImporter():
                         temp = c
             else:
                 self.selectionText.configure(text=f'Selected column {self.dataTable.multiplecollist[0]}')
+        
         else:
-            self.selectionText.configure(text=f'Cells from row {rows} col {cols}')
+            if len(cols) > 1:
+                tempC = cols[0]
+                for i, c in enumerate(cols):
+                    if i != 0:
+                        if c == tempC+1:
+                            textC = f'col {cols[0]}-{cols[-1]}'
+                            pass
+                        else:
+                            textC = ''
+                            for i, c in enumerate(cols):
+                                if i != len(cols)-1:
+                                    textC += f'{c}, '
+                                else:
+                                    textC += f'{c}'
+                        tempC = c
+            elif len(cols) == 1:
+                textC = f'col {cols[0]}'
+            else:
+                textC = ''
+
+            if len(rows) > 1:
+                tempR = rows[0]
+                for i, r in enumerate(rows):
+                    if i != 0:
+                        if r == tempR+1:
+                            textR = f'row {rows[0]+1}-{rows[-1]+1}'
+                        else:
+                            textR = ''
+                            for i, r in enumerate(rows):
+                                if i != len(rows)-1:
+                                    textR += f'{r+1}, '
+                                else:
+                                    textR += f'{r+1}'
+                        tempR = r
+            elif len(rows) == 1:
+                textR = f'row {rows[0]+1}'
+            else:
+                textR = ''
+
+            self.selectionText.configure(text=f'Cells from {textR} {textC}')
         
         self.updateMeanText()
 
@@ -785,51 +837,78 @@ class TestDataImporter():
                 self.notif.configure(text='Can not calculate mean of the given values.', background='red', foreground='white')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
+                iid = f'{loadIndex}{varIndex}'
                 if varIndex == 0: # VO2
-                    self.importedData[loadIndex].update(dict(VO2=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('VO2', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{2}'))
 
                 elif varIndex == 2: # HR
-                    self.importedData[loadIndex].update(dict(HR=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('HR', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{3}'))
 
                 elif varIndex == 3: # SV
-                    self.importedData[loadIndex].update(dict(SV=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('SV', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{5}'))
 
                 elif varIndex == 5: # Q
-                    self.importedData[loadIndex].update(dict(Q=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('Q', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{7}'))
 
                 elif varIndex == 7: # [Hb]
-                    self.importedData[loadIndex].update(dict(Hb=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('[Hb]', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{8}'))
 
                 elif varIndex == 8: # SaO2
-                    self.importedData[loadIndex].update(dict(SaO2=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('SaO2', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{9}'))
 
                 elif varIndex == 9: # CaO2
-                    self.importedData[loadIndex].update(dict(CaO2=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('CaO2', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{10}'))
 
                 elif varIndex == 10: # CvO2
-                    self.importedData[loadIndex].update(dict(CvO2=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('CvO2', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{11}'))
 
                 elif varIndex == 11: # C(a-v)O2
-                    self.importedData[loadIndex].update(dict(CavO2=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('C(a-v)O2', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{12}'))
 
                 elif varIndex == 12: # QaO2
-                    self.importedData[loadIndex].update(dict(QaO2=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('QaO2', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{13}'))
 
                 elif varIndex == 13: # SvO2
-                    self.importedData[loadIndex].update(dict(SvO2=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('SvO2', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{14}'))
 
                 elif varIndex == 14: # PvO2
-                    self.importedData[loadIndex].update(dict(PvO2=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('PvO2', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{15}'))
 
                 elif varIndex == 15: # T
-                    self.importedData[loadIndex].update(dict(T=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('T', value), ('imported', True)]) )]))
+                    self.treeView.selection_set((f'{loadIndex}{16}'))
 
                 elif varIndex == 16: # pH
-                    self.importedData[loadIndex].update(dict(pH=value))
+                    self.importedData[loadIndex].update( dict([(iid, dict([('pH', value), ('imported', True)]) )]))
+                    # self.treeView.selection_set((f'{int(loadIndex)+1}{0}'))
 
+                self.addCheckMarks()
                 self.notif.configure(text='OK', background='green', foreground='white')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
     
+    def addCheckMarks(self):
+        for loadIndex, details in self.importedData.items():
+            for iid, values in details.items():
+                for key, value in values.items():
+                    if key == 'imported':
+                        if value == True:
+                            text = self.treeView.item(iid)['text']
+                            if '\u2713' not in text:
+                                text = f'{text} \u2713'
+                            self.treeView.item(iid, text=text)
+
     def getValues(self, input):
         if len(self.dataTable.multiplecollist) == 1 and len(self.dataTable.multiplerowlist) == 1:
             row = self.dataTable.multiplerowlist[0]
@@ -840,7 +919,14 @@ class TestDataImporter():
                 return None
         else:
             try:
-                value = np.mean(input[0])
+                if len(input) < 2: # Vertical selection
+                    value = np.mean(input[0])
+                else: # Horizontal selection
+                    temp = []
+                    for c in self.dataTable.multiplecollist:
+                        temp.append(float(self.dataTable.model.getValueAt(self.dataTable.multiplerowlist[0],c)))
+
+                    value = np.mean(temp)
             except:
                 return None
 
@@ -850,10 +936,11 @@ class TestDataImporter():
         if mode == 0:
             self.window.destroy()
 
-            # Save imported data to test details
             for loadIndex, details in self.importedData.items():
-                for label, value in details.items():
-                    self.test.workLoads[int(loadIndex)].details.setValue(label, value)
+                for iid, values in details.items():
+                    for key, value in values.items():
+                        if key != 'imported':
+                            self.test.workLoads[int(loadIndex)].details.setValue(key, value)
 
             app.testDetailModule.refreshTestDetails()
         else:

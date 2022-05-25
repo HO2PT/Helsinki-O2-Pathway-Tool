@@ -7,7 +7,7 @@ from objects.test import Test
 from objects.app import app
 from objects.workLoadDetails import WorkLoadDetails
 from modules.notification import notification
-from modules.DataImporter import DataMenuElem
+from modules.ProjectDataImporter import DataMenuElem
 from copy import deepcopy
 from tkinter.filedialog import asksaveasfilename
 import pandas as pd

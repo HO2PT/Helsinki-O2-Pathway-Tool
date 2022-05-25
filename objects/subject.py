@@ -2,7 +2,7 @@ from objects.test import Test
 
 class Subject(object):
     def __init__(self, id=None, parentProject=None):
-        self.id = f'Subject{id}'
+        self.id = f'Subject-{id}'
         self.parentProject = parentProject
         self.tests = []
 

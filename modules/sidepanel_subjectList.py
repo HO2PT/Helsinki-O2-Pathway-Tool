@@ -5,7 +5,7 @@ from objects.app import app
 from objects.project import Project
 from objects.subject import Subject
 from modules.notification import notification
-from modules.DataImporter import DataImporter
+from modules.SubjectDataImporter import SubjectDataImporter
 from objects.test import Test
 
 class SubjectList(object):
@@ -28,7 +28,7 @@ class SubjectList(object):
         self.editButton.grid(column=1, row=0)
         ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteSubject()).grid(column=2, row=0)
         
-        ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
+        ttk.Button(buttonContainer, text='Import...', command=lambda: SubjectDataImporter()).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare...', command=lambda: self.showComparisonOptions()).grid(column=1, row=1)
         ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
 

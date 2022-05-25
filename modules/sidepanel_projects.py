@@ -5,7 +5,7 @@ from objects.app import app
 from objects.project import Project
 from objects.test import Test
 from modules.notification import notification
-from modules.DataImporter import DataImporter
+from modules.ProjectDataImporter import ProjectDataImporter
 
 class ProjectList(object):
     def __init__(self, sidePanel):
@@ -31,7 +31,7 @@ class ProjectList(object):
         self.deleteButton = ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteProject())
         self.deleteButton.grid(column=2, row=0)
         
-        ttk.Button(buttonContainer, text='Import...', command=lambda: DataImporter()).grid(column=0, row=1)
+        ttk.Button(buttonContainer, text='Import...', command=lambda: ProjectDataImporter()).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare', command=lambda: self.showComparisonOptions(), state=DISABLED).grid(column=1, row=1)
         ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
 
@@ -83,7 +83,8 @@ class ProjectList(object):
             index = self.projectList.curselection()[0]
             app.deleteProject(index)
             self.refreshList()
-            app.setActiveProject(None)
+            app.activeProject = None
+            app.activeSubject = None
             app.sidepanel_subjectList.refreshList()
             app.sidepanel_testList.refreshList()
         else:

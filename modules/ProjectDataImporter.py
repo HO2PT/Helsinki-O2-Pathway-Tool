@@ -29,7 +29,7 @@ from objects.subject import Subject
 # Stage 17: T
 # Stage 18: pH
 
-class DataImporter(object):
+class ProjectDataImporter(object):
     def __init__(self):
         self.multiplecells = []
         self.stage = 0
@@ -90,8 +90,8 @@ class DataImporter(object):
             ttk.Label(self.leftPanel, text='Project import steps').pack()
             self.progressionList = Listbox(self.leftPanel, yscrollcommand=self.yScroll.set, activestyle='none')
             options = [
-                'ID * \U0001F878',
-                'Load *',
+                'Subject ID(s) * \U0001F878',
+                'Load(s) *',
                 'VO\u2082 *',
                 '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015',
                 'HR *',
@@ -191,12 +191,8 @@ class DataImporter(object):
             # Clear initial selection
             self.dataTable.clearSelected()
             self.dataTable.rowheader.clearSelected()
-            # self.dataTable.currentcol = None
-            # self.dataTable.currentrow = None
             self.dataTable.setSelectedCol(-1)
             self.dataTable.setSelectedRow(-1)
-            self.dataTable.multiplerowlist = []
-            self.dataTable.multiplecollist = []
             
             self.dataTable.tablecolheader.bind('<Button-1>', self.selectCol)
             self.dataTable.tablecolheader.bind('<Control-Button-1>', self.handleColCtrlSelection)
@@ -209,12 +205,13 @@ class DataImporter(object):
 
             self.dataTable.rowindexheader.bind('<1>', lambda e: None)
 
-            self.dataTable.bind('<B1-Motion>', self.handleDragSelection)
-            self.dataTable.bind('<Button-1>', self.handleTableClick)
-            self.dataTable.bind('<Control-Button-1>', self.handleTableCtrlClick)
-            self.dataTable.bind('<Shift-Button-1>', self.handleDragSelection)
+            self.dataTable.bind('<B1-Motion>', lambda e: None)
+            self.dataTable.bind('<Button-1>', lambda e: None)
+            self.dataTable.bind('<Control-Button-1>', lambda e: None)
+            self.dataTable.bind('<Shift-Button-1>', lambda e: None)
             self.dataTable.bind('<Button-3>', self.handleRightClick) 
             self.dataTable.bind('<MouseWheel>', self.handleMouseWheel)
+            self.dataTable.bind('<Configure>', self.handleResize)
 
             def set_yviews(*args):
                 """Set the xview of table and row header"""
@@ -246,14 +243,8 @@ class DataImporter(object):
                     self.dataTable.rowheader.drawRect(r, delete=False)
                 self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
 
-            ##
             self.dataTable.Yscrollbar['command'] = set_yviews
             self.dataTable.Xscrollbar['command'] = set_xviews
-            # self.Yscrollbar = AutoScrollbar(self.parentframe,orient=VERTICAL,command=self.set_yviews)
-            # self.Yscrollbar.grid(row=1,column=2,rowspan=1,sticky='news',pady=0,ipady=0)
-            # self.Xscrollbar = AutoScrollbar(self.parentframe,orient=HORIZONTAL,command=self.set_xviews)
-            # self.Xscrollbar.grid(row=2,column=1,columnspan=1,sticky='news')
-            ##
 
             self.nextButton = ttk.Button(self.footer, text='Next', command=lambda: self.getInput())
             self.cancelButton = ttk.Button(self.footer, text='Cancel', command=lambda: self.closeImporter())
@@ -262,6 +253,17 @@ class DataImporter(object):
             self.nextButton.pack(side=RIGHT)
         else:
             notification.create('error', 'Error opening file', 5000)
+
+    def handleResize(self, event):
+        self.dataTable.currentrow = -1
+        self.dataTable.currentcol = -1
+        self.dataTable.redrawVisible()
+        for c in self.dataTable.multiplecollist:
+            self.dataTable.tablecolheader.drawRect(c, delete=False)
+                
+        for r in self.dataTable.multiplerowlist:
+            self.dataTable.rowheader.drawRect(r, delete=False)
+        self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
 
     def handleMouseWheel(self, event):
         """Handle mouse wheel scroll for windows"""
@@ -323,62 +325,6 @@ class DataImporter(object):
         # print(f'MASS SELECTION R{self.dataTable.multiplerowlist}, C{self.dataTable.multiplecollist}')
         self.updateSelectionText()
 
-    def handleTableClick(self, e=None):
-        pass
-        """ print('handle LEFT click')
-        col = self.dataTable.get_col_clicked(e)
-        row = self.dataTable.get_row_clicked(e)
-        self.dataTable.multiplecollist = []
-        self.multiplerowlist = []
-        self.multiplecells = []
-        self.dataTable.delete('ctrlSel')
-
-        self.dataTable.delete('rect')
-        self.dataTable.delete('multicellrect')
-        self.deselectAll()
-
-        ##
-        self.multiplecells.append(self.dataTable.model.getValueAt(row, col))
-        self.dataTable.multiplecollist.append(col)
-        self.multiplerowlist.append(row)
-
-        self.dataTable.setSelectedRow(row)
-        self.dataTable.setSelectedCol(col)
-        self.dataTable.drawSelectedRect(row=row, col=col)
-        self.dataTable.rowheader.drawRect(row)
-        self.dataTable.tablecolheader.drawRect(col)
-
-        self.updateSelectionText(e) """
-
-    def handleTableCtrlClick(self,e):
-        pass
-        """ print('handle CTRL click')
-        
-        row = self.dataTable.get_row_clicked(e)
-        col = self.dataTable.get_col_clicked(e)
-        isSelected = False
-
-        for i, r in enumerate(self.multiplerowlist):
-            if r == row and self.dataTable.multiplecollist[i] == col:
-                isSelected = True
-                self.dataTable.drawRect(row=row, col=col, delete=1)
-                del self.multiplerowlist[i]
-                del self.dataTable.multiplecollist[i]
-
-        if isSelected == False:
-            self.multiplecells.append(self.dataTable.model.getValueAt(row, col))
-            self.dataTable.multiplecollist.append(col)
-            self.multiplerowlist.append(row)
-
-            for i, c in enumerate(self.dataTable.multiplecollist):
-                self.dataTable.drawRect(row=self.multiplerowlist[i], col=c, color='#E4DED4', tag='ctrlSel', delete=1)
-
-        self.dataTable.drawSelectedRect(row=row, col=col)
-        self.dataTable.rowheader.drawRect(row)
-        self.dataTable.tablecolheader.drawRect(col)
-
-        self.updateSelectionText(e) """
-    
     def handleListboxSelect(self, e):
         index = self.progressionList.curselection()[0]
         if index == 3 or index == 6 or index == 8:
@@ -404,62 +350,6 @@ class DataImporter(object):
                 self.dataTable.drawSelectedCol(col=c, delete=False)
                 self.dataTable.tablecolheader.drawRect(col=c, delete=False)
         self.updateSelectionText()
-
-    def handleDragSelection(self, e):
-        pass
-        """ self.dataTable.multiplecollist = []
-        self.multiplerowlist = []
-        # self.dataTable.clearSelected()
-
-        if hasattr(self, 'cellentry'):
-            self.dataTable.cellentry.destroy()
-        rowover = self.dataTable.get_row_clicked(e)
-        colover = self.dataTable.get_col_clicked(e)
-        startcol = self.dataTable.getSelectedColumn()
-        startrow = self.dataTable.getSelectedRows().index[0]
-
-        # print(f'STARTCOL {startcol}, COLOVER {colover}, STARTROW {startrow}, ROWOVER {rowover}')
-
-        if colover == None or rowover == None:
-            return
-
-        if rowover >= self.dataTable.rows or startrow > self.dataTable.rows:
-            return
-        else:
-            self.endrow = rowover
-
-        #do columns
-        if colover > self.dataTable.cols or startcol > self.dataTable.cols:
-            return
-        else:
-            self.dataTable.endcol = colover
-            if self.dataTable.endcol < startcol:
-                self.dataTable.multiplecollist=list(range(self.dataTable.endcol, startcol+1))
-            else:
-                self.dataTable.multiplecollist=list(range(startcol, self.dataTable.endcol+1))
-
-        for c in self.dataTable.multiplecollist:
-            #self.dataTable.drawSelectedCol(c, delete=False)
-            self.dataTable.tablecolheader.drawRect(c, delete=False)
-
-        #draw the selected rows
-        if self.endrow != startrow:
-            if self.endrow < startrow:
-                self.multiplerowlist=list(range(self.endrow, startrow+1))
-            else:
-                self.multiplerowlist=list(range(startrow, self.endrow+1))
-            #self.dataTable.drawMultipleRows(self.multiplerowlist)
-            self.dataTable.rowheader.drawSelectedRows(self.multiplerowlist)
-            #draw selected cells outline using row and col lists
-            self.drawMultipleCells()
-        else:
-            self.multiplerowlist = []
-            self.multiplerowlist.append(self.dataTable.currentrow)
-            if len(self.dataTable.multiplecollist) >= 1:
-                self.drawMultipleCells()
-            self.dataTable.delete('multiplesel')
-
-        self.updateSelectionText(e) """
 
     def updateDragText(self):
         rows = self.dataTable.multiplerowlist
@@ -1071,95 +961,121 @@ class DataImporter(object):
         return lists
     
     def getLoadsFromCols(self):
-        for rowIndex, s in self.subjects.items():
-            test = s.getTests()[0]
-            test.workLoads = [] # delete previous workloads, if re-fetching loads
+        if len(self.subjects.items()) > 0:
+            for rowIndex, s in self.subjects.items():
+                test = s.getTests()[0]
+                test.workLoads = [] # delete previous workloads, if re-fetching loads
 
-            for i, v in enumerate(self.colValues): #iterate cols as list
-                for ci, cv in enumerate(v): #iterate values
-                    if ci == rowIndex: #if row matches subject's row
-                        columnName = self.columnNames[i]
-                        load = test.createLoad()
-                        
-                        load.setName(columnName) # column name
-                        load.getDetails().setValue('Load', cv) # set value
-                        load.getDetails().setImported(True)
-                        continue
-        
-        self.tempLocData['Load'] = self.columnNames
-        return True
+                for i, v in enumerate(self.colValues): #iterate cols as list
+                    for ci, cv in enumerate(v): #iterate values
+                        if ci == rowIndex: #if row matches subject's row
+                            columnName = self.columnNames[i]
+                            load = test.createLoad()
+                            
+                            load.setName(columnName) # column name
+                            load.getDetails().setValue('Load', cv) # set value
+                            load.getDetails().setImported(True)
+                            continue
+            
+            self.tempLocData['Load'] = self.columnNames
+            return True
+        else:
+            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before loads.', background='red', foreground='#333333')
+            self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def getLoadsFromRows(self):
-        for colIndex, s in self.subjects.items():
-            test = s.getTests()[0]
-            test.workLoads = [] # delete previous workloads, if re-fetching loads
+        if len(self.subjects.items()) > 0:
+            for colIndex, s in self.subjects.items():
+                test = s.getTests()[0]
+                test.workLoads = [] # delete previous workloads, if re-fetching loads
 
-            for i, v in enumerate(self.rowValues): #iterate rows as list
-                for ci, cv in enumerate(v): #iterate values
-                    if ci == colIndex: #if col matches subject's col
-                        rowName = self.rowNames[i]
-                        load = test.createLoad()
-                        load.setName(rowName) # row name
-                        load.getDetails().setValue('Load', cv) # set value
-                        load.getDetails().setImported(True)
-                        continue
-        
-        self.tempLocData['Load'] = self.rowNames
-        return True
+                for i, v in enumerate(self.rowValues): #iterate rows as list
+                    for ci, cv in enumerate(v): #iterate values
+                        if ci == colIndex: #if col matches subject's col
+                            rowName = self.rowNames[i]
+                            load = test.createLoad()
+                            load.setName(rowName) # row name
+                            load.getDetails().setValue('Load', cv) # set value
+                            load.getDetails().setImported(True)
+                            continue
+            
+            self.tempLocData['Load'] = self.rowNames
+            return True
+        else:
+            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before loads.', background='red', foreground='#333333')
+            self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def getColumnValues(self, label):
         flag = False
 
-        for rowIndex, s in self.subjects.items():
-            test = s.getTests()[0]
-            loads = test.getWorkLoads()
-            
-            if len(self.colValues) < len(loads) and len(self.colValues) != 1:
-                    # s = ttk.Style()
-                    # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(text=f'You have {len(loads)} loads but only {len(self.colValues)} values given', background='red', foreground='#333333')
+        if len(self.subjects.items()) > 0:
+            for rowIndex, s in self.subjects.items():
+                test = s.getTests()[0]
+                loads = test.getWorkLoads()
+                
+                if len(loads) == 0:
+                    self.notif.configure(text=f'No loads detected. Please define loads before other values.', background='red', foreground='#333333')
                     self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
-            else:
-                if len(self.colValues) == 1:
-                    for li, l in enumerate(loads):
-                        details = l.getDetails()
-                        value = self.colValues[0][rowIndex]
-                        details.setValue(label, value)
+                    break
+                elif len(self.colValues) < len(loads) and len(self.colValues) != 1:
+                        # s = ttk.Style()
+                        # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                        self.notif.configure(text=f'You have {len(loads)} loads but only {len(self.colValues)} values given', background='red', foreground='#333333')
+                        self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+                        break
                 else:
-                    for li, l in enumerate(loads):
-                        details = l.getDetails()
-                        value = self.colValues[li][rowIndex]
-                        details.setValue(label, value)
-                flag = True
-        return flag
-        # self.tempLocData[label] = self.columnNames
+                    if len(self.colValues) == 1:
+                        for li, l in enumerate(loads):
+                            details = l.getDetails()
+                            value = self.colValues[0][rowIndex]
+                            details.setValue(label, value)
+                    else:
+                        for li, l in enumerate(loads):
+                            details = l.getDetails()
+                            value = self.colValues[li][rowIndex]
+                            details.setValue(label, value)
+                    flag = True
+            return flag
+            # self.tempLocData[label] = self.columnNames
+        else:
+            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='#333333')
+            self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def getRowValues(self, label):
         flag = False
 
-        for colIndex, s in self.subjects.items():
-            test = s.getTests()[0]
-            loads = test.getWorkLoads()
-            
-            if len(self.rowValues) < len(loads) and len(self.rowValues) != 1:
-                    # s = ttk.Style()
-                    # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
-                    self.notif.configure(text=f'You have {len(loads)} loads but only {len(self.rowValues)} values given', background='red', foreground='#333333')
+        if len(self.subjects.items()) > 0:
+            for colIndex, s in self.subjects.items():
+                test = s.getTests()[0]
+                loads = test.getWorkLoads()
+                
+                if len(loads) == 0:
+                    self.notif.configure(text=f'No loads detected. Please define loads before other values.', background='red', foreground='#333333')
                     self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
-            else:
-                if len(self.rowValues) == 1:
-                    for li, l in enumerate(loads):
-                        details = l.getDetails()
-                        value = self.rowValues[0][colIndex]
-                        details.setValue(label, value)
+                    break
+                elif len(self.rowValues) < len(loads) and len(self.rowValues) != 1:
+                        # s = ttk.Style()
+                        # s.configure('error.TLabel', background='red', foreground="white", anchor="CENTER")
+                        self.notif.configure(text=f'You have {len(loads)} loads but only {len(self.rowValues)} values given', background='red', foreground='#333333')
+                        self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+                        break
                 else:
-                    for li, l in enumerate(loads):
-                        details = l.getDetails()
-                        value = self.rowValues[li][colIndex]
-                        details.setValue(label, value)
-                flag = True
-        return flag
-        # self.tempLocData[label] = self.rowNames
+                    if len(self.rowValues) == 1:
+                        for li, l in enumerate(loads):
+                            details = l.getDetails()
+                            value = self.rowValues[0][colIndex]
+                            details.setValue(label, value)
+                    else:
+                        for li, l in enumerate(loads):
+                            details = l.getDetails()
+                            value = self.rowValues[li][colIndex]
+                            details.setValue(label, value)
+                    flag = True
+            return flag
+            # self.tempLocData[label] = self.rowNames
+        else:
+            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='#333333')
+            self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def prevStage(self):
         self.deselectAll()
@@ -1210,57 +1126,62 @@ class DataImporter(object):
 
         if to == 0:
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define ID(s) column/row')
+            self.instructionText.configure(text='Define column/row containing subject ID(s)')
         elif to == 1:
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define loads row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing load(s)')
         elif to == 2: # -> VO2
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define VO\u2082 row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for VO\u2082')
         elif to== 4: # -> HR
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define HR row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for HR')
         elif to == 5: # -> SV
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define SV row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for SV')
         elif to == 7: # -> Q
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define Q row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for Q')
         elif to == 9: # -> Hb
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define [Hb] row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for [Hb]')
         elif to == 10: # -> SaO2
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define SaO\u2082 row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for SaO\u2082')
         elif to == 11: # -> CaO2
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define CaO\u2082 row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for CaO\u2082')
         elif to == 12: # -> CvO2
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define CvO\u2082 row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for CvO\u2082')
         elif to == 13: # -> CavO2
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define CavO\u2082 row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for C(a-v)O\u2082')
         elif to == 14: # -> QaO2
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define QaO\u2082 row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for QaO\u2082')
         elif to == 15: # -> SvO2
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define SvO\u2082 row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for SvO\u2082')
         elif to == 16: # -> PvO2
             self.moveArrow(self.stage, to=to)
-            self.instructionText.configure(text='Define PvO\u2082 row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for PvO\u2082')
         elif to == 17: # -> T
             self.moveArrow(self.stage, to=to)
             self.passBtn.configure(text='Use Default Values')
-            self.instructionText.configure(text='Define T row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for T')
         elif to == 18: # -> pH
             self.moveArrow(self.stage, to=to)
             self.passBtn.configure(text='Use Default Values')
-            self.instructionText.configure(text='Define pH row/column')
+            self.instructionText.configure(text='Define column(s)/row(s) containing value(s) for pH')
         elif to == 19: # Finish
             if askokcancel('Quit data import?', 'Have you imported everything?', parent=self.window):
-                self.importData()
+                if len(self.subjects.items()) > 0:
+                    self.importData()
+                else:
+                    self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='#333333')
+                    self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
+                    to = 18
             else:
                 to = 18
 
