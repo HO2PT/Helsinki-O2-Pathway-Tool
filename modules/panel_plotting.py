@@ -1,16 +1,16 @@
 from tkinter import *
 from tkinter import ttk
 import math
-from objects.app import app
-from modules.notification import notification
-from modules.ScrollableNotebook import ScrollableNotebook
-from modules.O2PTSolver import O2PTSolver
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
+from objects.app import app
+from modules.notification import notification
+from modules.ScrollableNotebook import ScrollableNotebook
+from modules.O2PTSolver import O2PTSolver
 
 class PlottingPanel(ttk.Frame):
     def __init__(self, mainFrame, *args, **kwargs):
@@ -74,7 +74,6 @@ class PlottingPanel(ttk.Frame):
         for w in app.getActiveTest().getWorkLoads():
             w = w.getDetails()
             workLoadDetailsObjects.append(w)
-        # self.workLoads = app.getActiveTest().getWorkLoads()
         try:
             self.plotNotebook.pack_info()
         except TclError:
@@ -143,7 +142,6 @@ class PlotTab(ttk.Frame):
         self.plotFrame.pack(fill=BOTH, expand=1)
         self.plotFrame.pack_propagate(False)
 
-        # self.plotFrame.bind('<Configure>', lambda e: self.plot[0].canvas.draw())
         self.createPlot()
 
     def createToolbar(self):
@@ -321,7 +319,7 @@ class PlotTab(ttk.Frame):
             limit = float(self.yValue.get())
         elif vo2unit == 'l/min':
             limit = float(self.yValue.get()) * 1000
-        #print(f'limit {limit}')
+
         self.plot[1].set_ylim(top=float(limit))
         self.plot[0].canvas.draw()
 
@@ -393,7 +391,6 @@ class PlotTab(ttk.Frame):
     def onpick(self, event):
         # on the pick event, find the orig line corresponding to the
         # legend proxy line, and toggle the visibility
-        print('ON PICK')
         origline = []
         legline = event.artist
         index = None
@@ -426,9 +423,6 @@ class PlotTab(ttk.Frame):
 
     def on_click(self, event):
         # If middle or righbutton is pressed -> show/hide all lines
-        print('ON CLICK')
-        # print(vars(self.leg))
-        # print(vars(self.leg._legend_title_box))
         if event.guiEvent.num == 3:
             visible = False
             alpha = 0.2
@@ -780,8 +774,6 @@ class LoadTabRow(ttk.Frame):
         self.details = detailsObject.getWorkLoadDetails()
 
         # Adjust the number of decimal according to the used unit
-        # print(self.details[f'{self.label}_unit'])
-
         self.var = DoubleVar(self.parent, value=f'{"{0:.1f}".format(float(self.value))}')
 
         # Label

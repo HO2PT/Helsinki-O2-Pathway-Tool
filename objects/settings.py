@@ -13,9 +13,7 @@ class Settings(object):
             settingsFile.close()
             self.processData()
         except:
-            #print('SETTINGS NOT FOUND')
             defData = {
-                # "userMode": 0,
                 "layout": {
                     'sideMenu': True,
                     'allDetails': True,
@@ -125,12 +123,7 @@ class Settings(object):
             settingsFile.close()
             self.processData()
 
-        # app.activeMode = self.data['userMode']
-        #print(f'SETTINGS LOADED')
-
     def processData(self):
-        # self.userMode = self.data['userMode']
-
         self.visDefaults = {
             'sideMenu': self.data['layout']['sideMenu'],
             'allDetails': self.data['layout']['allDetails'],
@@ -275,7 +268,6 @@ class Settings(object):
         self.sideMenu.pack_propagate(False)
         self.sideMenu.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
 
-        # self.sideMenu.insert('end', 'General')
         self.sideMenu.insert('end', 'Test')
         self.sideMenu.insert('end', 'Environmental')
 
@@ -350,7 +342,6 @@ class Settings(object):
             # Select default values/units
             labelFrame = ttk.Labelframe(self.settingsContainer, text='Value & Unit defaults')
             labelFrame.pack(fill=X, pady=(5,5), padx=(5,5), anchor='nw')
-            # labelFrame.grid_columnconfigure(0, weight=1)
             container = ttk.Frame(labelFrame)
             container.grid()
 
@@ -641,9 +632,6 @@ class SettingsRow(object):
             ttk.Label(parent, text=label_subscripted).grid(column=0, row=row)
         else:
             ttk.Label(parent, text=label).grid(column=0, row=row)
-        # self.menuButton = ttk.Menubutton(parent)
-        # settings.menuButtons[label] = self.menuButton
-        # self.menuButton.config(text=settings.unitDefaults[f'{label}_unit'])
 
         # Entry
         if entryFlag == 1:
@@ -674,8 +662,6 @@ class SettingsRow(object):
         # Measured/Calculated
         try:
             self.intVar = IntVar(value=settings.mcDefaults[f'{label}_mc'])
-            # if self.intVar not in app.intVars:
-            #     app.intVars.append(self.intVar)
             self.radio1 = ttk.Radiobutton(parent, value=0, variable=self.intVar)
             self.radio1.grid(column=3, row=row)
 

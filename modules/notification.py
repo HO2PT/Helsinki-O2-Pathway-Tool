@@ -28,8 +28,7 @@ class NotificationPanel(object):
 
     def setParent(self, parent):
         self.parent = parent
-        # self.notifPanel = ttk.Frame(self.parent,height=20)
-        self.notifPanel = ttk.Frame(self.parent)
+        self.notifPanel = ttk.Frame(self.parent, height=22)
         self.notifPanel.pack(fill=X)
 
 notification = NotificationPanel()

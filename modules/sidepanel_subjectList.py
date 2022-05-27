@@ -1,12 +1,12 @@
-from copy import deepcopy
 from tkinter import *
 from tkinter import ttk
+from copy import deepcopy
 from objects.app import app
 from objects.project import Project
 from objects.subject import Subject
+from objects.test import Test
 from modules.notification import notification
 from modules.SubjectDataImporter import SubjectDataImporter
-from objects.test import Test
 
 class SubjectList(object):
     def __init__(self, sidePanel):
@@ -44,27 +44,6 @@ class SubjectList(object):
     def showMeanOptions(self):
         if len(self.subjectList.curselection()) > 0:
             Options(self, 'mean')
-            """ # Create popup
-            editscreen = Toplevel(width=self.editButton.winfo_reqwidth()*3, height=self.editButton.winfo_reqheight()*4)
-            editscreen.title('Plot options')
-            editscreenX = self.editButton.winfo_rootx()-self.editButton.winfo_reqwidth() - 7
-            ediscreenY = self.editButton.winfo_rooty()-(self.editButton.winfo_reqheight()*4.5)
-            editscreen.geometry("+%d+%d" % ( editscreenX, ediscreenY ))
-            editscreen.grid_propagate(False)
-                
-            self.var = IntVar(value=0)
-            opt1 = ttk.Radiobutton(editscreen, text='Mean/SD', variable=self.var, value=0)
-            opt1.grid(column=1, row=0, sticky='w')
-            opt2 = ttk.Radiobutton(editscreen, text='Mean/IQR', variable=self.var, value=1)
-            opt2.grid(column=1, row=1, sticky='w')
-            ttk.Button(editscreen, text='Plot', command=lambda: plot()).grid(column=3, row=3, sticky='se')
-
-            def plot():
-                if self.var.get() == 0:
-                    self.plotMeanSd()
-                else:
-                    self.plotMeanIqr()
-                editscreen.destroy() """
         else:
             notification.create('error', 'Subject not selected', '5000')
 
@@ -90,8 +69,6 @@ class SubjectList(object):
             if app.activeTest.id != 'Joined subjects':
                 app.activeTest.workLoads[0].setName(f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}')
                 app.activeTest.id = 'Joined subjects'
-            # else:
-            #     app.activeTest.workLoads[0].name = f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].name}'
 
             for sindex in self.subjectList.curselection():
                 lastTest = project.getSubjects()[sindex].tests[-1]
@@ -136,7 +113,6 @@ class SubjectList(object):
             self.subjectList.selection_set(index)
 
     def compareSubjects(self, n):
-        #print(n)
         comparisonTest = Test()
         comparisonTest.setId('Subject comparison')
         comparisonTest.workLoads = []
@@ -144,14 +120,11 @@ class SubjectList(object):
         for j,i in enumerate(self.subjectList.curselection()):
             subject = app.getActiveProject().getSubjects()[i]
             test = subject.getTests()[n]
-            # print( f'index: {i} - {test.id}' )
             lastWorkLoad = test.getWorkLoads()[-1]
             loadCopy = deepcopy(lastWorkLoad)
             loadCopy.setName(f'{subject.id}-Test{n+1}')
             comparisonTest.addWorkLoad(loadCopy)
 
-        # print(comparisonTest.getWorkLoads())
-        # print(self.testList.curselection())
         app.setActiveTest(comparisonTest)
         # Refresh views
         app.testDetailModule.refreshTestDetails()
@@ -213,7 +186,6 @@ class SubjectList(object):
 
             # Update app state
             app.setActiveSubject(subject)
-            # app.setActiveTest(None)
 
             activeProject.addSubject(subject)
         
@@ -245,7 +217,6 @@ class SubjectList(object):
             subjects.append(project.getSubjects()[sindex])
             
         VO2mean, Qmean, HBmean, SAO2mean = app.getMaxMinAvg(subjects=subjects)
-        # print(VO2mean, Qmean, HBmean, SAO2mean)
         createdLoad = emptyTest.createLoad()
         createdLoad.details.setValue('VO2', VO2mean)
         createdLoad.details.setValue('Q', Qmean)
@@ -269,7 +240,6 @@ class SubjectList(object):
             subjects = activeProject.getSubjects()
         except AttributeError:
             subjects = []
-        #print(subjects)
         self.subjectList.delete(0, 'end')
         for s in subjects:
             self.subjectList.insert('end', s.id)
@@ -287,7 +257,6 @@ class SubjectList(object):
             
             # Refresh app state
             app.setActiveSubject(subject)
-            # app.setActiveTest(None)
 
             # Refresh views
             app.sidepanel_testList.refreshList()

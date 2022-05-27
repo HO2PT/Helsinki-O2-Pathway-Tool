@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter.messagebox import askokcancel
 from tkinter import ttk
-
 from objects.app import app
 from objects.settings import Settings
 from modules.menubar import MenuBar
@@ -9,7 +8,6 @@ from modules.notification import notification
 from modules.panel_side import SidePanel
 from modules.panel_details import DetailsPanel
 from modules.panel_plotting import PlottingPanel
-# from objects.workLoadDetails import WorkLoadDetails
 
 root = Tk()
 root.title("O\u2082 Pathway Tool")

@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import ttk
-
 from objects.app import app
 from objects.project import Project
 from objects.test import Test
@@ -106,12 +105,10 @@ class ProjectList(object):
         self.projectList.selection_set('end')
 
     def createProject(self):
-        #print(f'BEFORE: {self.projectList.curselection()}')
         project = Project()
         self.projectList.insert('end', project.id)
         self.projectList.selection_clear(0, 'end')
         self.projectList.selection_set('end')
-        #print(f'AFTER: {self.projectList.curselection()}')
 
         # Update app state
         app.addProject(project)
@@ -134,7 +131,6 @@ class ProjectList(object):
 
             # Refresh app state
             app.setActiveSubject(None)
-            # app.setActiveTest(None)
 
             # Refresh views
             app.sidepanel_subjectList.refreshList()

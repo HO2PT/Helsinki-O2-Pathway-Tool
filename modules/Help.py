@@ -1,9 +1,9 @@
-from tkinter import *
-from tkinter import ttk
-from objects.app import app
-from PIL import Image, ImageTk
 import fitz
 import math
+from tkinter import *
+from tkinter import ttk
+from PIL import Image, ImageTk
+from objects.app import app
 
 class Help():
     def __init__(self):

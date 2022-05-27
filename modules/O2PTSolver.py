@@ -146,60 +146,6 @@ class O2PTSolver():
                     return VO2 / Q
         else:
             return CavO2
-            # If C(a-v)O2 is given, ensure that it fulfills
-            # the equations.
-            """ print('CAVO2 TARKISTUKSEEN')
-
-            # If CaO2 and CvO2 is given
-            if CaO2 != 0 and CvO2 != 0:
-                if unit == 'ml/l':
-                    if CaO2unit == 'ml/dl': # -> ml/l
-                        CaO2 = CaO2 * 10
-                    if CvO2unit == 'ml/dl': # -> ml/l
-                        CvO2 = CvO2 * 10
-
-                    if CavO2 != (CaO2 - CvO2):
-                        w.setMC('C(a-v)O2_MC', 1)
-                        print('LASKETTU')
-                        return CaO2 - CvO2 # ml/l
-                elif unit == 'ml/dl':
-                    if CaO2unit == 'ml/l': # -> ml/dl
-                        CaO2 = CaO2 / 10
-                    if CvO2unit == 'ml/l': # -> ml/dl
-                        CvO2 = CvO2 / 10
-
-                    if CavO2 != (CaO2 - CvO2):
-                        w.setMC('C(a-v)O2_MC', 1)
-                        print('LASKETTU')
-                        return CaO2 - CvO2 # ml/dl
-
-            else:
-                VO2Unit = details['VO2_unit']
-                QUnit = details['Q_unit']
-                    
-                if unit == 'ml/l':
-                    if VO2Unit == 'l/min': # -> ml/min
-                        VO2 = VO2 * 1000
-                    if QUnit == 'ml/min': # -> l/min
-                        Q = Q / 1000
-                    
-                    if CavO2 != (VO2 / Q):
-                        w.setMC('C(a-v)O2_MC', 1)
-                        print('LASKETTU')
-                        return VO2 / Q
-
-                elif unit == 'ml/dl':
-                    if VO2Unit == 'l/min': # -> ml/min
-                        VO2 = VO2 * 1000
-                    if QUnit == 'l/min': # -> dl/min
-                        Q = Q * 10
-                    elif QUnit == 'ml/min':
-                        Q = Q / 100
-
-                    if CavO2 != (VO2 / Q):
-                        w.setMC('C(a-v)O2_MC', 1)
-                        print('LASKETTU')
-                        return VO2 / Q """
             
     def formatCaO2(self, Hb, SaO2):
         CaO2 = float(self.d['CaO2'])
@@ -234,7 +180,6 @@ class O2PTSolver():
                 if HbUnit == 'g/l': # -> g/dl
                     Hb = Hb / 10
             
-            # CvO2 = 1.34 x [Hb] x SvO2 / 100
             return 1.34 * Hb * SvO2
         else:
             return CvO2 
@@ -254,8 +199,7 @@ class O2PTSolver():
                 CavO2 = CavO2 / 10
             if HbUnit == 'g/l': # -> g/dl
                 Hb = Hb / 10
-            # print(f'WTF {CaO2}, {CavO2}, {Hb}')
-            # SvO2 = (CaO2 - C(a-v)O2) x 100 / 1,34 / [Hb]
+
             return (CaO2 - CavO2) / 1.34 / Hb
         else:
             return SvO2 / 100
@@ -287,15 +231,9 @@ class O2PTSolver():
 
     def formatPvO2(self, a, b):
         PvO2 = float(self.d['PvO2'])
-
         self.w.setMC('PvO2_MC', 1)
+        
         return np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
-
-        """ if PvO2 == 0:
-            w.getDetails().setMC('PvO2_MC', 1)
-            return np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
-        else:
-            return PvO2 """
 
     def phTempCorrection(self, pH0, pH, T0, T, PvO2_calc):
         lnPvO2 = np.log(PvO2_calc)

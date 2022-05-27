@@ -3,8 +3,8 @@
 
 from tkinter import *
 from tkinter import ttk
-from objects.app import app
 from tkinter.messagebox import askokcancel
+from objects.app import app
 
 class ScrollableNotebook(ttk.Frame):
     def __init__(self, parent, parentObj=None, wheelscroll=False, tabmenu=False, *args, **kwargs):
@@ -186,7 +186,6 @@ class ScrollableNotebook(ttk.Frame):
         self.notebookTab.insert(pos,frame,**kwargs)
 
     def select(self,tab_id):
-##        self.notebookContent.select(self.__ContentTabID(tab_id))
         self.notebookTab.select(tab_id)
 
     def tab(self,tab_id, option=None, **kwargs):
@@ -196,7 +195,6 @@ class ScrollableNotebook(ttk.Frame):
         return self.notebookTab.tab(tab_id, option=None, **kwargs)
 
     def tabs(self):
-##        return self.notebookContent.tabs()
         return self.notebookTab.tabs()
 
     def enable_traversal(self):

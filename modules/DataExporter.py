@@ -1,19 +1,19 @@
 import os
 import math
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from tkinter import *
 from tkinter import ttk
-from modules.O2PTSolver import O2PTSolver
+from tkinter.filedialog import asksaveasfilename
+from copy import deepcopy
 from objects.test import Test
 from objects.app import app
 from objects.workLoadDetails import WorkLoadDetails
 from modules.notification import notification
 from modules.ProjectDataImporter import DataMenuElem
-from copy import deepcopy
-from tkinter.filedialog import asksaveasfilename
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
+from modules.O2PTSolver import O2PTSolver
 
 class DataExporter(object):
     def __init__(self, toNew, onlyPlots=False):
@@ -199,7 +199,6 @@ class DataExporter(object):
         columns = []
         
         if self.onlyPlots == True:
-            print('EXPORT TO NEW - ONLY PLOTS')
             for i, p in enumerate(app.getPlottingPanel().plots):
                 
                 # Keep the aspect ratio of the plot the same even
@@ -278,7 +277,6 @@ class DataExporter(object):
 
                 # Allow duplicates
                 if id in self.dfs.keys():
-                    print('DUBBELGUBBEL')
                     id = f'{id}-{i+1}'
 
                 self.dfs[id] = df
@@ -305,7 +303,6 @@ class DataExporter(object):
                 os.remove(f'{os.getcwd()}\plot{i}.png')
             self.exportOptions.destroy()
         else:
-            print('EXPORT TO NEW - WHOLE PROJECT')
             project = app.getActiveProject()
             subjects = project.getSubjects()
 
@@ -378,7 +375,6 @@ class DataExporter(object):
         ordered, units, mcs = self.getSortedData()
 
         if self.onlyPlots == True: # Export only created plots
-            print('TO SELECTED - ONLY PLOTS')
             self.createDfsOfPlots()
             for key,value in self.dfs.items():
                 excel[str(key)[0:30]] = value
@@ -408,7 +404,6 @@ class DataExporter(object):
             self.exportOptions.destroy()
 
         else: # Export all values and plots to excel file
-            print('TO SELECTED - WHOLE PROJECT')
             if self.importDataMode == 'long':
                 for key, value in ordered.items():
                     if 'C(a-v)O2' in key:
@@ -598,8 +593,6 @@ class DataExporter(object):
                         details = workLoadObjects[i].getWorkLoadDetails()
                         O2PTSolver(workLoadObjects[i], details).calc()
                         updatedDetails = workLoadObjects[i].getWorkLoadDetails()
-                        # print(updatedDetails)
-                        # print(f'SELF VARS: {self.vars}')
                         for v in self.vars:
                             value = updatedDetails[v]
                             unit = updatedDetails[f'{v}_unit']
@@ -610,9 +603,8 @@ class DataExporter(object):
                             temp[f'{v}-{i+1}'].append(value)
                             units[v] = unit
                             mcs[v] = mc
-                            # print(value, unit, mc)
+
                     except Exception as err:
-                        # print(f'ERROR: {err}')
                         updatedDetails = workLoadObjects[0].getWorkLoadDetails()
 
                         for v in self.vars:
@@ -742,7 +734,6 @@ class DataExporter(object):
             details = l.getDetails().getWorkLoadDetails()
             if projectPlot == False:
                 O2PTSolver(l.getDetails(), details).calc()
-                # app.getPlottingPanel().calc(l.getDetails(), details)
             updatedDetails = l.getDetails().getWorkLoadDetails()
 
             for v in self.vars:

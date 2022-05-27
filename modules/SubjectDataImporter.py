@@ -1,14 +1,14 @@
+import pandas as pd
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
 from tkinter.messagebox import askokcancel
-import pandas as pd
 from pandastable import Table, TableModel
-from modules.notification import notification
 from objects.app import app
 from objects.project import Project
 from objects.subject import Subject
 from objects.test import Test
+from modules.notification import notification
 
 # Stage 0: id
 # Stage 1: loads
@@ -405,7 +405,6 @@ class SubjectDataImporter(object):
                 self.dataTable.drawSelectedCol(c, delete=False)
                 self.dataTable.tablecolheader.drawRect(c, delete=False)
 
-        # self.updateColumnText()
         self.updateSelectionText()
 
     def handleRightClick(self, e = None):
@@ -432,7 +431,6 @@ class SubjectDataImporter(object):
             if len(rows) > 1:
                 temp = rows[0]
                 for i, r in enumerate(rows):
-                    # print(r)
                     if i != 0:
                         if r == temp+1:
                             self.selectionText.configure(text=f'Selected rows {rows[0]+1}-{rows[-1]+1}')
@@ -777,12 +775,9 @@ class SubjectDataImporter(object):
         self.dataTable.clearSelected()
         self.dataTable.multiplecollist = []
         self.dataTable.multiplerowlist = []
-        # self.dataTable.setSelectedCol( -1 )
         self.dataTable.drawSelectedCol(-1)
         self.dataTable.tablecolheader.drawRect(-1)
-        # self.dataTable.setSelectedRow( -1 )
-        
-        # self.dataTable.drawSelectedRow()
+
         self.dataTable.rowheader.clearSelected()
         self.dataTable.delete('ctrlSel')
         self.dataTable.delete('currentrect')
@@ -798,8 +793,6 @@ class SubjectDataImporter(object):
         cols = self.dataTable.multiplecollist
         model = self.dataTable.model
         lists = []
-
-        # print('CUSTOM')
 
         for c in cols:
             x=[]
@@ -928,7 +921,6 @@ class SubjectDataImporter(object):
             self.imported[imported] = True
 
         if to == None:
-            # self.stage += 1 
             to = self.stage + 1
 
         if to > 0:

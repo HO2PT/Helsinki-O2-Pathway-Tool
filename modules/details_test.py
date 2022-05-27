@@ -2,8 +2,8 @@ import gc
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
-from modules.ScrollableNotebook import ScrollableNotebook
 from objects.test import Test
+from modules.ScrollableNotebook import ScrollableNotebook
 
 class TestDetailModule(ttk.Labelframe):
     def __init__(self, detailsPanel, *args, **kwargs):

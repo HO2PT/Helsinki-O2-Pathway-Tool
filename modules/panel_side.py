@@ -1,9 +1,9 @@
 from tkinter import *
 from tkinter import ttk
+from objects.app import app
 from modules.sidepanel_projects import ProjectList
 from modules.sidepanel_subjectList import SubjectList
 from modules.sidepanel_testList import TestList
-from objects.app import app
 
 class SidePanel(ttk.Frame):
     def __init__(self, mainFrame, *args, **kwargs):

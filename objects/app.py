@@ -82,10 +82,8 @@ class App(object):
             for t in tests:
                 # Find last workload with values
                 for l in reversed(t.workLoads):
-                    # print(f'REVERSED: {l.details.getWorkLoadDetails()}')
                     if l.details.getWorkLoadDetails()['Load'] != 0:
                         wOrig = l
-                        # print(f'VALITTU: {wOrig.parentTest.id}, {wOrig.details.getWorkLoadDetails()["Load"]}')
                         break
 
                 if wOrig == None:

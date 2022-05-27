@@ -23,8 +23,6 @@ class WorkLoadDetails(object):
         self.pHrest = testDefaults['pH @ rest']
         self.T = testDefaults['Tc\u209A\u2091\u2090\u2096']
         self.pH = testDefaults['pH\u209A\u2091\u2090\u2096']
-        # self.T = testDefaults['Tc @ rest']
-        # self.pH = testDefaults['pH @ rest']
         self.PvO2 = 0
         self.DO2 = 0
 
@@ -79,7 +77,6 @@ class WorkLoadDetails(object):
         self.DO2_MC = defMc['DO2_mc']
 
     def setUnit(self, label, unit):
-        # print(f'UPDATING UNIT {label}, to {unit}')
         if label == 'Load_unit':
             self.Load_unit = unit
 
@@ -138,7 +135,6 @@ class WorkLoadDetails(object):
             self.DO2_unit = unit
 
     def setMC(self, label, value):
-        # print('UPDATING MC')
         if label == 'VO2_MC':
             self.VO2_MC = value
  
@@ -188,7 +184,6 @@ class WorkLoadDetails(object):
             self.DO2_MC = value
 
     def setValue(self, label, value):
-        # print('UPDATING VALUE')
         if label == 'Load':
             self.Load = value
 
@@ -324,17 +319,9 @@ class WorkLoadDetails(object):
             'Tc @ rest_unit': self.Trest_unit,
             'Tc @ rest_MC': self.Trest_MC,
 
-            # 'Tc\u209A\u2091\u2090\u2096': self.T,
-            # 'Tc\u209A\u2091\u2090\u2096_unit': self.T_unit,
-            # 'Tc\u209A\u2091\u2090\u2096_MC': self.T_MC,
-
             'pH @ rest': self.pHrest,
             'pH @ rest_unit': self.pHrest_unit,
             'pH @ rest_MC': self.pHrest_MC,
-
-            # 'pH\u209A\u2091\u2090\u2096': self.pH,
-            # 'pH\u209A\u2091\u2090\u2096_unit': self.pH_unit,
-            # 'pH\u209A\u2091\u2090\u2096_MC': self.pH_MC,
 
             'pH': self.pH,
             'pH_unit': self.pH_unit,
@@ -359,7 +346,6 @@ class WorkLoadDetails(object):
         self.xi = xi
         self.yi = yi
         self.VO2 = VO2
-        #self.SV = SV
         self.Q = Q
         self.Hb = Hb
         self.SaO2 = SaO2

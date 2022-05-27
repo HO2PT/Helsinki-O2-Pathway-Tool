@@ -1,14 +1,13 @@
-from copy import deepcopy
+import time
 from tkinter import *
 from tkinter import ttk
-import time
-from modules.TestDataImporter import TestDataImporter
+from copy import deepcopy
 from objects.project import Project
 from objects.subject import Subject
 from objects.test import Test
 from objects.app import app
+from modules.TestDataImporter import TestDataImporter
 from modules.notification import notification
-
 
 class TestList(object):
     def __init__(self, sidePanel):
@@ -37,13 +36,11 @@ class TestList(object):
 
     def testImport(self):
         if len(self.testList.curselection()) == 1:
-            print('TESTIN MUOKKAUS')
             subject = app.getActiveSubject()
             tindex = self.testList.curselection()[0]
             test = subject.tests[tindex]
             TestDataImporter(test)
         else: 
-            print('UUSI TESTI')
             TestDataImporter()
 
     def setStartSel(self, e):
@@ -238,9 +235,6 @@ class TestList(object):
 
             # Update app state
             app.setActiveTest(test)
-
-        # Add test to app
-        #app.plottedTests.append(test)
 
         # Create load tab
         app.projectDetailModule.refreshDetails()

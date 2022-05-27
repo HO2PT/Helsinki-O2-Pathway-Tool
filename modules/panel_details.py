@@ -1,9 +1,9 @@
 from tkinter import *
 from tkinter import ttk
+from objects.app import app
 from modules.details_env import EnvDetailModule
 from modules.details_project import ProjectDetailsModule
 from modules.details_test import TestDetailModule
-from objects.app import app
 from modules.notification import notification
 
 class DetailsPanel(ttk.Frame):

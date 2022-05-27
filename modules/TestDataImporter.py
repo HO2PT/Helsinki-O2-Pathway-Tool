@@ -1,14 +1,13 @@
+import pandas as pd
+import numpy as np
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
 from tkinter.messagebox import askokcancel
-import pandas as pd
-import numpy as np
-from pandastable import Table, TableModel
+from pandastable import Table, TableModel, util
 from objects.project import Project
 from objects.subject import Subject
 from objects.test import Test
-from pandastable import util
 from objects.app import app
 from modules.notification import notification
 
@@ -21,41 +20,39 @@ from modules.notification import notification
 class TestDataImporter():
     def __init__(self, test=None):
         self.importedData = {}
+        self.newProject = False
+        self.newSubject = False
+        self.newTest = False
+
+        # Create a project if any project is not set active
+        if app.activeProject == None:
+            self.project = Project()
+            self.newProject = True
+        else:
+            self.project = app.activeProject
+
+        # Create a subject if any subject is not set active
+        if app.activeSubject == None:
+            self.subject = Subject(0, parentProject=self.project)
+            self.newSubject = True
+        else:
+            self.subject = app.activeSubject
 
         if test == None:
-            # Create a project if any project is not set active
-            if app.activeProject == None:
-                self.project = Project()
-                app.addProject(self.project)
-                app.setActiveProject(self.project)
-                app.sidepanel_projectList.addToList(self.project.id)
-            else:
-                self.project = app.activeProject
-
-            # Create a subject if any subject is not set active
-            if app.activeSubject == None:
-                self.subject = Subject(0, parentProject=self.project)
-                self.project.addSubject(self.subject)
-                app.setActiveSubject(self.subject)
-                app.sidepanel_subjectList.addToList(self.subject)
-                app.sidepanel_subjectList.updateSelection()
-            else:
-                self.subject = app.activeSubject
-
-            # Add test to subject
+            # Create a test if none is set active
             testId = f'{self.subject.id}-Test-{len(self.subject.getTests())+1}'
             self.test = Test(id=testId, parentSubject=self.subject)
-            self.subject.addTest(self.test)
-            app.setActiveTest(self.test)
-            app.sidepanel_testList.addToList(self.test.id)
-
-            app.projectDetailModule.refreshDetails()
+            self.newTest = True
         else:
             self.test = test
 
         file = askopenfile(mode ='r')
         if file is not None:
-            self.data = pd.ExcelFile(file.name)
+            try:
+                self.data = pd.ExcelFile(file.name)
+            except:
+                notification.create('error', 'Can not open file.', 5000)
+                return
             self.dfList= {}
 
             for sheet in self.data.sheet_names:
@@ -139,9 +136,6 @@ class TestDataImporter():
                 self.treeView.insert('', END, text='pH', iid=f'{i}{treeId+16}', open=False)
                 self.treeView.move(f'{i}{treeId+16}', i, treeId+16)
 
-            # self.treeView.tag_configure('hrLine', background='red')
-            # print(self.treeView.tag_configure('hrLine'))
-
             self.treeView.pack(fill=Y, expand=True)
             self.treeView.selection_set(('00'))
 
@@ -166,7 +160,7 @@ class TestDataImporter():
             # Instructions
             headerFrame = ttk.Frame(self.rightPanel)
             headerFrame.pack(fill=X)
-            self.instructionText = ttk.Label(headerFrame, text='Define column(s)/row(s)/cell(s) containing value(s) for VO\u2082 on 1. load.')
+            self.instructionText = ttk.Label(headerFrame, text='Define cell(s) containing value(s) for VO\u2082 on 1. load.')
             self.instructionText.pack()
 
             # Create menubutton for selection of excel sheet
@@ -222,7 +216,6 @@ class TestDataImporter():
             self.nCellsText.pack(anchor='w')
 
             nameOfFirstSheet = list(self.dfList)[0]
-
             self.dataTable = Table(dataFrame, dataframe=self.dfList[nameOfFirstSheet], editable=False)
             self.dataTable.show()
 
@@ -231,8 +224,6 @@ class TestDataImporter():
             self.dataTable.rowheader.clearSelected()
             self.dataTable.setSelectedCol(-1)
             self.dataTable.setSelectedRow(-1)
-            self.dataTable.multiplerowlist = []
-            self.dataTable.multiplecollist = []
 
             # Override original bindings
             self.dataTable.tablecolheader.bind('<1>', self.handle_col_left_click)
@@ -250,6 +241,7 @@ class TestDataImporter():
 
             self.dataTable.rowindexheader.bind('<1>', lambda e: None)
 
+            self.dataTable.bind('<1>', self.handle_left_click)
             self.dataTable.bind('<B1-Motion>', self.handle_table_mouse_drag)
             self.dataTable.bind('<Control-Button-1>', lambda e: None)
             self.dataTable.bind('<Shift-Button-1>', lambda e: None)
@@ -302,6 +294,46 @@ class TestDataImporter():
 
         else:
             notification.create('error', 'Error opening file', 5000)
+
+    def handle_left_click(self, event):
+        """Respond to a single press"""
+
+        self.dataTable.clearSelected()
+        self.dataTable.allrows = False
+        #which row and column is the click inside?
+        rowclicked = self.dataTable.get_row_clicked(event)
+        colclicked = self.dataTable.get_col_clicked(event)
+        if colclicked == None:
+            return
+        self.dataTable.focus_set()
+
+        if hasattr(self, 'cellentry'):
+            self.dataTable.cellentry.destroy()
+        #ensure popup menus are removed if present
+        if hasattr(self, 'rightmenu'):
+            self.dataTable.rightmenu.destroy()
+        if hasattr(self.dataTable.tablecolheader, 'rightmenu'):
+            self.dataTable.tablecolheader.rightmenu.destroy()
+
+        self.dataTable.startrow = rowclicked
+        self.dataTable.endrow = rowclicked
+        self.dataTable.startcol = colclicked
+        self.dataTable.endcol = colclicked
+        #reset multiple selection list
+        self.dataTable.multiplerowlist=[]
+        self.dataTable.multiplerowlist.append(rowclicked)
+        if 0 <= rowclicked < self.dataTable.rows and 0 <= colclicked < self.dataTable.cols:
+            self.dataTable.setSelectedRow(rowclicked)
+            self.dataTable.setSelectedCol(colclicked)
+            self.dataTable.drawSelectedRect(self.dataTable.currentrow, self.dataTable.currentcol)
+            self.dataTable.drawSelectedRow()
+            self.dataTable.rowheader.drawSelectedRows(rowclicked)
+            self.dataTable.tablecolheader.delete('rect')
+            
+        if hasattr(self, 'cellentry'):
+            self.dataTable.cellentry.destroy()
+
+        self.updateSelectionText()
     
     def handleResize(self, event):
         self.dataTable.currentrow = -1
@@ -569,7 +601,7 @@ class TestDataImporter():
             if len(self.treeView.selection()[0]) > 1:
                 text =  self.treeView.item(self.treeView.selection()[0])['text']
                 text = text.split(' ')[0]
-                self.instructionText.configure(text=f'Define column(s)/row(s)/cell(s) containing value(s) for {text} on {int(self.treeView.selection()[0][0])+1}. load.')
+                self.instructionText.configure(text=f'Define cell(s) containing value(s) for {text} on {int(self.treeView.selection()[0][0])+1}. load.')
             else:
                 self.instructionText.configure(text='')
         except IndexError:
@@ -809,7 +841,10 @@ class TestDataImporter():
             else:
                 textR = ''
 
-            self.selectionText.configure(text=f'Cells from {textR} {textC}')
+            if len(rows) > 1 or len(cols) > 1:
+                self.selectionText.configure(text=f'Cells from {textR} {textC}')
+            else:
+                self.selectionText.configure(text=f'Cell from {textR} {textC}')
         
         self.updateMeanText()
 
@@ -892,7 +927,6 @@ class TestDataImporter():
 
                 elif varIndex == 16: # pH
                     self.importedData[loadIndex].update( dict([(iid, dict([('pH', value), ('imported', True)]) )]))
-                    # self.treeView.selection_set((f'{int(loadIndex)+1}{0}'))
 
                 self.addCheckMarks()
                 self.notif.configure(text='OK', background='green', foreground='white')
@@ -942,6 +976,26 @@ class TestDataImporter():
                         if key != 'imported':
                             self.test.workLoads[int(loadIndex)].details.setValue(key, value)
 
+            # Add project
+            if self.newProject:
+                app.sidepanel_projectList.addToList(self.project.id)
+                app.addProject(self.project)
+                app.setActiveProject(self.project)
+
+            # Add subject
+            if self.newSubject:
+                app.sidepanel_subjectList.addToList(self.subject)
+                app.sidepanel_subjectList.updateSelection()
+                self.project.addSubject(self.subject)
+                app.setActiveSubject(self.subject)
+
+            # Add test
+            if self.newTest:
+                app.sidepanel_testList.addToList(self.test.id)
+                self.subject.addTest(self.test)
+                app.setActiveTest(self.test)
+
+            app.projectDetailModule.refreshDetails()
             app.testDetailModule.refreshTestDetails()
         else:
             self.window.destroy()
