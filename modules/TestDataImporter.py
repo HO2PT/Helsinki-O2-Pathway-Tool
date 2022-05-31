@@ -23,6 +23,7 @@ class TestDataImporter():
         self.newProject = False
         self.newSubject = False
         self.newTest = False
+        self.testList = []
 
         # Create a project if any project is not set active
         if app.activeProject == None:
@@ -56,7 +57,99 @@ class TestDataImporter():
             self.dfList= {}
 
             for sheet in self.data.sheet_names:
-                self.dfList[sheet] = pd.read_excel(self.data, sheet, header=None)
+                self.dfList[sheet] = pd.read_excel(self.data, sheet, header=None, keep_default_na=False)
+
+            self.templateUsed = False
+
+            if self.newTest == True:
+                phAndTempCorrection = False
+                params = [
+                    'Load',
+                    'Velocity',
+                    'Incline',
+                    'VO2',
+                    '[Hb]',
+                    'SaO2',
+                    'HR',
+                    'SV',
+                    'Q',
+                    'CaO2',
+                    'CvO2',
+                    'C(a-v)O2',
+                    'QaO2',
+                    'SvO2',
+                    'PvO2',
+                    'T',
+                    'pH'
+                ]
+
+                print(f'number of sheets: {len(self.dfList)}')
+
+                # Check if template excel is used and import data automatically
+                for sheetName, sheet in self.dfList.items():
+                    if sheet.loc[0,0] == 'Test-template':
+                        print(f'TestID: {self.dfList[sheetName].loc[2,1]}') #loc[y,x]
+                        self.cols = []
+
+                        testId = f'{self.subject.id}-Test-{len(self.subject.getTests())+1}'
+                        self.test = Test(id=testId, parentSubject=self.subject)
+                        self.testList.append(self.test)
+
+                        self.test.workLoads = []
+                        self.test.id = self.dfList[sheetName].loc[2,1]
+
+                        # Check the number of loads and save column indexes
+                        for i, x in enumerate(self.dfList[sheetName].loc[4,:]):
+                            if 'Load' in str(x):
+                                self.cols.append(i)
+
+                        # Import values load by load
+                        for i in self.cols:
+                            colHasValues = False
+
+                            for value in self.dfList[sheetName].loc[5:,i]:
+                                if value != '':
+                                    colHasValues = True
+                            
+                            # If there are values given -> create a workload
+                            if colHasValues:
+                                print(f'Load {i} has values')
+                                newLoad = self.test.createLoad()
+                                newLoad.details.isImported = True
+                                
+                                # Start importing from row 5
+                                index = 5
+                                for p in params:
+                                    value = self.dfList[sheetName].loc[index,i]
+                                    
+                                    # Replace null values with 0
+                                    if value == '':
+                                        value = 0
+                                    
+                                    newLoad.details.setValue(p, value)
+                                    index += 1
+                                    
+                                    if index == 20: # Distribute default pH and Temp if value not given
+                                        if value == 0:
+                                            phAndTempCorrection = True
+                                        else:
+                                            newLoad.details.setValue('T', value)
+                                    if index == 21: # Distribute default pH and Temp if value not given
+                                        if value == 0:
+                                            phAndTempCorrection = True
+                                        else:
+                                            newLoad.details.setValue('pH', value)
+                            else:
+                                continue
+
+                            if phAndTempCorrection:
+                                app.settings.updatePhAndTemp(self.test)
+
+                        self.templateUsed = True
+                
+                if self.templateUsed:
+                    self.closeImporter(mode=1)
+                    return
 
             self.window = Toplevel()
             self.window.title('Test import')
@@ -222,8 +315,6 @@ class TestDataImporter():
             # Clear initial selection
             self.dataTable.clearSelected()
             self.dataTable.rowheader.clearSelected()
-            self.dataTable.setSelectedCol(-1)
-            self.dataTable.setSelectedRow(-1)
 
             # Override original bindings
             self.dataTable.tablecolheader.bind('<1>', self.handle_col_left_click)
@@ -286,7 +377,7 @@ class TestDataImporter():
 
             self.nextButton = ttk.Button(self.footer, text='Next', command=self.getInput)
             self.doneButton = ttk.Button(self.footer, text='Done', command=lambda: self.closeImporter(0))
-            self.cancelButton = ttk.Button(self.footer, text='Cancel', command=lambda: self.closeImporter(1))
+            self.cancelButton = ttk.Button(self.footer, text='Cancel', command=lambda: self.closeImporter(2))
 
             self.cancelButton.pack(side=RIGHT, anchor='s')
             self.doneButton.pack(side=RIGHT, anchor='s')
@@ -671,25 +762,25 @@ class TestDataImporter():
             self.treeView.insert('', END, text='[Hb] *', iid=f'{i}{treeId+7}', open=False)
             self.treeView.move(f'{i}{treeId+7}', i, treeId+7)
 
-            self.treeView.insert('', END, text='SaO2 *', iid=f'{i}{treeId+8}', open=False)
+            self.treeView.insert('', END, text='SaO\u2082 *', iid=f'{i}{treeId+8}', open=False)
             self.treeView.move(f'{i}{treeId+8}', i, treeId+8)
 
-            self.treeView.insert('', END, text='CaO2', iid=f'{i}{treeId+9}', open=False)
+            self.treeView.insert('', END, text='CaO\u2082', iid=f'{i}{treeId+9}', open=False)
             self.treeView.move(f'{i}{treeId+9}', i, treeId+9)
 
-            self.treeView.insert('', END, text='CvO2', iid=f'{i}{treeId+10}', open=False)
+            self.treeView.insert('', END, text='CvO\u2082', iid=f'{i}{treeId+10}', open=False)
             self.treeView.move(f'{i}{treeId+10}', i, treeId+10)
 
-            self.treeView.insert('', END, text='C(a-v)O2', iid=f'{i}{treeId+11}', open=False)
+            self.treeView.insert('', END, text='C(a-v)O\u2082', iid=f'{i}{treeId+11}', open=False)
             self.treeView.move(f'{i}{treeId+11}', i, treeId+11)
 
-            self.treeView.insert('', END, text='QaO2', iid=f'{i}{treeId+12}', open=False)
+            self.treeView.insert('', END, text='QaO\u2082', iid=f'{i}{treeId+12}', open=False)
             self.treeView.move(f'{i}{treeId+12}', i, treeId+12)
 
-            self.treeView.insert('', END, text='SvO2', iid=f'{i}{treeId+13}', open=False)
+            self.treeView.insert('', END, text='SvO\u2082', iid=f'{i}{treeId+13}', open=False)
             self.treeView.move(f'{i}{treeId+13}', i, treeId+13)
 
-            self.treeView.insert('', END, text='PvO2', iid=f'{i}{treeId+14}', open=False)
+            self.treeView.insert('', END, text='PvO\u2082', iid=f'{i}{treeId+14}', open=False)
             self.treeView.move(f'{i}{treeId+14}', i, treeId+14)
 
             self.treeView.insert('', END, text='T', iid=f'{i}{treeId+15}', open=False)
@@ -968,6 +1059,8 @@ class TestDataImporter():
         
     def closeImporter(self, mode):
         if mode == 0:
+            """ Done button clicked """
+            
             self.window.destroy()
 
             for loadIndex, details in self.importedData.items():
@@ -994,10 +1087,38 @@ class TestDataImporter():
                 app.sidepanel_testList.addToList(self.test.id)
                 self.subject.addTest(self.test)
                 app.setActiveTest(self.test)
+            else:
+                app.setActiveTest(self.test)
 
             app.projectDetailModule.refreshDetails()
             app.testDetailModule.refreshTestDetails()
-        else:
+        elif mode == 1:
+            """ Template used """
+
+            # Add project
+            if self.newProject:
+                app.sidepanel_projectList.addToList(self.project.id)
+                app.addProject(self.project)
+                app.setActiveProject(self.project)
+
+            # Add subject
+            if self.newSubject:
+                app.sidepanel_subjectList.addToList(self.subject)
+                app.sidepanel_subjectList.updateSelection()
+                self.project.addSubject(self.subject)
+                app.setActiveSubject(self.subject)
+
+            # Add test
+            for t in self.testList:
+                app.sidepanel_testList.addToList(t.id)
+                self.subject.addTest(t)
+                app.setActiveTest(t)
+
+            app.projectDetailModule.refreshDetails()
+            app.testDetailModule.refreshTestDetails()
+        else: 
+            """ Cancel button clicked """
+
             self.window.destroy()
 
 class DataMenuElem(object):

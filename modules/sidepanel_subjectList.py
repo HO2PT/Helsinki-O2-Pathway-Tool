@@ -15,11 +15,12 @@ class SubjectList(object):
         self.container.configure(cursor='arrow')
         self.startSel = None
 
-        self.subjectList = Listbox(self.container, exportselection=FALSE, height=1)
+        self.subjectList = Listbox(self.container, exportselection=FALSE, height=1, activestyle='none')
         self.subjectList.pack(fill = BOTH, expand=TRUE)
         self.subjectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
         self.subjectList.bind('<Control-Button-1>', lambda e: self.handleCtrlSelect(e))
         self.subjectList.bind('<Shift-Button-1>', lambda e: self.handleShiftSelect(e))
+        self.subjectList.bind('<3>', self.deselectList)
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
@@ -27,10 +28,14 @@ class SubjectList(object):
         self.editButton = ttk.Button(buttonContainer, text='Edit...', command=lambda: self.editSubject())
         self.editButton.grid(column=1, row=0)
         ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteSubject()).grid(column=2, row=0)
-        
         ttk.Button(buttonContainer, text='Import...', command=lambda: SubjectDataImporter()).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare...', command=lambda: self.showComparisonOptions()).grid(column=1, row=1)
         ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
+
+    def deselectList(self, e):
+        self.subjectList.select_clear(0, END)
+        app.activeSubject = None
+        app.sidepanel_testList.refreshList()
 
     def showCreateOptions(self):
         Options(self, 'add')

@@ -50,8 +50,9 @@ root.geometry("+%d+%d" % ( initX, initY ))
 loaded = False
 
 def debug():
-    for d in app.getActiveTest().getWorkLoads():
-        print(d.getDetails().getWorkLoadDetails())
+    # for d in app.getActiveTest().getWorkLoads():
+    #     print(d.getDetails().getWorkLoadDetails())
+    print(f'current selection: {app.sidepanel_testList.testList.curselection()}')
 
 def updateCursor(e):
     print(mainframe.identify(e.x, e.y))

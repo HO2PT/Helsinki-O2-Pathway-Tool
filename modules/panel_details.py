@@ -83,12 +83,11 @@ class DetailsPanel(ttk.Frame):
             notification.create('error', 'No active test found', 5000)
     
     def clear(self):
-        if app.activeTest != None:
-            app.activeTest = None
-            self.testDetails.testId.pack_forget()
-            self.testDetails.loadsContainer.pack_forget()
-            self.envDetails.container.grid_forget()
-            app.sidepanel_testList.testList.selection_clear(0, 'end')
+        app.activeTest = None
+        self.testDetails.testId.pack_forget()
+        self.testDetails.loadsContainer.pack_forget()
+        self.envDetails.container.grid_forget()
+        app.sidepanel_testList.testList.selection_clear(0, 'end')
 
     def setPosY(self, e):
         self.posY = e.y

@@ -15,13 +15,15 @@ class TestList(object):
         self.container.pack(fill = BOTH, expand=TRUE)
         self.container.configure(cursor='arrow')
         self.startSel = None
+        self.prevSelected = None
 
-        self.testList = Listbox(self.container, exportselection=FALSE, height=1)
+        self.testList = Listbox(self.container, exportselection=FALSE, height=1, selectmode=SINGLE, activestyle='none')
         self.testList.pack(fill = BOTH, expand=TRUE)
         self.testList.bind('<Double-1>', self.handleListboxSelect)
         self.testList.bind('<1>', self.setStartSel)
-        self.testList.bind('<Control-Button-1>', lambda e: self.handleMultiSelect(e))
-        self.testList.bind('<Shift-Button-1>', lambda e: self.handleShiftSelect(e))
+        self.testList.bind('<3>', self.deselectList)
+        self.testList.bind('<Control-Button-1>', self.handleMultiSelect)
+        self.testList.bind('<Shift-Button-1>', self.handleShiftSelect)
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
@@ -29,7 +31,6 @@ class TestList(object):
         self.editButton = ttk.Button(buttonContainer, text='Edit...', command=lambda: self.editTest())
         self.editButton.grid(column=1, row=0)
         ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteTest()).grid(column=2, row=0)
-        
         ttk.Button(buttonContainer, text='Import...', command=self.testImport).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare...', command=self.showComparisonOptions).grid(column=1, row=1)
         ttk.Button(buttonContainer, text='Statistics...', command=self.showMeanOptions).grid(column=2, row=1)
@@ -43,9 +44,16 @@ class TestList(object):
         else: 
             TestDataImporter()
 
+    def deselectList(self, e):
+        self.testList.select_clear(0, END)
+        app.activeTest = None
+
     def setStartSel(self, e):
-        self.startSel = f'@{e.x},{e.y}'
-        self.testList.selection_set(self.startSel)
+        try:
+            self.prevSelected = self.testList.curselection()[0]
+        except:
+            self.prevSelected = None
+        self.startSel = self.testList.index(f'@{e.x},{e.y}')
 
     def showAddOptions(self):
         Options(self, 'add')
@@ -94,7 +102,7 @@ class TestList(object):
         subjects = []
         subjects.append(app.getActiveSubject())
         emptyTest = Test()
-        app.plotMean(test=emptyTest, subjects=subjects)
+        app.plotMean(test=emptyTest, subjects=subjects) # FIXAA
     
     def plotMeanIqr(self):
         subjects = []

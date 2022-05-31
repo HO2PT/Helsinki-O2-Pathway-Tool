@@ -14,12 +14,13 @@ class ProjectList(object):
         self.container.pack(fill = BOTH, expand=TRUE)
         self.container.configure(cursor='arrow')
 
-        self.projectList = Listbox(self.container, exportselection=FALSE, height=1)
+        self.projectList = Listbox(self.container, exportselection=FALSE, height=1, activestyle='none')
         self.projectList.pack(fill = BOTH, expand=TRUE)
 
         self.projectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
         self.projectList.bind('<Control-Button-1>', lambda e: self.handleCtrlSelect(e))
         self.projectList.bind('<Shift-Button-1>', lambda e: self.handleShiftSelect(e))
+        self.projectList.bind('<3>', self.deselectList)
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
@@ -33,6 +34,14 @@ class ProjectList(object):
         ttk.Button(buttonContainer, text='Import...', command=lambda: ProjectDataImporter()).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare', command=lambda: self.showComparisonOptions(), state=DISABLED).grid(column=1, row=1)
         ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
+
+    def deselectList(self, e):
+        self.projectList.select_clear(0, END)
+        app.activeProject = None
+        app.activeSubject = None
+        app.sidepanel_subjectList.refreshList()
+        app.sidepanel_testList.refreshList()
+        app.projectDetailModule.refreshDetails()
 
     def plotMeanSd(self):
         emptyTest = Test()

@@ -6,7 +6,10 @@ class O2PTSolver():
         self.d = detailsDict
 
     def formatQ(self):
-        Q = float(self.d["Q"])
+        try:
+            Q = float(self.d["Q"])
+        except ValueError:
+            Q = 0
         unit = self.d["Q_unit"]
 
         if Q == 0:
@@ -96,12 +99,18 @@ class O2PTSolver():
 
         return Hb
 
-    def formatCavO2(self, VO2, Q):
-        CavO2 = float(self.d['C(a-v)O2'])
+    def formatCavO2(self, VO2, Q, CaO2):
+        try:
+            CavO2 = float(self.d['C(a-v)O2'])
+        except ValueError:
+            CavO2 = 0
         unit = self.d['C(a-v)O2_unit']
-        CaO2 = float(self.d['CaO2'])
+        # CaO2 = float(self.d['CaO2'])
         CaO2unit = self.d['CaO2_unit']
-        CvO2 = float(self.d['CvO2'])
+        try:
+            CvO2 = float(self.d['CvO2'])
+        except ValueError:
+            CvO2 = 0
         CvO2unit = self.d['CvO2_unit']
 
         if CavO2 == 0:
@@ -148,7 +157,10 @@ class O2PTSolver():
             return CavO2
             
     def formatCaO2(self, Hb, SaO2):
-        CaO2 = float(self.d['CaO2'])
+        try:
+            CaO2 = float(self.d['CaO2'])
+        except ValueError:
+            CaO2 = 0
         unit = self.d['CaO2_unit']
 
         if CaO2 == 0:
@@ -166,7 +178,10 @@ class O2PTSolver():
             return CaO2
 
     def formatCvO2(self, Hb, CaO2, CavO2, SvO2):
-        CvO2 = float(self.d['CvO2'])
+        try:
+            CvO2 = float(self.d['CvO2'])
+        except ValueError:
+            CvO2 = 0
         unit = self.d['CvO2_unit']
 
         if CvO2 == 0:
@@ -185,7 +200,10 @@ class O2PTSolver():
             return CvO2 
     
     def formatSvO2(self, CavO2, CaO2, Hb):
-        SvO2 = float(self.d['SvO2'])
+        try:
+            SvO2 = float(self.d['SvO2'])
+        except ValueError:
+            SvO2 = 0
 
         if SvO2 == 0:
             self.w.setMC('SvO2_MC', 1)
@@ -205,7 +223,10 @@ class O2PTSolver():
             return SvO2 / 100
 
     def formatQaO2(self, Q, CaO2):
-        QO2 = float(self.d['QaO2'])
+        try:
+            QO2 = float(self.d['QaO2'])
+        except ValueError:
+            QO2 = 0
         unit = self.d['QaO2_unit']
         QUnit = self.d['Q_unit']
         CaO2Unit = self.d['CaO2_unit']
@@ -230,10 +251,16 @@ class O2PTSolver():
             return QO2
 
     def formatPvO2(self, a, b):
-        PvO2 = float(self.d['PvO2'])
+        try:
+            PvO2 = float(self.d['PvO2'])
+        except ValueError:
+            PvO2 = 0
         self.w.setMC('PvO2_MC', 1)
         
-        return np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
+        if PvO2 == 0:
+            return np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
+        else:
+            return PvO2
 
     def phTempCorrection(self, pH0, pH, T0, T, PvO2_calc):
         lnPvO2 = np.log(PvO2_calc)
@@ -278,7 +305,7 @@ class O2PTSolver():
         SaO2 = float(self.d['SaO2'])
 
         CaO2 = self.formatCaO2(Hb, SaO2/100)
-        CavO2 = self.formatCavO2(VO2, Q)
+        CavO2 = self.formatCavO2(VO2, Q, CaO2)
         SvO2_calc = self.formatSvO2(CavO2, CaO2, Hb)
         CvO2 = self.formatCvO2(Hb, CaO2, CavO2, SvO2_calc)
         QaO2 = self.formatQaO2(Q, CaO2)
