@@ -31,13 +31,16 @@ from modules.notification import notification
 # Stage 18: pH
 
 class SubjectDataImporter(object):
-    def __init__(self):
+    def __init__(self, subject=None):
         self.stage = 0
         self.tests = {}
         self.currentDf = None
         self.tempLocData = {}
         self.dataMode = None
         self.addLinearDist = False
+        self.newSubject = False
+        self.newProject = False
+        self.testList = []
         self.imported = {
             0: False,
             1: False,
@@ -60,13 +63,121 @@ class SubjectDataImporter(object):
             18: False
         }
 
+        # Create a project if any project is not set active
+        if app.activeProject == None:
+            self.project = Project()
+            self.newProject = True
+        else:
+            self.project = app.activeProject
+
+        # Create a subject if any subject is not set active
+        if subject == None:
+            self.subject = Subject(parentProject=self.project)
+            self.newSubject = True
+        else:
+            self.subject = subject
+
         file = askopenfile(mode ='r')
         if file is not None:
-            self.data = pd.ExcelFile(file.name)
+            try:
+                self.data = pd.ExcelFile(file.name)
+            except:
+                notification.create('error', 'Can not open file.', 5000)
+                return
+
             self.dfList= {}
 
             for sheet in self.data.sheet_names:
-                self.dfList[sheet] = pd.read_excel(self.data, sheet, header=None)
+                self.dfList[sheet] = pd.read_excel(self.data, sheet, header=None, keep_default_na=False)
+
+            self.templateUsed = False
+
+            if self.newSubject == True:
+                phAndTempCorrection = False
+                params = [
+                    'Load',
+                    'Velocity',
+                    'Incline',
+                    'VO2',
+                    '[Hb]',
+                    'SaO2',
+                    'HR',
+                    'SV',
+                    'Q',
+                    'CaO2',
+                    'CvO2',
+                    'C(a-v)O2',
+                    'QaO2',
+                    'SvO2',
+                    'PvO2',
+                    'T',
+                    'pH'
+                ]
+
+                # Check if template excel is used and import data automatically
+                for sheetName, sheet in self.dfList.items():
+                    if sheet.loc[0,0] == 'Test-template':
+                        print(f'TestID: {self.dfList[sheetName].loc[2,1]}') #loc[y,x]
+                        self.cols = []
+
+                        testId = f'{self.subject.id}-Test-{len(self.subject.getTests())+1}'
+                        self.test = Test(id=testId, parentSubject=self.subject)
+                        self.testList.append(self.test)
+
+                        self.test.workLoads = []
+                        self.test.id = self.dfList[sheetName].loc[2,1]
+
+                        # Check the number of loads and save column indexes
+                        for i, x in enumerate(self.dfList[sheetName].loc[4,:]):
+                            if 'Load' in str(x):
+                                self.cols.append(i)
+
+                        # Import values load by load
+                        for i in self.cols:
+                            colHasValues = False
+
+                            for value in self.dfList[sheetName].loc[5:,i]:
+                                if value != '':
+                                    colHasValues = True
+                            
+                            # If there are values given -> create a workload
+                            if colHasValues:
+                                newLoad = self.test.createLoad()
+                                newLoad.details.isImported = True
+                                
+                                # Start importing from row 5
+                                index = 5
+                                for p in params:
+                                    value = self.dfList[sheetName].loc[index,i]
+                                    
+                                    # Replace null values with 0
+                                    if value == '':
+                                        value = 0
+                                    
+                                    newLoad.details.setValue(p, value)
+                                    index += 1
+                                    
+                                    if index == 20: # Distribute default pH and Temp if value not given
+                                        if value == 0:
+                                            phAndTempCorrection = True
+                                        else:
+                                            newLoad.details.setValue('T', value)
+                                    if index == 21: # Distribute default pH and Temp if value not given
+                                        if value == 0:
+                                            phAndTempCorrection = True
+                                        else:
+                                            newLoad.details.setValue('pH', value)
+                            else:
+                                continue
+
+                            if phAndTempCorrection:
+                                app.settings.updatePhAndTemp(self.test)
+
+                        self.templateUsed = True
+                
+                if self.templateUsed:
+                    self.closeImporter(mode=1)
+                    return
 
             self.window = Toplevel()
             self.window.title('Subject import')
@@ -244,8 +355,8 @@ class SubjectDataImporter(object):
             self.dataTable.Yscrollbar['command'] = set_yviews
             self.dataTable.Xscrollbar['command'] = set_xviews
             
-            self.nextButton = ttk.Button(self.footer, text='Next', command=lambda: self.getInput())
-            self.cancelButton = ttk.Button(self.footer, text='Cancel', command=lambda: self.closeImporter())
+            self.nextButton = ttk.Button(self.footer, text='Next', command=self.getInput)
+            self.cancelButton = ttk.Button(self.footer, text='Cancel', command=lambda: self.closeImporter(2))
 
             self.cancelButton.pack(side=RIGHT)
             self.nextButton.pack(side=RIGHT)
@@ -691,7 +802,7 @@ class SubjectDataImporter(object):
                                     if ci != 0: #skip header
                                         # Create test, set its id and reset workloads
                                         test = Test()
-                                        test.id = id
+                                        test.id = cv
                                         test.workLoads = []
                                         colIndex = colList[i]
                                         self.tests[ci] = test
@@ -757,15 +868,61 @@ class SubjectDataImporter(object):
                     self.notif.after(1000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                     self.nextStage(imported=self.stage)
 
-    def closeImporter(self):
-        if hasattr(self, 'test'):
-            del self.test
-        self.window.destroy()
+    def closeImporter(self, mode):
+        if mode == 0:
+            """ Done button clicked """
+        
+            for loadIndex, details in self.importedData.items():
+                for iid, values in details.items():
+                    for key, value in values.items():
+                        if key != 'imported':
+                            self.test.workLoads[int(loadIndex)].details.setValue(key, value)
+
+            # Add project
+            if self.newProject:
+                app.sidepanel_projectList.addToList(self.project.id)
+                app.addProject(self.project)
+                app.setActiveProject(self.project)
+
+            # Add subject
+            if self.newSubject:
+                app.sidepanel_subjectList.addToList(self.subject)
+                app.sidepanel_subjectList.updateSelection()
+                self.project.addSubject(self.subject)
+                app.setActiveSubject(self.subject)
+
+            app.projectDetailModule.refreshDetails()
+            app.testDetailModule.refreshTestDetails()
+
+        elif mode == 1:
+            """ Template used """
+
+            # Add project
+            if self.newProject:
+                app.sidepanel_projectList.addToList(self.project.id)
+                app.addProject(self.project)
+                app.setActiveProject(self.project)
+
+            # Add subject
+            if self.newSubject:
+                app.sidepanel_subjectList.addToList(self.subject)
+                app.sidepanel_subjectList.updateSelection()
+                self.project.addSubject(self.subject)
+                app.setActiveSubject(self.subject)
+
+            # Add test
+            for t in self.testList:
+                app.sidepanel_testList.addToList(t.id)
+                self.subject.addTest(t)
+
+            app.projectDetailModule.refreshDetails()
+            app.testDetailModule.refreshTestDetails()
+
         try:
+            self.window.destroy()
             self.options.destroy()
         except:
             pass
-        del self
 
     def updateTable(self, table):
         self.dataTable.updateModel(TableModel(self.dfList[table]))
@@ -878,7 +1035,6 @@ class SubjectDataImporter(object):
             self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='#333333')
             self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
-
     def getRowValues(self, label):
         flag = False
 
@@ -936,9 +1092,9 @@ class SubjectDataImporter(object):
 
             # Pack in reversed order
             self.cancelButton.pack(side=RIGHT)
-            self.doneBtn = ttk.Button(self.footer, text='Done', command=lambda: self.importData())
+            self.doneBtn = ttk.Button(self.footer, text='Done', command=self.importData)
             self.doneBtn.pack(side=RIGHT)
-            self.prevBtn = ttk.Button(self.footer, text='Prev', command=lambda: self.prevStage())
+            self.prevBtn = ttk.Button(self.footer, text='Prev', command=self.prevStage)
             self.prevBtn.pack(side=RIGHT)
             self.passBtn = ttk.Button(self.footer, text='Skip', command=lambda: self.nextStage(skipped=self.stage))
             self.passBtn.pack(side=RIGHT)
@@ -1050,18 +1206,20 @@ class SubjectDataImporter(object):
         else:
             project = app.activeProject
 
-        if app.activeSubject == None:
-            id = len(project.subjects)-1
-            subject = Subject(id=id)
-            app.setActiveSubject(subject)
-            project.addSubject(subject)
-        else:
-            subject = app.activeSubject
-        
+        # if app.activeSubject == None:
+        #     id = len(project.subjects)
+        #     print(f'Creating a subject with name {id}')
+        #     subject = Subject(id=id)
+        #     print(f'Creating a subject with name {subject.id}')
+        #     app.setActiveSubject(subject)
+        #     project.addSubject(subject)
+        # else:
+        #     subject = app.activeSubject
+        app.activeSubject = self.subject
         app.setActiveTest(None)
 
         for t in self.tests.values():
-            subject.addTest(t)
+            self.subject.addTest(t)
         
         # Update app state
         app.sidepanel_projectList.refreshList(index=len(app.projects)-1)

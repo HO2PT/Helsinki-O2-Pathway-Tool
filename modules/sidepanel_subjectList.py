@@ -17,20 +17,27 @@ class SubjectList(object):
 
         self.subjectList = Listbox(self.container, exportselection=FALSE, height=1, activestyle='none')
         self.subjectList.pack(fill = BOTH, expand=TRUE)
-        self.subjectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
-        self.subjectList.bind('<Control-Button-1>', lambda e: self.handleCtrlSelect(e))
-        self.subjectList.bind('<Shift-Button-1>', lambda e: self.handleShiftSelect(e))
+        self.subjectList.bind( '<<ListboxSelect>>', self.handleListboxSelect)
+        self.subjectList.bind('<Control-Button-1>', self.handleCtrlSelect)
+        self.subjectList.bind('<Shift-Button-1>', self.handleShiftSelect)
         self.subjectList.bind('<3>', self.deselectList)
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add...', command=self.showCreateOptions).grid(column=0, row=0)
-        self.editButton = ttk.Button(buttonContainer, text='Edit...', command=lambda: self.editSubject())
+        self.editButton = ttk.Button(buttonContainer, text='Edit...', command=self.editSubject)
         self.editButton.grid(column=1, row=0)
-        ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteSubject()).grid(column=2, row=0)
-        ttk.Button(buttonContainer, text='Import...', command=lambda: SubjectDataImporter()).grid(column=0, row=1)
-        ttk.Button(buttonContainer, text='Compare...', command=lambda: self.showComparisonOptions()).grid(column=1, row=1)
-        ttk.Button(buttonContainer, text='Statistics...', command=lambda: self.showMeanOptions()).grid(column=2, row=1)
+        ttk.Button(buttonContainer, text='Delete', command=self.deleteSubject).grid(column=2, row=0)
+        ttk.Button(buttonContainer, text='Import...', command=self.importSubject).grid(column=0, row=1)
+        ttk.Button(buttonContainer, text='Compare...', command=self.showComparisonOptions).grid(column=1, row=1)
+        ttk.Button(buttonContainer, text='Statistics...', command=self.showMeanOptions).grid(column=2, row=1)
+
+    def importSubject(self):
+        if len(self.subjectList.curselection()) == 1:
+            subject = app.getActiveSubject()
+            SubjectDataImporter(subject)
+        else: 
+            SubjectDataImporter()
 
     def deselectList(self, e):
         self.subjectList.select_clear(0, END)
@@ -253,7 +260,7 @@ class SubjectList(object):
         if index != None:
             self.subjectList.select_set(index)
 
-    def handleListboxSelect(self):
+    def handleListboxSelect(self, e):
         try:
             # Set selected subject as active subject by index
             index = self.subjectList.curselection()[0]

@@ -32,18 +32,13 @@ class TestDetailModule(ttk.Labelframe):
         self.loadNotebook.addLoad()
 
     def refreshTestDetails(self):
-        # Refresh details
-        # if there is no active test, create a dummy test
         try:
             self.testId.config(text=f'Id: {app.getActiveTest().id}')
+            self.testId.pack()
+            self.loadsContainer.pack(side=LEFT, fill=BOTH)
+            self.loadNotebook.refresh()
         except:
-            emptyTest = Test()
-            app.setActiveTest(emptyTest)
-            self.testId.config(text=f'Id: {app.getActiveTest().id}')
-
-        self.testId.pack()
-        self.loadsContainer.pack(side=LEFT, fill=BOTH)#, expand=TRUE)
-        self.loadNotebook.refresh()
+            pass
         
 class LoadNotebook(object):
     def __init__(self, parent):

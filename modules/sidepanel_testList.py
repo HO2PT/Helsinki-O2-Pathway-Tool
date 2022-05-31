@@ -28,14 +28,14 @@ class TestList(object):
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
         ttk.Button(buttonContainer, text='Add...', command=self.showAddOptions).grid(column=0, row=0)
-        self.editButton = ttk.Button(buttonContainer, text='Edit...', command=lambda: self.editTest())
+        self.editButton = ttk.Button(buttonContainer, text='Edit...', command=self.editTest)
         self.editButton.grid(column=1, row=0)
-        ttk.Button(buttonContainer, text='Delete', command=lambda: self.deleteTest()).grid(column=2, row=0)
-        ttk.Button(buttonContainer, text='Import...', command=self.testImport).grid(column=0, row=1)
+        ttk.Button(buttonContainer, text='Delete', command=self.deleteTest).grid(column=2, row=0)
+        ttk.Button(buttonContainer, text='Import...', command=self.importTest).grid(column=0, row=1)
         ttk.Button(buttonContainer, text='Compare...', command=self.showComparisonOptions).grid(column=1, row=1)
         ttk.Button(buttonContainer, text='Statistics...', command=self.showMeanOptions).grid(column=2, row=1)
 
-    def testImport(self):
+    def importTest(self):
         if len(self.testList.curselection()) == 1:
             subject = app.getActiveSubject()
             tindex = self.testList.curselection()[0]

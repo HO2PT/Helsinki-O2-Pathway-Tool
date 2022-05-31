@@ -83,8 +83,6 @@ class TestDataImporter():
                     'pH'
                 ]
 
-                print(f'number of sheets: {len(self.dfList)}')
-
                 # Check if template excel is used and import data automatically
                 for sheetName, sheet in self.dfList.items():
                     if sheet.loc[0,0] == 'Test-template':
@@ -113,7 +111,6 @@ class TestDataImporter():
                             
                             # If there are values given -> create a workload
                             if colHasValues:
-                                print(f'Load {i} has values')
                                 newLoad = self.test.createLoad()
                                 newLoad.details.isImported = True
                                 
