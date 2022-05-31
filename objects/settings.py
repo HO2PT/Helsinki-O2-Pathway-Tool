@@ -316,6 +316,7 @@ class Settings(object):
 
     def cancel(self):
         app.root.unbind('<MouseWheel>', self.mouseWheelBindId)
+        self.notifications = []
         self.settingsWindow.destroy()
 
     def handleMouseWheel(self, e):
@@ -546,8 +547,7 @@ class Settings(object):
 
             app.testDetailModule.refreshTestDetails()
             app.envDetailModule.refresh()
-
-        self.createNotification('info', 'Settings saved', 5000)
+        self.createNotification('info', 'Settings saved', 2000)
 
     def updatePhAndTemp(self, test):
         # Add linear change in pH and T
@@ -592,23 +592,24 @@ class Settings(object):
         
     def createNotification(self, type, text, timeout):
         def destroy():
-            notif.destroy()
+            self.notif.destroy()
             self.notifications = []
 
         if len(self.notifications) > 0:
             pass
         else:
             style = ttk.Style()
+            style.configure('settings.TLabel', font=('TkDefaultFont', 12))
             
             if type == 'info':
                 style.configure('settings.TLabel', background="green", foreground="white", anchor="CENTER")
             if type == 'error':
                 style.configure('settings.TLabel', background="red", foreground="white", anchor="CENTER")
 
-            notif = ttk.Label(self.notification, style='settings.TLabel', text=text)
-            notif.pack(fill=X)
-            self.notifications.append(notif)
-            notif.after(timeout, destroy)
+            self.notif = ttk.Label(self.notification, style='settings.TLabel', text=text)
+            self.notif.pack(fill=X)
+            self.notifications.append(self.notif)
+            self.notif.after(timeout, destroy)
 
 class MenuElem(object):
     def __init__(self, menu, menuButton, label, index, elems):

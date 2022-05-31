@@ -61,6 +61,7 @@ class DataExporter(object):
             
             self.exportOptions = Toplevel(borderwidth=10)
             self.exportOptions.title("Export options")
+            self.exportOptions.focus_force()
 
             self.container = ttk.Labelframe(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
             self.container.pack()
@@ -96,8 +97,10 @@ class DataExporter(object):
             ttk.Button(self.container, text='Select All', command=self.selectAll).grid(column=0, row=len(temp.getWorkLoadDetails().keys()))
             ttk.Button(self.container, text='Deselect All', command=self.deselectAll).grid(column=1, row=len(temp.getWorkLoadDetails().keys()))
             
-            ttk.Button(self.footer, text='Cancel', command=self.cancel).pack(side=RIGHT)
-            ttk.Button(self.footer, text='Export', command=self.getSelected).pack(side=RIGHT)
+            self.cancelButton = ttk.Button(self.footer, text='Cancel', command=self.cancel)
+            self.cancelButton.pack(side=RIGHT)
+            self.exportButton = ttk.Button(self.footer, text='Export', command=self.getSelected)
+            self.exportButton.pack(side=RIGHT)
             
             # If exporting to imported file
             if self.toNew == False:
@@ -171,17 +174,35 @@ class DataExporter(object):
             # self.exportOptions.destroy()
     
     def getSelected(self):
-        for v in self.vars:
-            if v.get() == 1:
-                self.varTemp.append(str(v))
-        self.vars = self.varTemp
+        # Block the export options pop-up
+        self.exportOptions.update_idletasks()
+        self.exportButton.configure(text='Exporting', state=DISABLED)
+        self.cancelButton.configure(state=DISABLED)
 
-        if self.toNew == False:
-            if self.onlyPlots == False:
-                self.selectedSheet = self.menuButton.cget('text')
-            self.exportToSelected()
-        else:
-            self.exportToNew()
+        w = self.exportOptions.winfo_width()
+        h = self.exportOptions.winfo_height()
+        self.overLay = Toplevel( width=w, height=h, bg='light gray')
+        self.overLay.overrideredirect(True)
+        X = self.exportOptions.winfo_rootx()
+        Y = self.exportOptions.winfo_rooty()
+        self.overLay.geometry("+%d+%d" % ( X, Y ))
+        self.overLay.lift()
+        self.overLay.attributes('-alpha', 0.3)
+
+        def proceed():
+            for v in self.vars:
+                if v.get() == 1:
+                    self.varTemp.append(str(v))
+            self.vars = self.varTemp
+
+            if self.toNew == False:
+                if self.onlyPlots == False:
+                    self.selectedSheet = self.menuButton.cget('text')
+                self.exportToSelected()
+            else:
+                self.exportToNew()
+
+        self.exportButton.after(100, proceed)
 
     def selectAll(self):
         for v in self.vars:
@@ -192,6 +213,7 @@ class DataExporter(object):
             v.set(0)
 
     def cancel(self):
+        self.overLay.destroy()
         self.exportOptions.destroy()
 
     def exportToNew(self):
@@ -294,6 +316,7 @@ class DataExporter(object):
 
                     notification.create('info', 'Data successfully exported', 5000)
                 else:
+                    self.cancel()
                     notification.create('error', 'Data not exported', 5000)
             except:
                 notification.create('error', 'Data not exported', 5000)
@@ -337,19 +360,23 @@ class DataExporter(object):
             # Create excel
             try:
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
-                with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
-                    for i, (key, value) in enumerate(self.dfs.items()):
-                        value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
-                        worksheet = writer.sheets[str(key)[0:30]]
-                        for i in range(len(self.images[key])):
-                            if i != 0:
-                                imgDest = f'{os.getcwd()}\plot{value.iloc[i*20][1]}.png'
-                                worksheet.insert_image(f'N{i*20}', imgDest)
-                            else:
-                                imgDest = f'{os.getcwd()}\plot{value.iloc[0][1]}.png'
-                                worksheet.insert_image('N1', imgDest)
+                if saveFile:
+                    with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
+                        for i, (key, value) in enumerate(self.dfs.items()):
+                            value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
+                            worksheet = writer.sheets[str(key)[0:30]]
+                            for i in range(len(self.images[key])):
+                                if i != 0:
+                                    imgDest = f'{os.getcwd()}\plot{value.iloc[i*20][1]}.png'
+                                    worksheet.insert_image(f'N{i*20}', imgDest)
+                                else:
+                                    imgDest = f'{os.getcwd()}\plot{value.iloc[0][1]}.png'
+                                    worksheet.insert_image('N1', imgDest)
 
-                notification.create('info', 'Data successfully exported', 5000)
+                    notification.create('info', 'Data successfully exported', 5000)
+                else:
+                    self.cancel()
+                    notification.create('error', 'Data not exported', 5000)
             except:
                 notification.create('error', 'Data not exported', 5000)
 
@@ -383,18 +410,22 @@ class DataExporter(object):
             # Create excel
             try:
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
-                with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
-                    for sheet in self.sheetNames:
-                        df = pd.DataFrame.from_dict(excel[sheet])
-                        df.to_excel(writer, sheet_name=sheet, index=False, header=False)
+                if saveFile:
+                    with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
+                        for sheet in self.sheetNames:
+                            df = pd.DataFrame.from_dict(excel[sheet])
+                            df.to_excel(writer, sheet_name=sheet, index=False, header=False)
 
-                        for i, (key, value) in enumerate(self.dfs.items()):
-                            if sheet == str(key)[0:30]:
-                                worksheet = writer.sheets[sheet]
-                                imgDest = f'{os.getcwd()}\plot{key}.png'
-                                worksheet.insert_image('N1', imgDest)
+                            for i, (key, value) in enumerate(self.dfs.items()):
+                                if sheet == str(key)[0:30]:
+                                    worksheet = writer.sheets[sheet]
+                                    imgDest = f'{os.getcwd()}\plot{key}.png'
+                                    worksheet.insert_image('N1', imgDest)
 
-                notification.create('info', 'Data successfully exported', 5000)
+                    notification.create('info', 'Data successfully exported', 5000)
+                else:
+                    self.cancel()
+                    notification.create('error', 'Data not exported', 5000)
             except:
                 notification.create('error', 'Data not exported', 5000)
 
@@ -506,37 +537,40 @@ class DataExporter(object):
 
             try:
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
+                if saveFile:
+                    # Create excel
+                    with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
+                        for sheet in self.sheetNames:
+                            df = pd.DataFrame.from_dict(excel[sheet])
+                            df.to_excel(writer, sheet_name=sheet, index=False, header=False)
 
-                # Create excel
-                with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
-                    for sheet in self.sheetNames:
-                        df = pd.DataFrame.from_dict(excel[sheet])
-                        df.to_excel(writer, sheet_name=sheet, index=False, header=False)
-
-                        if sheet == 'Plots':
-                            worksheet = writer.sheets[sheet]
-                            for i, (key, value) in enumerate(self.images.items()):
-                                imgDest = f'{os.getcwd()}\plot{value[0]}.png'
-                                if i != 0:
-                                    worksheet.write(f'A{i*20+3}', f'Test ID: {value[0]}')
-                                    worksheet.insert_image(f'A{i*20+4}', imgDest)
-                                else:
-                                    worksheet.write('A1', f'Test ID: {value[0]}')
-                                    worksheet.insert_image('A2', imgDest)
-                        if sheet == 'Median(IQR)':
-                            worksheet = writer.sheets[sheet]
-                            imgDest = f'{os.getcwd()}\plotProject Median(IQR).png'
-                            worksheet.insert_image('H1', imgDest)
-                        elif sheet == 'Mean(SD)':
-                            worksheet = writer.sheets[sheet]
-                            imgDest = f'{os.getcwd()}\plotProject Mean(SD).png'
-                            worksheet.insert_image('H1', imgDest)
-                        elif sheet == 'Mean(CI95%)':
-                            worksheet = writer.sheets[sheet]
-                            imgDest = f'{os.getcwd()}\plotProject mean(95% CI).png'
-                            worksheet.insert_image('H1', imgDest)
-                    
-                notification.create('info', 'Data successfully exported', 5000)
+                            if sheet == 'Plots':
+                                worksheet = writer.sheets[sheet]
+                                for i, (key, value) in enumerate(self.images.items()):
+                                    imgDest = f'{os.getcwd()}\plot{value[0]}.png'
+                                    if i != 0:
+                                        worksheet.write(f'A{i*20+3}', f'Test ID: {value[0]}')
+                                        worksheet.insert_image(f'A{i*20+4}', imgDest)
+                                    else:
+                                        worksheet.write('A1', f'Test ID: {value[0]}')
+                                        worksheet.insert_image('A2', imgDest)
+                            if sheet == 'Median(IQR)':
+                                worksheet = writer.sheets[sheet]
+                                imgDest = f'{os.getcwd()}\plotProject Median(IQR).png'
+                                worksheet.insert_image('H1', imgDest)
+                            elif sheet == 'Mean(SD)':
+                                worksheet = writer.sheets[sheet]
+                                imgDest = f'{os.getcwd()}\plotProject Mean(SD).png'
+                                worksheet.insert_image('H1', imgDest)
+                            elif sheet == 'Mean(CI95%)':
+                                worksheet = writer.sheets[sheet]
+                                imgDest = f'{os.getcwd()}\plotProject mean(95% CI).png'
+                                worksheet.insert_image('H1', imgDest)
+                        
+                    notification.create('info', 'Data successfully exported', 5000)
+                else:
+                    self.cancel()
+                    notification.create('error', 'Data not exported', 5000)
             except:
                 notification.create('error', 'Data not exported', 5000)
 

@@ -295,10 +295,10 @@ class ProjectDataImporter(object):
 
         if selMode == 'row':
             if start-1 < 0:
-                self.notif.configure(text='Start row index out of range', background='red', foreground='#333333')
+                self.notif.configure(text='Start row index out of range', background='red', foreground='white')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             elif end > self.dataTable.rows:
-                self.notif.configure(text='End row index out of range', background='red', foreground='#333333')
+                self.notif.configure(text='End row index out of range', background='red', foreground='white')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
                 for i in range(start-1, end):
@@ -307,10 +307,10 @@ class ProjectDataImporter(object):
                 self.dataTable.drawMultipleRows(self.dataTable.multiplerowlist)
         else: # cols
             if start < 0:
-                self.notif.configure(text='Start column index out of range', background='red', foreground='#333333')
+                self.notif.configure(text='Start column index out of range', background='red', foreground='white')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             elif end > self.dataTable.cols:
-                self.notif.configure(text='End column index out of range', background='red', foreground='#333333')
+                self.notif.configure(text='End column index out of range', background='red', foreground='white')
                 self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
             else:
                 for i in range(start, end):
@@ -571,7 +571,7 @@ class ProjectDataImporter(object):
             self.columnNames.append(c[0])
 
         if (len(rowList) < 1 and len(colList) < 1): # nothing selected
-            self.notif.configure(background='red', foreground="#333333", text=f'Nothing selected')
+            self.notif.configure(background='red', foreground="white", text=f'Nothing selected')
             self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
         elif self.closedByClick == True:
             pass
@@ -833,7 +833,7 @@ class ProjectDataImporter(object):
             self.tempLocData['Load'] = self.columnNames
             return True
         else:
-            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before loads.', background='red', foreground='#333333')
+            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before loads.', background='red', foreground='white')
             self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def getLoadsFromRows(self):
@@ -855,7 +855,7 @@ class ProjectDataImporter(object):
             self.tempLocData['Load'] = self.rowNames
             return True
         else:
-            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before loads.', background='red', foreground='#333333')
+            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before loads.', background='red', foreground='white')
             self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def getColumnValues(self, label):
@@ -867,11 +867,11 @@ class ProjectDataImporter(object):
                 loads = test.getWorkLoads()
                 
                 if len(loads) == 0:
-                    self.notif.configure(text=f'No loads detected. Please define loads before other values.', background='red', foreground='#333333')
+                    self.notif.configure(text=f'No loads detected. Please define loads before other values.', background='red', foreground='white')
                     self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                     break
                 elif len(self.colValues) < len(loads) and len(self.colValues) != 1:
-                        self.notif.configure(text=f'You have {len(loads)} loads but only {len(self.colValues)} values given', background='red', foreground='#333333')
+                        self.notif.configure(text=f'You have imported {len(loads)} loads but only {len(self.colValues)} values given', background='red', foreground='white')
                         self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                         break
                 else:
@@ -888,7 +888,7 @@ class ProjectDataImporter(object):
                     flag = True
             return flag
         else:
-            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='#333333')
+            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='white')
             self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def getRowValues(self, label):
@@ -900,11 +900,11 @@ class ProjectDataImporter(object):
                 loads = test.getWorkLoads()
                 
                 if len(loads) == 0:
-                    self.notif.configure(text=f'No loads detected. Please define loads before other values.', background='red', foreground='#333333')
+                    self.notif.configure(text=f'No loads detected. Please define loads before other values.', background='red', foreground='white')
                     self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                     break
                 elif len(self.rowValues) < len(loads) and len(self.rowValues) != 1:
-                        self.notif.configure(text=f'You have {len(loads)} loads but only {len(self.rowValues)} values given', background='red', foreground='#333333')
+                        self.notif.configure(text=f'You have imported {len(loads)} loads but only {len(self.rowValues)} values given', background='red', foreground='white')
                         self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                         break
                 else:
@@ -921,7 +921,7 @@ class ProjectDataImporter(object):
                     flag = True
             return flag
         else:
-            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='#333333')
+            self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='white')
             self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
 
     def prevStage(self):
@@ -1025,7 +1025,7 @@ class ProjectDataImporter(object):
                 if len(self.subjects.items()) > 0:
                     self.importData()
                 else:
-                    self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='#333333')
+                    self.notif.configure(text=f'No ID(s) detected. Please define ID(s) before other values.', background='red', foreground='white')
                     self.notif.after(5000, lambda: self.notif.configure(text='', background=self.window.cget('background')))
                     to = 18
             else:
