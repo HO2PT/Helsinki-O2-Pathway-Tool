@@ -52,7 +52,20 @@ loaded = False
 def debug():
     # for d in app.getActiveTest().getWorkLoads():
     #     print(d.getDetails().getWorkLoadDetails())
-    print(f'current selection: {app.activeSubject}')
+    # print(f'current selection: {app.activeSubject}')
+    project = app.getActiveProject()
+    subjects = project.getSubjects()
+    nLoads = 0
+
+    for s in subjects:
+        for t in s.tests:
+            n = len(t.workLoads)
+            if n > nLoads:
+                nLoads = n
+
+    print(nLoads)
+    for i in range(nLoads):
+        print(f'Load{i}')
 
 def updateCursor(e):
     print(mainframe.identify(e.x, e.y))

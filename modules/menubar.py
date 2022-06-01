@@ -15,20 +15,33 @@ class MenuBar(object):
         # Adding File Menu and commands
         file = Menu(self.menuBar, tearoff = 0)
         self.menuBar.add_cascade(label ='File', menu = file)
-
+        
+        # File... -> Import...
         importFile = Menu(self.menuBar, tearoff = 0)
         importFile.add_command(label ='Project...', command = lambda: ProjectDataImporter())
         importFile.add_command(label ='Subject...', command = lambda: SubjectDataImporter())
         importFile.add_command(label ='Test...', command = lambda: TestDataImporter())
-        file.add_cascade(label ='Import...', menu = importFile)
-
+        
+        # File... -> Export... -> Project...
+        exportMenuProject = Menu(self.menuBar, tearoff=0)
+        exportMenuProject.add_command(label='Project to new file...', command=lambda: DataExporter(toNew=1))
+        exportMenuProject.add_command(label='Project to imported file...', command=lambda: DataExporter(toNew=0))
+        
+        # File... -> Export... -> Plots
+        exportMenuPlots = Menu(self.menuBar, tearoff=0)
+        exportMenuPlots.add_command(label='Plots to new file...', command=lambda: DataExporter(toNew=1, onlyPlots=1))
+        exportMenuPlots.add_command(label='Plots to imported file...', command=lambda: DataExporter(toNew=0, onlyPlots=1))
+        
+        # File... -> Export...
         exportMenu = Menu(self.menuBar, tearoff=0)
-        exportMenu.add_command(label='Project to new file...', command=lambda: DataExporter(toNew=1))
-        exportMenu.add_command(label='Project to imported file...', command=lambda: DataExporter(toNew=0))
-        exportMenu.add_command(label='Plots to new file...', command=lambda: DataExporter(toNew=1, onlyPlots=1))
-        exportMenu.add_command(label='Plots to imported file...', command=lambda: DataExporter(toNew=0, onlyPlots=1))
-        file.add_cascade(label='Export...', menu=exportMenu)
+        exportMenu.add_cascade(label='Project...', menu=exportMenuProject)
+        exportMenu.add_cascade(label='Subject...')
+        exportMenu.add_cascade(label='Test...')
+        exportMenu.add_cascade(label='Plots...', menu=exportMenuPlots)
 
+        # File...
+        file.add_cascade(label ='Import...', menu=importFile)
+        file.add_cascade(label='Export...', menu=exportMenu)
         file.add_separator()
         file.add_command(label ='Exit', command = root.destroy)
 

@@ -1,3 +1,4 @@
+from cgi import test
 import os
 import math
 import pandas as pd
@@ -213,7 +214,10 @@ class DataExporter(object):
             v.set(0)
 
     def cancel(self):
-        self.overLay.destroy()
+        try:
+            self.overLay.destroy()
+        except:
+            pass
         self.exportOptions.destroy()
 
     def exportToNew(self):
@@ -357,22 +361,29 @@ class DataExporter(object):
 
                 self.dfs[s.id] = dfSubject
 
+            # Create mass info sheet
+            self.dfs['Data'] = self.createDataDumpSheet()
+
             # Create excel
             try:
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                 if saveFile:
                     with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
-                        for i, (key, value) in enumerate(self.dfs.items()):
+                        for key, value in self.dfs.items():
                             value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
                             worksheet = writer.sheets[str(key)[0:30]]
-                            for i in range(len(self.images[key])):
-                                if i != 0:
-                                    imgDest = f'{os.getcwd()}\plot{value.iloc[i*20][1]}.png'
-                                    worksheet.insert_image(f'N{i*20}', imgDest)
-                                else:
-                                    imgDest = f'{os.getcwd()}\plot{value.iloc[0][1]}.png'
-                                    worksheet.insert_image('N1', imgDest)
 
+                            for subjectId, testId in list(self.images.items()):
+                                if key == subjectId:
+                                    for ti, t in enumerate(reversed(testId)):
+                                        imgDest = f'{os.getcwd()}\plot-{key}-{t}.png'
+                                        
+                                        if ti == 0:   
+                                            worksheet.insert_image('N1', imgDest)
+                                        else:
+                                            worksheet.insert_image(f'N{int(ti)+(int(ti)*20)+1}', imgDest)
+
+                    self.overLay.destroy()
                     notification.create('info', 'Data successfully exported', 5000)
                 else:
                     self.cancel()
@@ -381,21 +392,46 @@ class DataExporter(object):
                 notification.create('error', 'Data not exported', 5000)
 
             # Delete images
-            for s in subjects:
-                tests = s.getTests()
-                for t in tests:
-                    os.remove(f'{os.getcwd()}\plot{t.id}.png')
-            
-            if self.statsVar0.get() == 1:
-                os.remove(f'{os.getcwd()}\plotProject mean(SD).png')
-                
-            if self.statsVar1.get() == 1:
-                os.remove(f'{os.getcwd()}\plotProject median(IQR).png')
-
-            if self.statsVar2.get() == 1:
-                os.remove(f'{os.getcwd()}\plotProject mean(95% CI).png')
+            for subjectId, testId in self.images.items():
+                for ti, t in enumerate(testId):
+                    os.remove(f'{os.getcwd()}\plot-{subjectId}-{testId[ti]}.png')
 
             self.exportOptions.destroy()
+
+    def createDataDumpSheet(self):
+        project = app.getActiveProject()
+        subjects = project.getSubjects()
+        nLoads = 0
+        df = pd.DataFrame()
+        rows = []
+
+        # Get number of loads 
+        for s in subjects:
+            for t in s.tests:
+                n = len(t.workLoads)
+                if n > nLoads:
+                    nLoads = n
+
+        # Construct header row
+        headerRow = ['ID']
+        for v in self.vars:
+            unit = subjects[0].tests[0].workLoads[0].details.getWorkLoadDetails()[f'{v}_unit']
+            for i in range(nLoads):
+                headerRow.append(f'{v}-{i}({unit})')
+
+        headerRow = pd.Series(headerRow)
+        df = pd.concat([df, headerRow.to_frame().T], axis=0, ignore_index=True)
+        
+        # Append subject data row by row
+        for s in subjects:
+            for t in s.tests:
+                row = pd.Series([t.id])
+                for var in self.vars:
+                    for w in t.workLoads:
+                        row = pd.concat([row, pd.Series([w.details.getWorkLoadDetails()[var]], dtype='float64')], axis=0, ignore_index=True)
+                df = pd.concat([df, row.to_frame().T], axis=0, ignore_index=True)
+        
+        return df
 
     def exportToSelected(self):
         excel = deepcopy(app.getActiveProject().data)
@@ -556,15 +592,15 @@ class DataExporter(object):
                                         worksheet.insert_image('A2', imgDest)
                             if sheet == 'Median(IQR)':
                                 worksheet = writer.sheets[sheet]
-                                imgDest = f'{os.getcwd()}\plotProject Median(IQR).png'
+                                imgDest = f'{os.getcwd()}\plot-Median(IQR)-Project Median(IQR).png'
                                 worksheet.insert_image('H1', imgDest)
                             elif sheet == 'Mean(SD)':
                                 worksheet = writer.sheets[sheet]
-                                imgDest = f'{os.getcwd()}\plotProject Mean(SD).png'
+                                imgDest = f'{os.getcwd()}\plot-Mean(SD)-Project Mean(SD).png'
                                 worksheet.insert_image('H1', imgDest)
                             elif sheet == 'Mean(CI95%)':
                                 worksheet = writer.sheets[sheet]
-                                imgDest = f'{os.getcwd()}\plotProject mean(95% CI).png'
+                                imgDest = f'{os.getcwd()}\plot-Mean(CI95%)-Project mean(95% CI).png'
                                 worksheet.insert_image('H1', imgDest)
                         
                     notification.create('info', 'Data successfully exported', 5000)
@@ -582,11 +618,11 @@ class DataExporter(object):
                         os.remove(f'{os.getcwd()}\plot{t.id}.png')
 
             if self.statsVar0.get() == 1:
-                os.remove(f'{os.getcwd()}\plotProject Mean(SD).png')
+                os.remove(f'{os.getcwd()}\plot-Mean(SD)-Project Mean(SD).png')
             if self.statsVar1.get() == 1:
-                os.remove(f'{os.getcwd()}\plotProject Median(IQR).png')
+                os.remove(f'{os.getcwd()}\plot-Median(IQR)-Project Median(IQR).png')
             if self.statsVar2.get() == 1:
-                os.remove(f'{os.getcwd()}\plotProject mean(95% CI).png')
+                os.remove(f'{os.getcwd()}\plot-Mean(CI95%)-Project mean(95% CI).png')
             
             self.exportOptions.destroy()
 
@@ -666,7 +702,7 @@ class DataExporter(object):
 
         return ordered, units, mcs
 
-    def createPlot(self, workLoads, id): #workloads = workloaddetails object
+    def createPlot(self, workLoads, id, sid=None): #workloads = workloaddetails object
         PvO2 = np.arange(0,100,1)
         plot = plt.subplots(constrained_layout=True)
         fig, ax = plot
@@ -725,7 +761,10 @@ class DataExporter(object):
         coef = 1 + (legSize.width/100)/5.4
         fig.set(figwidth=5.4*coef, figheight=4)
         
-        fig.savefig(f'plot{id}.png')
+        if sid == None:
+            fig.savefig(f'plot{id}.png')
+        else:
+            fig.savefig(f'plot-{sid}-{id}.png')
         fig.clear()
         plt.close(fig)
 
@@ -797,13 +836,13 @@ class DataExporter(object):
             workLoadObjects.append(l.getDetails())
 
         if projectPlot == False:
-            self.createPlot(workLoadObjects, id)
+            self.createPlot(workLoadObjects, id, sid=sid)
 
         try:
-            self.images[sid].append('img')
+            self.images[sid].append(f'{id}')
         except:
             pass
-                        
+
         for key, value in ordered.items():
             unit = self.units[key]
             mc = self.mcs[key]
@@ -837,7 +876,7 @@ class DataExporter(object):
         workLoadDetailObjects = []
         for w in dummyTest.getWorkLoads():
             workLoadDetailObjects.append(w.getDetails())
-        self.createPlot(workLoadDetailObjects, dummyTest.id)
+        self.createPlot(workLoadDetailObjects, dummyTest.id, sid=label)
         
         df = self.createDfForTest(dummyTest, label, projectPlot=True)
         return df
