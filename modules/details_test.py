@@ -141,9 +141,16 @@ class LoadNotebook(object):
     def addLoad(self):
         # Add load to active test
         activeTest = app.getActiveTest()
+        isImported = False
+
+        for w in activeTest.workLoads:
+            if w.details.isImported:
+                isImported = True
+
         workLoadObject = activeTest.createLoad()
         i = len(self.loadTabs)
-        pHvalues, Tvalues = self.updatePhAndTemp()
+        if not isImported:
+            pHvalues, Tvalues = self.updatePhAndTemp()
         details = workLoadObject.getDetails()
 
         newLoad = LoadTab(i, workLoadObject, details, self.loadbook)
@@ -154,9 +161,10 @@ class LoadNotebook(object):
         self.loadbook.add(newLoad.loadFrame, text=newLoad.getName())
         self.loadbook.select(tabCount) 
 
-        for i, l in enumerate(self.loadTabs):
-            l.updateValues('pH', pHvalues[i])
-            l.updateValues('T', Tvalues[i])
+        if not isImported:
+            for i, l in enumerate(self.loadTabs):
+                l.updateValues('pH', pHvalues[i])
+                l.updateValues('T', Tvalues[i])
 
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)

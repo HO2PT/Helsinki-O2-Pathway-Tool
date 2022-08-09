@@ -129,6 +129,7 @@ class ProjectDataImporter(object):
                                     subject = self.subjectList[subjectIndex]
                                     test = subject.tests[0]
                                     load = test.createLoad()
+                                    load.details.isImported = True
                                     load.setName(c[5])
                                     load.details.setValue('Load', value)
                         else:
@@ -957,7 +958,7 @@ class ProjectDataImporter(object):
                         if ci == rowIndex: #if row matches subject's row
                             columnName = self.columnNames[i]
                             load = test.createLoad()
-                            
+                            load.details.isImported = True
                             load.setName(columnName) # column name
                             load.getDetails().setValue('Load', cv) # set value
                             load.getDetails().setImported(True)
@@ -980,6 +981,7 @@ class ProjectDataImporter(object):
                         if ci == colIndex: #if col matches subject's col
                             rowName = self.rowNames[i]
                             load = test.createLoad()
+                            load.details.isImported = True
                             load.setName(rowName) # row name
                             if cv == None or cv == '': # replace empty cell with 0
                                 cv = 0

@@ -2,7 +2,7 @@
  False,
  False,
  True,
- 'c:\\koulu\\inssityö\\o2pathwaytool\\o2\\lib\\site-packages\\PyInstaller\\bootloader\\images\\icon-windowed.ico',
+ 'Img\\ho2pt.ico',
  None,
  False,
  False,
@@ -62,7 +62,7 @@
  [],
  False,
  False,
- 1651734908,
+ 1660037810,
  [('runw.exe',
    'c:\\koulu\\inssityö\\o2pathwaytool\\o2\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit\\runw.exe',
    'EXECUTABLE')])

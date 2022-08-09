@@ -41,8 +41,8 @@ class SidePanel(ttk.Frame):
         # Add basic instructions to the footer
         self.info = ttk.Frame(self.sidePanel)
 
-        self.info_icon1 = PhotoImage(file='./Img/leftclick.png')
-        self.info_icon2 = PhotoImage(file='./Img/rightclick.png')
+        self.info_icon1 = PhotoImage(file='Img/leftclick.png')
+        self.info_icon2 = PhotoImage(file='Img/rightclick.png')
         
         infoLeft = ttk.Label(self.info, image=self.info_icon1)
         infoLeft.pack(side=LEFT)

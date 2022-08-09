@@ -712,7 +712,8 @@ class TestDataImporter():
         self.dataTable.redraw()
         
     def addLoadToTree(self):
-        self.test.createLoad()
+        load = self.test.createLoad()
+        load.details.isImported = True
         self.updateTreeview()
 
     def deleteLoadFromTree(self):

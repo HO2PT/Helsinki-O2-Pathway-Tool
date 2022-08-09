@@ -974,7 +974,6 @@ class SubjectDataImporter(object):
                         if ci == rowIndex: #if row matches subject's row
                             columnName = self.columnNames[i]
                             load = t.createLoad()
-                            
                             load.setName(columnName) # column name
                             load.getDetails().setValue('Load', cv) # set value
                             load.getDetails().setImported(True)
