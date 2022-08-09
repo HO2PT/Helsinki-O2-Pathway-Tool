@@ -62,7 +62,6 @@ class TestDataImporter():
             self.templateUsed = False
 
             if self.newTest == True:
-                phAndTempCorrection = False
                 params = [
                     'Load',
                     'Velocity',
@@ -86,7 +85,6 @@ class TestDataImporter():
                 # Check if template excel is used and import data automatically
                 for sheetName, sheet in self.dfList.items():
                     if sheet.loc[0,0] == 'Test-template':
-                        print(f'TestID: {self.dfList[sheetName].loc[2,1]}') #loc[y,x]
                         self.cols = []
 
                         testId = f'{self.subject.id}-Test-{len(self.subject.getTests())+1}'
@@ -112,6 +110,7 @@ class TestDataImporter():
                             # If there are values given -> create a workload
                             if colHasValues:
                                 newLoad = self.test.createLoad()
+                                newLoad.setName(sheet.loc[4,i])
                                 newLoad.details.isImported = True
                                 
                                 # Start importing from row 5
@@ -125,28 +124,31 @@ class TestDataImporter():
                                     
                                     newLoad.details.setValue(p, value)
                                     index += 1
-                                    
-                                    if index == 20: # Distribute default pH and Temp if value not given
-                                        if value == 0:
-                                            phAndTempCorrection = True
-                                        else:
-                                            newLoad.details.setValue('T', value)
-                                    if index == 21: # Distribute default pH and Temp if value not given
-                                        if value == 0:
-                                            phAndTempCorrection = True
-                                        else:
-                                            newLoad.details.setValue('pH', value)
                             else:
                                 continue
 
-                            if phAndTempCorrection:
-                                app.settings.updatePhAndTemp(self.test)
-
                         self.templateUsed = True
+
+                for t in self.testList:
+                    tempAddLinearity = False
+                    pHAddLinearity = False
+
+                    for w in t.workLoads:
+                        details = w.details.getWorkLoadDetails()
+                        if details['T'] == 0:
+                            tempAddLinearity = True
+                        if details['pH'] == 0:
+                            pHAddLinearity = True
+
+                    if tempAddLinearity:
+                        self.addLinearDistT(t)
+
+                    if pHAddLinearity:
+                        self.addLinearDistPH(t)
                 
-                if self.templateUsed:
-                    self.closeImporter(mode=1)
-                    return
+            if self.templateUsed:
+                self.closeImporter(mode=1)
+                return
 
             self.window = Toplevel()
             self.window.title('Test import')
@@ -1117,6 +1119,65 @@ class TestDataImporter():
             """ Cancel button clicked """
 
             self.window.destroy()
+
+    def addLinearDistPH(self, test):
+        pHrest = float(app.settings.testDefaults['pH @ rest'])
+        pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
+        pHDif = float(pHrest) - float(pHpeak)
+
+        # Filter possible empty loads
+        nFilteredLoads = 0
+        filteredLoads = []
+        for i, l in enumerate(test.workLoads):
+            detailsDict = l.getDetails().getWorkLoadDetails()
+                        
+            if i == 0 or detailsDict['Load'] != 0:
+                nFilteredLoads += 1
+                filteredLoads.append(l)
+
+        if nFilteredLoads > 1:
+            if pHrest != pHpeak:
+                test.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
+
+            pHstep = pHDif / (nFilteredLoads-1)
+        else:
+            pHstep = 0
+        
+        # Add linear distribution
+        for i, w in enumerate(filteredLoads):
+            details = w.getDetails()
+            pHValue = pHrest - (i * pHstep)
+            details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')
+    
+    def addLinearDistT(self, test):
+        Trest = float(app.settings.testDefaults['Tc @ rest'])
+        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
+        Tdif = float(Tpeak) - float(Trest)
+
+        # Filter possible empty loads
+        nFilteredLoads = 0
+        filteredLoads = []
+        for i, l in enumerate(test.workLoads):
+            detailsDict = l.getDetails().getWorkLoadDetails()
+                        
+            if i == 0 or detailsDict['Load'] != 0:
+                nFilteredLoads += 1
+                filteredLoads.append(l)
+
+        if nFilteredLoads > 1:
+            if Trest != Tpeak:
+                test.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
+
+            Tstep = Tdif / (nFilteredLoads-1)
+        else:
+            Tstep = 0
+
+        # Add linear distribution
+        for i, w in enumerate(filteredLoads):
+            details = w.getDetails()
+
+            Tvalue = Trest + (i * Tstep)
+            details.setValue('T', f'{"{0:.1f}".format(Tvalue)}')
 
 class DataMenuElem(object):
     def __init__(self, importer, menu, menuButton, option, isExporter = False):

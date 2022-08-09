@@ -34,9 +34,32 @@ class SidePanel(ttk.Frame):
 
         subjects = SubjectList(self.sidePanel)
         app.sidepanel_subjectList = subjects
-        
+
         tests = TestList(self.sidePanel)
         app.sidepanel_testList = tests
+
+        # Add basic instructions to the footer
+        self.info = ttk.Frame(self.sidePanel)
+
+        self.info_icon1 = PhotoImage(file='./Img/leftclick.png')
+        self.info_icon2 = PhotoImage(file='./Img/rightclick.png')
+        
+        infoLeft = ttk.Label(self.info, image=self.info_icon1)
+        infoLeft.pack(side=LEFT)
+        infoLeft2 = ttk.Label(self.info, text='= Select')
+        infoLeft2.pack(side=LEFT)
+
+        infoRight = ttk.Label(self.info, image=self.info_icon2)
+        infoRight.pack(side=LEFT)
+        infoRight2 = ttk.Label(self.info, text='= Deselect')
+        infoRight2.pack(side=LEFT)
+
+        infoDLeft = ttk.Label(self.info, image=self.info_icon1)
+        infoDLeft.pack(side=LEFT)
+        infoDLeft2 = ttk.Label(self.info, text='x2 = Open')
+        infoDLeft2.pack(side=LEFT)
+        
+        self.info.pack()
 
         self.indicator = ttk.Label(self, text='', anchor='center')
         self.indicator.pack(side=RIGHT, fill=Y)

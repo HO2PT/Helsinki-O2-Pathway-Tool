@@ -93,7 +93,6 @@ class SubjectDataImporter(object):
             self.templateUsed = False
 
             if self.newSubject == True:
-                phAndTempCorrection = False
                 params = [
                     'Load',
                     'Velocity',
@@ -116,16 +115,15 @@ class SubjectDataImporter(object):
 
                 # Check if template excel is used and import data automatically
                 for sheetName, sheet in self.dfList.items():
-                    if sheet.loc[0,0] == 'Test-template':
-                        print(f'TestID: {self.dfList[sheetName].loc[2,1]}') #loc[y,x]
+                    if sheet.loc[0,0] == 'Subject-template':
+                        self.subject.setId(self.dfList[sheetName].loc[2,1]) #loc[y,x]
                         self.cols = []
 
-                        testId = f'{self.subject.id}-Test-{len(self.subject.getTests())+1}'
+                        testId = f'{self.subject.id}-{sheetName}'
                         self.test = Test(id=testId, parentSubject=self.subject)
                         self.testList.append(self.test)
 
                         self.test.workLoads = []
-                        self.test.id = self.dfList[sheetName].loc[2,1]
 
                         # Check the number of loads and save column indexes
                         for i, x in enumerate(self.dfList[sheetName].loc[4,:]):
@@ -143,6 +141,7 @@ class SubjectDataImporter(object):
                             # If there are values given -> create a workload
                             if colHasValues:
                                 newLoad = self.test.createLoad()
+                                newLoad.setName(sheet.loc[4,i])
                                 newLoad.details.isImported = True
                                 
                                 # Start importing from row 5
@@ -153,31 +152,34 @@ class SubjectDataImporter(object):
                                     # Replace null values with 0
                                     if value == '':
                                         value = 0
-                                    
+
                                     newLoad.details.setValue(p, value)
                                     index += 1
-                                    
-                                    if index == 20: # Distribute default pH and Temp if value not given
-                                        if value == 0:
-                                            phAndTempCorrection = True
-                                        else:
-                                            newLoad.details.setValue('T', value)
-                                    if index == 21: # Distribute default pH and Temp if value not given
-                                        if value == 0:
-                                            phAndTempCorrection = True
-                                        else:
-                                            newLoad.details.setValue('pH', value)
                             else:
                                 continue
 
-                            if phAndTempCorrection:
-                                app.settings.updatePhAndTemp(self.test)
-
                         self.templateUsed = True
+
+                for t in self.testList:
+                    tempAddLinearity = False
+                    pHAddLinearity = False
+
+                    for w in t.workLoads:
+                        details = w.details.getWorkLoadDetails()
+                        if details['T'] == 0:
+                            tempAddLinearity = True
+                        if details['pH'] == 0:
+                            pHAddLinearity = True
+
+                    if tempAddLinearity:
+                        self.addLinearDistT(t)
+
+                    if pHAddLinearity:
+                        self.addLinearDistPH(t)
                 
-                if self.templateUsed:
-                    self.closeImporter(mode=1)
-                    return
+            if self.templateUsed:
+                self.closeImporter(mode=1)
+                return
 
             self.window = Toplevel()
             self.window.title('Subject import')
@@ -1206,15 +1208,6 @@ class SubjectDataImporter(object):
         else:
             project = app.activeProject
 
-        # if app.activeSubject == None:
-        #     id = len(project.subjects)
-        #     print(f'Creating a subject with name {id}')
-        #     subject = Subject(id=id)
-        #     print(f'Creating a subject with name {subject.id}')
-        #     app.setActiveSubject(subject)
-        #     project.addSubject(subject)
-        # else:
-        #     subject = app.activeSubject
         app.activeSubject = self.subject
         app.setActiveTest(None)
 
@@ -1229,26 +1222,23 @@ class SubjectDataImporter(object):
 
         # If pH and T are not imported, distribute defaults linearly
         # (in case user is done importing before pH and T)
-        if self.imported[17] == False and self.imported[18] == False:
-            self.addLinearDist = True
-
-        # Add linear distribution of pH and T
-        if self.addLinearDist:
+        if self.imported[17] == False:
             for s in project.subjects:
                 for t in s.tests:
-                    self.updatePhAndTemp(t)
+                    self.addLinearDistT(t)
+
+        if self.imported[18] == False:
+            for s in project.subjects:
+                for t in s.tests:
+                    self.addLinearDistPH(t)
 
         self.window.destroy()
         del self
 
-    def updatePhAndTemp(self, test):
-        # Add linear change in pH and T
+    def addLinearDistPH(self, test):
         pHrest = float(app.settings.testDefaults['pH @ rest'])
-        Trest = float(app.settings.testDefaults['Tc @ rest'])
         pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
-        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
         pHDif = float(pHrest) - float(pHpeak)
-        Tdif = float(Tpeak) - float(Trest)
 
         # Filter possible empty loads
         nFilteredLoads = 0
@@ -1264,20 +1254,42 @@ class SubjectDataImporter(object):
             if pHrest != pHpeak:
                 test.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
 
-            if Trest != Tpeak:
-                test.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
-
             pHstep = pHDif / (nFilteredLoads-1)
-            Tstep = Tdif / (nFilteredLoads-1)
         else:
             pHstep = 0
-            Tstep = 0
-
-        # Add linear change
+        
+        # Add linear distribution
         for i, w in enumerate(filteredLoads):
             details = w.getDetails()
             pHValue = pHrest - (i * pHstep)
             details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')
+    
+    def addLinearDistT(self, test):
+        Trest = float(app.settings.testDefaults['Tc @ rest'])
+        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
+        Tdif = float(Tpeak) - float(Trest)
+
+        # Filter possible empty loads
+        nFilteredLoads = 0
+        filteredLoads = []
+        for i, l in enumerate(test.workLoads):
+            detailsDict = l.getDetails().getWorkLoadDetails()
+                        
+            if i == 0 or detailsDict['Load'] != 0:
+                nFilteredLoads += 1
+                filteredLoads.append(l)
+
+        if nFilteredLoads > 1:
+            if Trest != Tpeak:
+                test.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
+
+            Tstep = Tdif / (nFilteredLoads-1)
+        else:
+            Tstep = 0
+
+        # Add linear distribution
+        for i, w in enumerate(filteredLoads):
+            details = w.getDetails()
 
             Tvalue = Trest + (i * Tstep)
             details.setValue('T', f'{"{0:.1f}".format(Tvalue)}')

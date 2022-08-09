@@ -35,8 +35,8 @@ class MenuBar(object):
         # File... -> Export...
         exportMenu = Menu(self.menuBar, tearoff=0)
         exportMenu.add_cascade(label='Project...', menu=exportMenuProject)
-        exportMenu.add_cascade(label='Subject...')
-        exportMenu.add_cascade(label='Test...')
+        exportMenu.add_cascade(label='Subject...', state=DISABLED)
+        exportMenu.add_cascade(label='Test...', state=DISABLED)
         exportMenu.add_cascade(label='Plots...', menu=exportMenuPlots)
 
         # File...

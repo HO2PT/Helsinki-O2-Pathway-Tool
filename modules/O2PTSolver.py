@@ -321,7 +321,7 @@ class O2PTSolver():
 
         # pH + temp correction
         pH = float(self.d['pH'])
-        pH0 = float(self.d['pH @ rest'])
+        pH0 = float(self.d['pH @ rest']) # verrataanko rest vs. kuorma VAI aikaisemman kuorman max vs kuorman max?
         T = self.formatT('T')
         T0 = self.formatT('Tc @ rest')
 

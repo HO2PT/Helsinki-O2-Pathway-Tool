@@ -10,7 +10,7 @@ from modules.panel_details import DetailsPanel
 from modules.panel_plotting import PlottingPanel
 
 root = Tk()
-root.title("O\u2082 Pathway Tool")
+root.title("Helsinki O\u2082 Pathway Tool")
 root.geometry('750x500')
 
 app.root = root
@@ -49,28 +49,13 @@ root.geometry("+%d+%d" % ( initX, initY ))
 
 loaded = False
 
-def debug():
-    # for d in app.getActiveTest().getWorkLoads():
-    #     print(d.getDetails().getWorkLoadDetails())
-    # print(f'current selection: {app.activeSubject}')
-    project = app.getActiveProject()
-    subjects = project.getSubjects()
-    nLoads = 0
-
-    for s in subjects:
-        for t in s.tests:
-            n = len(t.workLoads)
-            if n > nLoads:
-                nLoads = n
-
-    print(nLoads)
-    for i in range(nLoads):
-        print(f'Load{i}')
+# def debug():
+#     for d in app.getActiveTest().getWorkLoads():
+#         print(d.getDetails().getWorkLoadDetails())
+# root.bind('<Tab>', lambda e: debug())
 
 def updateCursor(e):
     print(mainframe.identify(e.x, e.y))
-
-root.bind('<Tab>', lambda e: debug())
 
 sepStyle = ttk.Style()
 sepStyle.configure('asd.TSeparator', background = 'dark gray')
@@ -114,6 +99,7 @@ def on_closing():
         root.quit()
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
+root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='Img/ho2pt.png'))
 
 if __name__ == '__main__':
     root.mainloop()

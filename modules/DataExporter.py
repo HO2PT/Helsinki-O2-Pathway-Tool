@@ -51,6 +51,14 @@ class DataExporter(object):
         self.bpm_Dig = 0
         self.perc_Dig = 0
 
+    def closeOptions(self):
+        try:
+            self.overLay.destroy()
+        except:
+            pass
+        self.exportOptions.destroy()
+        notification.create('error', text='Data not exported', timeout=5000)
+
     def showOptions(self):
         try:
             if self.toNew == False:
@@ -63,6 +71,7 @@ class DataExporter(object):
             self.exportOptions = Toplevel(borderwidth=10)
             self.exportOptions.title("Export options")
             self.exportOptions.focus_force()
+            self.exportOptions.protocol("WM_DELETE_WINDOW", self.closeOptions)
 
             self.container = ttk.Labelframe(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
             self.container.pack()
@@ -151,15 +160,38 @@ class DataExporter(object):
             else:
                 if self.onlyPlots == False:
                     self.container.pack_configure(side=LEFT, padx=10)
-                    expOptions = ttk.Labelframe(self.exportOptions, text='Options')
+                    expOptions = ttk.Labelframe(self.exportOptions, text='Options', padding=(5,5))
                     expOptions.pack(side=LEFT, fill=X, expand=True, padx=10)
 
+                    statistics = ttk.Labelframe(expOptions, text='Statistics', padding=(10,10))
+                    statistics.pack(fill=X, expand=True)
                     self.statsVar0 = IntVar(value=0)
                     self.statsVar1 = IntVar(value=0)
                     self.statsVar2 = IntVar(value=0)
-                    ttk.Checkbutton(expOptions, text='Create mean (SD) plot', variable=self.statsVar0).grid(column=0, row=0, sticky='nw')
-                    ttk.Checkbutton(expOptions, text='Create median (IQR) plot', variable=self.statsVar1).grid(column=0, row=1, sticky='nw')
-                    ttk.Checkbutton(expOptions, text='Create mean (CI95%) plot', variable=self.statsVar2).grid(column=0, row=2, sticky='nw')
+                    ttk.Checkbutton(statistics, text='Create mean (SD) plot', variable=self.statsVar0).grid(column=0, row=0, sticky='nw')
+                    ttk.Checkbutton(statistics, text='Create median (IQR) plot', variable=self.statsVar1).grid(column=0, row=1, sticky='nw')
+                    ttk.Checkbutton(statistics, text='Create mean (CI95%) plot', variable=self.statsVar2).grid(column=0, row=2, sticky='nw')
+
+                    expOptions.grid_rowconfigure(3, minsize=10)
+
+                    # loads = ttk.Labelframe(expOptions, text='Loads', padding=(10,10))
+                    # loads.pack(fill=X, expand=True)
+                    # self.loadVar = IntVar(value=0)
+                    # ttk.Radiobutton(loads, text='Export all loads', variable=self.loadVar, value=0).grid(column=0, row=4, sticky='nw')
+                    # ttk.Radiobutton(loads, text='Export max load', variable=self.loadVar, value=1).grid(column=0, row=5, sticky='nw')
+                    # ttk.Radiobutton(loads, text='Export load number', variable=self.loadVar, value=2).grid(column=0, row=6, sticky='nw')
+                    # ttk.Entry(loads, width=3).grid(column=1, row=6, sticky='nw')
+
+                    # expOptions.grid_rowconfigure(7, minsize=10)
+
+                    # tests = ttk.Labelframe(expOptions, text='Tests', padding=(10,10))
+                    # tests.pack(fill=X, expand=True)
+                    # self.testVar = IntVar(value=0)
+                    # ttk.Radiobutton(tests, text='Export all tests', variable=self.testVar, value=0).grid(column=0, row=8, sticky='nw')
+                    # ttk.Radiobutton(tests, text='Export only first test', variable=self.testVar, value=1).grid(column=0, row=9, sticky='nw')
+                    # ttk.Radiobutton(tests, text='Export only last test', variable=self.testVar, value=2).grid(column=0, row=10, sticky='nw')
+                    # ttk.Radiobutton(tests, text='Export test number', variable=self.testVar, value=3).grid(column=0, row=11, sticky='nw')
+                    # ttk.Entry(tests, width=3).grid(column=1, row=11, sticky='nw')
                 else:
                     self.exportOptions.geometry("550x450")
 
@@ -328,6 +360,8 @@ class DataExporter(object):
             # Delete images
             for i, img in enumerate(imgs):
                 os.remove(f'{os.getcwd()}\plot{i}.png')
+            
+            self.overLay.destroy()
             self.exportOptions.destroy()
         else:
             project = app.getActiveProject()
@@ -413,7 +447,7 @@ class DataExporter(object):
                     nLoads = n
 
         # Construct header row
-        headerRow = ['ID']
+        headerRow = ['Subject ID', 'Test ID', 'Test number']
         for v in self.vars:
             unit = subjects[0].tests[0].workLoads[0].details.getWorkLoadDetails()[f'{v}_unit']
             for i in range(nLoads):
@@ -424,8 +458,8 @@ class DataExporter(object):
         
         # Append subject data row by row
         for s in subjects:
-            for t in s.tests:
-                row = pd.Series([t.id])
+            for i, t in enumerate(s.tests):
+                row = pd.Series([s.id, t.id, i])
                 for var in self.vars:
                     for w in t.workLoads:
                         row = pd.concat([row, pd.Series([w.details.getWorkLoadDetails()[var]], dtype='float64')], axis=0, ignore_index=True)
@@ -834,6 +868,8 @@ class DataExporter(object):
         workLoadObjects = []
         for l in filteredLoads:
             workLoadObjects.append(l.getDetails())
+
+        print(workLoadObjects)
 
         if projectPlot == False:
             self.createPlot(workLoadObjects, id, sid=sid)
