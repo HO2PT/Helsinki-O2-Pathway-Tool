@@ -258,6 +258,7 @@ class Settings(object):
         self.settingsWindow.title("Settings")
         self.settingsWindow.pack_propagate(False)
         self.settingsWindow.update_idletasks()
+        self.settingsWindow.tk.call('wm', 'iconphoto', self.settingsWindow._w, PhotoImage(file='Img/ho2pt.png'))
 
         initX = int(app.root.winfo_screenwidth()) * 0.5 - int(self.settingsWindow.winfo_width()) * 0.5
         initY = int(app.root.winfo_screenheight()) * 0.5 - int(self.settingsWindow.winfo_height()) * 0.5
@@ -524,10 +525,11 @@ class Settings(object):
                     for s in subjects:
                         tests = s.getTests()
                         for t in tests:
-                            for key, val in self.unitDefaults.items():
-                                t.envDetails.setDetail(key, val)
-                            for key, val in self.envDefaults.items():
-                                t.envDetails.setDetail(key, val)
+                            for l in t.workLoads:
+                                for key, val in self.unitDefaults.items():
+                                    l.envDetails.setDetail(key, val)
+                                for key, val in self.envDefaults.items():
+                                    l.envDetails.setDetail(key, val)
                             
 
         settingsFile = open('settings.pkl', 'wb')
@@ -541,8 +543,11 @@ class Settings(object):
             for l in app.activeTest.workLoads:
                 for key, val in self.unitDefaults.items():
                     l.getDetails().setUnit(key, val)
+                    l.envDetails.setDetail(key, val)
                 for key, val in self.testDefaults.items():
                     l.getDetails().setValue(key, val)
+                for key, val in self.envDefaults.items():
+                    l.envDetails.setDetail(key, val)
             self.updatePhAndTemp(app.activeTest)
 
             app.testDetailModule.refreshTestDetails()

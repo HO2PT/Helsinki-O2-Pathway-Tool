@@ -1,4 +1,3 @@
-from cgi import test
 import os
 import math
 import pandas as pd
@@ -9,6 +8,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import asksaveasfilename
 from copy import deepcopy
+from objects.envDetails import EnvDetails
 from objects.test import Test
 from objects.app import app
 from objects.workLoadDetails import WorkLoadDetails
@@ -50,6 +50,12 @@ class DataExporter(object):
         self.ml_Dig = 0
         self.bpm_Dig = 0
         self.perc_Dig = 0
+        self.m_Dig = 0
+        self.km_Dig = 1
+        self.ft_Dig = 0
+        self.kPa_Dig = 1
+        self.bar_Dig = 1
+        self.psi_Dig = 0
 
     def closeOptions(self):
         try:
@@ -72,12 +78,11 @@ class DataExporter(object):
             self.exportOptions.title("Export options")
             self.exportOptions.focus_force()
             self.exportOptions.protocol("WM_DELETE_WINDOW", self.closeOptions)
+            self.exportOptions.tk.call('wm', 'iconphoto', self.exportOptions._w, PhotoImage(file='Img/ho2pt.png'))
 
-            self.container = ttk.Labelframe(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
-            self.container.pack()
-
-            self.footer = ttk.Frame(self.exportOptions, padding=(10,0))
-            self.footer.pack(side=BOTTOM, fill=X)
+            # Choose test details to be exported
+            self.testContainer = ttk.Labelframe(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
+            self.testContainer.pack(side=LEFT, fill=Y, padx=10)
 
             self.vars = []
             loadMode = app.settings.getTestDef()['loadMode']
@@ -93,7 +98,7 @@ class DataExporter(object):
                             if '2' in key:
                                 key = key.replace('2', '\u2082')
 
-                            ttk.Checkbutton(self.container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+                            ttk.Checkbutton(self.testContainer, text=key, variable=var).grid(column=0, row=i, sticky='nw')
                     else: # Velocity&Incline
                         if key != 'Load':
                             var = IntVar(value=1, name=key)
@@ -102,11 +107,34 @@ class DataExporter(object):
                             if '2' in key:
                                 key = key.replace('2', '\u2082')
 
-                            ttk.Checkbutton(self.container, text=key, variable=var).grid(column=0, row=i, sticky='nw')
-
-            ttk.Button(self.container, text='Select All', command=self.selectAll).grid(column=0, row=len(temp.getWorkLoadDetails().keys()))
-            ttk.Button(self.container, text='Deselect All', command=self.deselectAll).grid(column=1, row=len(temp.getWorkLoadDetails().keys()))
+                            ttk.Checkbutton(self.testContainer, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+            self.testContainer.grid_rowconfigure(len(temp.getWorkLoadDetails().keys()), weight=1)
+            ttk.Button(self.testContainer, text='Select All', command=lambda: self.selectAll(0)).grid(column=0, row=len(temp.getWorkLoadDetails().keys()), sticky='s', pady=(10,0))
+            ttk.Button(self.testContainer, text='Deselect All', command=lambda: self.deselectAll(0)).grid(column=1, row=len(temp.getWorkLoadDetails().keys()), sticky='s', pady=(10,0))
             
+            # Choose environment details to be exported
+            self.envContainer = ttk.Labelframe(self.exportOptions, text='Choose environment values to be exported', padding=(10, 10))
+            self.envContainer.pack(fill=BOTH)
+
+            temp = EnvDetails()
+            self.envVars = []
+            for i, key in enumerate(temp.getDetails().keys()):
+                if 'unit' not in key:
+                    var = IntVar(value=1, name=key)
+                    self.envVars.append(var)
+
+                    if '2' in key:
+                        key = key.replace('2', '\u2082')
+
+                    ttk.Checkbutton(self.envContainer, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+            self.envContainer.grid_rowconfigure(len(temp.getDetails().keys()), weight=1)
+            ttk.Button(self.envContainer, text='Select All', command=lambda: self.selectAll(1)).grid(column=0, row=len(temp.getDetails().keys()), sticky='s', pady=(10,0))
+            ttk.Button(self.envContainer, text='Deselect All', command=lambda: self.deselectAll(1)).grid(column=1, row=len(temp.getDetails().keys()), sticky='s', pady=(10,0))
+
+            # Create footer
+            self.footer = ttk.Frame(self.exportOptions, padding=(10,0))
+            self.footer.pack(side=BOTTOM, fill=X)
+
             self.cancelButton = ttk.Button(self.footer, text='Cancel', command=self.cancel)
             self.cancelButton.pack(side=RIGHT)
             self.exportButton = ttk.Button(self.footer, text='Export', command=self.getSelected)
@@ -121,7 +149,7 @@ class DataExporter(object):
 
                 # Create the sheet selection dropdown where the data is appended to
                 if self.onlyPlots == False:
-                    self.container.pack_configure(side=LEFT, padx=10)
+                    self.testContainer.pack_configure(side=LEFT, padx=10)
                     self.rightContainer = ttk.Frame(self.exportOptions)
                     self.rightContainer.pack(side=RIGHT, fill=X, expand=True)
 
@@ -154,12 +182,11 @@ class DataExporter(object):
                     self.plotVar = IntVar(value=0)
                     ttk.Radiobutton(expOptions, text='Create graph for every test on a separate sheet', variable=self.plotVar, value=0).grid(column=0, row=4, sticky='nw')
                     ttk.Radiobutton(expOptions, text='Export only quantitative results', variable=self.plotVar, value=1).grid(column=0, row=5, sticky='nw')
-                else:
-                    self.exportOptions.geometry("550x450")
+
             # If exporting to a new file
             else:
                 if self.onlyPlots == False:
-                    self.container.pack_configure(side=LEFT, padx=10)
+                    self.testContainer.pack_configure(side=LEFT, padx=10)
                     expOptions = ttk.Labelframe(self.exportOptions, text='Options', padding=(5,5))
                     expOptions.pack(side=LEFT, fill=X, expand=True, padx=10)
 
@@ -192,8 +219,6 @@ class DataExporter(object):
                     # ttk.Radiobutton(tests, text='Export only last test', variable=self.testVar, value=2).grid(column=0, row=10, sticky='nw')
                     # ttk.Radiobutton(tests, text='Export test number', variable=self.testVar, value=3).grid(column=0, row=11, sticky='nw')
                     # ttk.Entry(tests, width=3).grid(column=1, row=11, sticky='nw')
-                else:
-                    self.exportOptions.geometry("550x450")
 
             self.exportOptions.update_idletasks()
             optionsX = int(self.exportOptions.winfo_screenwidth()) * 0.5 - int(self.exportOptions.winfo_width()) * 0.5
@@ -201,6 +226,7 @@ class DataExporter(object):
             self.exportOptions.geometry("+%d+%d" % ( optionsX, optionsY ))
 
             self.varTemp = []
+            self.envVarTemp = []
 
         except:
             notification.create('error', 'No imported file detected. Data input by hand?', 5000)
@@ -228,6 +254,11 @@ class DataExporter(object):
                     self.varTemp.append(str(v))
             self.vars = self.varTemp
 
+            for ev in self.envVars:
+                if ev.get() == 1:
+                    self.envVarTemp.append(str(ev))
+            self.envVars = self.envVarTemp
+
             if self.toNew == False:
                 if self.onlyPlots == False:
                     self.selectedSheet = self.menuButton.cget('text')
@@ -237,13 +268,21 @@ class DataExporter(object):
 
         self.exportButton.after(100, proceed)
 
-    def selectAll(self):
-        for v in self.vars:
-            v.set(1)
+    def selectAll(self, mode):
+        if mode == 0:
+            for v in self.vars:
+                v.set(1)
+        else:
+            for ev in self.envVars:
+                ev.set(1)
 
-    def deselectAll(self):
-        for v in self.vars:
-            v.set(0)
+    def deselectAll(self, mode):
+        if mode == 0:
+            for v in self.vars:
+                v.set(0)
+        else:
+            for ev in self.envVars:
+                ev.set(0)
 
     def cancel(self):
         try:
@@ -287,12 +326,18 @@ class DataExporter(object):
                 df = pd.concat([df, cols.to_frame().T], axis=0, ignore_index=True)
 
                 for j in range(len(p.workLoadDetailsObjects)):
+                    # Initialize test details row indexes
                     for v in self.vars:
                         self.temp[f'{v}'] = []
+
+                    # Initialize envdetail row indexes
+                    for ev in self.envVars:
+                        self.temp[f'{ev}'] = []
 
                 for li, l in enumerate(p.workLoadDetailsObjects):
                     details = l.getWorkLoadDetails()
 
+                    # Add test details values
                     for v in self.vars:
                         value = details[v]
                         unit = details[f'{v}_unit']
@@ -307,19 +352,35 @@ class DataExporter(object):
                             self.units[v] = unit
                         self.mcs[v] = mc
 
-                    # Sort values
-                    ordered = {}
-                    for v in self.vars:
-                        for key, value in self.temp.items():
-                            ordered[key] = value
+                for l in p.activeTest.workLoads:
+                    # Add envdetails
+                    envDetails = l.envDetails.getDetails()
+                    for ev in self.envVars:
+                        value = envDetails[ev]
+                        try:
+                            unit = envDetails[f'{ev}_unit']
+                        except KeyError:
+                            unit = ''
+                        mc = ''
+
+                        self.temp[f'{ev}'].append(value)
+                        self.units[ev] = unit
+                        self.mcs[ev] = mc
+
+                # Sort values
+                ordered = {}
+                for key, value in self.temp.items():
+                    ordered[key] = value
 
                 for key, value in ordered.items():
                     unit = self.units[key]
                     mc = self.mcs[key]
                     if mc == 1:
                         mc = 'Calculated'
-                    else:
+                    elif mc == 0:
                         mc = 'Measured'
+                    else:
+                        mc = ''
 
                     # Change 2's to subscript
                     if '2' in key:
@@ -364,7 +425,7 @@ class DataExporter(object):
             self.overLay.destroy()
             self.exportOptions.destroy()
         else:
-            project = app.getActiveProject()
+            project = deepcopy(app.getActiveProject())
             subjects = project.getSubjects()
 
             # Create project plots
@@ -437,7 +498,6 @@ class DataExporter(object):
         subjects = project.getSubjects()
         nLoads = 0
         df = pd.DataFrame()
-        rows = []
 
         # Get number of loads 
         for s in subjects:
@@ -448,10 +508,29 @@ class DataExporter(object):
 
         # Construct header row
         headerRow = ['Subject ID', 'Test ID', 'Test number']
+        # Add test details
         for v in self.vars:
             unit = subjects[0].tests[0].workLoads[0].details.getWorkLoadDetails()[f'{v}_unit']
             for i in range(nLoads):
-                headerRow.append(f'{v}-{i}({unit})')
+                if i == 0:
+                    headerRow.append(f'{v}-Rest({unit})')
+                elif i == nLoads-1:
+                    headerRow.append(f'{v}-Max({unit})')
+                else:
+                    headerRow.append(f'{v}-{i}({unit})')
+        # Add environment details
+        for ev in self.envVars:
+            try:
+                unit = subjects[0].tests[0].workLoads[0].envDetails.getDetails()[f'{ev}_unit']
+            except KeyError:
+                unit = ''
+            for i in range(nLoads):
+                if i == 0:
+                    headerRow.append(f'{ev}-Rest({unit})')
+                elif i == nLoads-1:
+                    headerRow.append(f'{ev}-Max({unit})')
+                else:
+                    headerRow.append(f'{ev}-{i}({unit})')
 
         headerRow = pd.Series(headerRow)
         df = pd.concat([df, headerRow.to_frame().T], axis=0, ignore_index=True)
@@ -460,9 +539,41 @@ class DataExporter(object):
         for s in subjects:
             for i, t in enumerate(s.tests):
                 row = pd.Series([s.id, t.id, i])
+
+                # Append test details
                 for var in self.vars:
-                    for w in t.workLoads:
-                        row = pd.concat([row, pd.Series([w.details.getWorkLoadDetails()[var]], dtype='float64')], axis=0, ignore_index=True)
+                    if len(t.workLoads) < nLoads:
+                        skip = nLoads - len(t.workLoads)
+
+                        for wi, w in enumerate(t.workLoads):
+                            value = [w.details.getWorkLoadDetails()[var]]
+                            
+                            if wi == len(t.workLoads)-1: # MAX value
+                                for s in range(skip):
+                                    value = [0] + value
+
+                            row = pd.concat([row, pd.Series(value, dtype='float64')], axis=0, ignore_index=True)
+                    else:
+                        for w in t.workLoads:
+                            row = pd.concat([row, pd.Series([w.details.getWorkLoadDetails()[var]], dtype='float64')], axis=0, ignore_index=True)
+
+                # Append env details
+                for ev in self.envVars:
+                    if len(t.workLoads) < nLoads:
+                        skip = nLoads - len(t.workLoads)
+
+                        for wi, w in enumerate(t.workLoads):
+                            value = [w.envDetails.getDetails()[ev]]
+                            
+                            if wi == len(t.workLoads)-1: # MAX value
+                                for s in range(skip):
+                                    value = [0] + value
+
+                            row = pd.concat([row, pd.Series(value, dtype='float64')], axis=0, ignore_index=True)
+                    else:
+                        for w in t.workLoads:
+                            row = pd.concat([row, pd.Series([w.envDetails.getDetails()[ev]], dtype='float64')], axis=0, ignore_index=True)
+
                 df = pd.concat([df, row.to_frame().T], axis=0, ignore_index=True)
         
         return df
@@ -502,6 +613,11 @@ class DataExporter(object):
             # Delete images
             for i, (key, value) in enumerate(self.dfs.items()):
                 os.remove(f'{os.getcwd()}\plot{key}.png')
+            
+            try:
+                self.overLay.destroy()
+            except:
+                pass
             self.exportOptions.destroy()
 
         else: # Export all values and plots to excel file
@@ -516,10 +632,13 @@ class DataExporter(object):
                     else:
                         unit = units[f'{key.split("-")[0]}']
                         mc = mcs[f'{key.split("-")[0]}']
+
                     if mc == 1:
                         mc = 'Calculated'
-                    else:
+                    elif mc == 0:
                         mc = 'Measured'
+                    else:
+                        mc = ''
 
                     # Change 2's to subscript
                     if '2' in key.split('-')[0]:
@@ -528,7 +647,6 @@ class DataExporter(object):
                         key = f'{key0}-{key1}'
 
                     value = self.formatValue(value, unit)
-                    
                     value.insert(0, f'{key} ({unit})-{mc}')
                     excel[self.selectedSheet][key] = value
             else: # 'wide'
@@ -547,8 +665,10 @@ class DataExporter(object):
 
                     if mc == 1:
                         mc = 'Calculated'
-                    else:
+                    elif mc == 0:
                         mc = 'Measured'
+                    else:
+                        mc = ''
 
                     # Change 2's to subscript
                     if '2' in key.split('-')[0]:
@@ -557,7 +677,6 @@ class DataExporter(object):
                         key = f'{key0}-{key1}'
 
                     value = self.formatValue(value, unit)
-
                     value.insert(0, f'{key} ({unit})-{mc}')
                     value = pd.Series(value, index=range(len(excelTemp.columns)))
                     excelTemp = pd.concat([excelTemp, value.to_frame().T], axis=0, ignore_index=True)
@@ -658,6 +777,10 @@ class DataExporter(object):
             if self.statsVar2.get() == 1:
                 os.remove(f'{os.getcwd()}\plot-Mean(CI95%)-Project mean(95% CI).png')
             
+            try:
+                self.overLay.destroy()
+            except:
+                pass
             self.exportOptions.destroy()
 
     def getSortedData(self):
@@ -666,7 +789,7 @@ class DataExporter(object):
         mcs = {}
 
         # Get number of loads in project
-        p = app.getActiveProject()
+        p = deepcopy(app.getActiveProject())
         try:
             nLoads = len(p.loadLoc)
         except:
@@ -683,6 +806,8 @@ class DataExporter(object):
         for i in range(nLoads):
             for v in self.vars:
                 temp[f'{v}-{i+1}'] = []
+            for ev in self.envVars:
+                temp[f'{ev}-{i+1}'] = []
 
         subjects = p.getSubjects()
         for s in subjects:
@@ -697,6 +822,9 @@ class DataExporter(object):
                         details = workLoadObjects[i].getWorkLoadDetails()
                         O2PTSolver(workLoadObjects[i], details).calc()
                         updatedDetails = workLoadObjects[i].getWorkLoadDetails()
+                        envDetails = t.workLoads[i].envDetails.getDetails()
+                        
+                        # Test details
                         for v in self.vars:
                             value = updatedDetails[v]
                             unit = updatedDetails[f'{v}_unit']
@@ -708,8 +836,22 @@ class DataExporter(object):
                             units[v] = unit
                             mcs[v] = mc
 
+                        # Environment details
+                        for ev in self.envVars:
+                            value = envDetails[ev]
+                            try:
+                                unit = envDetails[f'{ev}_unit']
+                            except KeyError:
+                                unit = ''
+                            mc = ''
+
+                            temp[f'{ev}-{i+1}'].append(value)
+                            units[ev] = unit
+                            mcs[ev] = mc
+
                     except Exception as err:
                         updatedDetails = workLoadObjects[0].getWorkLoadDetails()
+                        envDetails = t.workLoads[0].envDetails.getDetails()
 
                         for v in self.vars:
                             value = 0
@@ -722,6 +864,19 @@ class DataExporter(object):
                             units[v] = unit
                             mcs[v] = mc
 
+                        # Environment details
+                        for ev in self.envVars:
+                            value = 0
+                            try:
+                                unit = envDetails[f'{ev}_unit']
+                            except KeyError:
+                                unit = ''
+                            mc = ''
+
+                            temp[f'{ev}-{i+1}'].append(value)
+                            units[ev] = unit
+                            mcs[ev] = mc
+
         # Sort values
         ordered = {}
         for v in self.vars:
@@ -732,6 +887,11 @@ class DataExporter(object):
                         ordered[key] = value
                 else:
                     if key.split('-')[0] == v:
+                        ordered[key] = value
+
+        for ev in self.envVars:
+            for key, value in temp.items():
+                if key.split('-')[0] == ev:
                         ordered[key] = value
 
         return ordered, units, mcs
@@ -833,10 +993,15 @@ class DataExporter(object):
         cols = pd.Series(columns)
         df = pd.concat([df, cols.to_frame().T], axis=0, ignore_index=True)
 
-        # initialize row indexes
+        # Initialize test details row indexes
         for v in self.vars:
             self.temp[f'{v}'] = []
 
+        # Initialize envdetail row indexes
+        for ev in self.envVars:
+            self.temp[f'{ev}'] = []
+
+        # Add test details values 
         for li, l in enumerate(filteredLoads):
             details = l.getDetails().getWorkLoadDetails()
             if projectPlot == False:
@@ -858,6 +1023,20 @@ class DataExporter(object):
                     self.units[v] = unit
                 self.mcs[v] = mc
 
+            # Add envdetails
+            envDetails = l.envDetails.getDetails()
+            for ev in self.envVars:
+                value = envDetails[ev]
+                try:
+                    unit = envDetails[f'{ev}_unit']
+                except KeyError:
+                    unit = ''
+                mc = ''
+
+                self.temp[f'{ev}'].append(value)
+                self.units[ev] = unit
+                self.mcs[ev] = mc
+
             # Sort values
             ordered = {}
             for v in self.vars:
@@ -868,8 +1047,6 @@ class DataExporter(object):
         workLoadObjects = []
         for l in filteredLoads:
             workLoadObjects.append(l.getDetails())
-
-        print(workLoadObjects)
 
         if projectPlot == False:
             self.createPlot(workLoadObjects, id, sid=sid)
@@ -884,8 +1061,10 @@ class DataExporter(object):
             mc = self.mcs[key]
             if mc == 1:
                 mc = 'Calculated'
-            else:
+            elif mc == 0:
                 mc = 'Measured'
+            else:
+                mc = ''
 
             # Change 2's to subscript
             if '2' in key:
@@ -940,9 +1119,15 @@ class DataExporter(object):
             df = pd.concat([df, cols.to_frame().T], axis=0, ignore_index=True)
 
             for i in range(len(p.workLoadDetailsObjects)):
+                # Initialize test details row indexes
                 for v in self.vars:
                     self.temp[f'{v}'] = []
 
+                # Initialize envdetail row indexes
+                for ev in self.envVars:
+                    self.temp[f'{ev}'] = []
+
+            # Add test details values
             for li, l in enumerate(p.workLoadDetailsObjects):
                 details = l.getWorkLoadDetails()
 
@@ -960,6 +1145,21 @@ class DataExporter(object):
                         self.units[v] = unit
                     self.mcs[v] = mc
 
+            for l in p.activeTest.workLoads:
+                # Add envdetails
+                envDetails = l.envDetails.getDetails()
+                for ev in self.envVars:
+                    value = envDetails[ev]
+                    try:
+                        unit = envDetails[f'{ev}_unit']
+                    except KeyError:
+                        unit = ''
+                    mc = ''
+
+                    self.temp[f'{ev}'].append(value)
+                    self.units[ev] = unit
+                    self.mcs[ev] = mc
+
                 # Sort values
                 ordered = {}
                 for v in self.vars:
@@ -972,8 +1172,10 @@ class DataExporter(object):
                 
                 if mc == 1:
                     mc = 'Calculated'
-                else:
+                elif mc == 0:
                     mc = 'Measured'
+                else:
+                    mc = ''
 
                 # Change 2's to subscript
                 if '2' in key:
@@ -1062,6 +1264,36 @@ class DataExporter(object):
         elif unit == 'bpm':
             for v in value:
                 v = '{0:.{1}f}'.format(float(v), self.bpm_Dig)
+                res.append(v)
+            return res
+        elif unit == 'm':
+            for v in value:
+                v = '{0:.{1}f}'.format(float(v), self.m_Dig)
+                res.append(v)
+            return res
+        elif unit == 'km':
+            for v in value:
+                v = '{0:.{1}f}'.format(float(v), self.km_Dig)
+                res.append(v)
+            return res
+        elif unit == 'ft':
+            for v in value:
+                v = '{0:.{1}f}'.format(float(v), self.ft_Dig)
+                res.append(v)
+            return res
+        elif unit == 'kPa':
+            for v in value:
+                v = '{0:.{1}f}'.format(float(v), self.kPa_Dig)
+                res.append(v)
+            return res
+        elif unit == 'bar':
+            for v in value:
+                v = '{0:.{1}f}'.format(float(v), self.bar_Dig)
+                res.append(v)
+            return res
+        elif unit == 'psi':
+            for v in value:
+                v = '{0:.{1}f}'.format(float(v), self.psi_Dig)
                 res.append(v)
             return res
         else:

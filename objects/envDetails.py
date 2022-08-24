@@ -26,13 +26,13 @@ class EnvDetails(object):
             'Elevation': self.elevation,
             'ATM': self.atm,
             'FiO2': self.fio2,
-            'Temp': self.temp,
+            'Temperature': self.temp,
             'Rh': self.rh,
             'PiO2Method': self.pio2Method,
             'Elevation_unit': self.elevationUnit,
             'ATM_unit': self.atmUnit,
             'FiO2_unit': self.fio2Unit,
-            'Temp_unit': self.tempUnit,
+            'Temperature_unit': self.tempUnit,
             'Rh_unit': self.rhUnit
         }
 

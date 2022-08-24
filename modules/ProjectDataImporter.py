@@ -190,6 +190,7 @@ class ProjectDataImporter(object):
                             self.addLinearDistPH(s.tests[0])
                 
             if self.templateUsed:
+                tempProject.data = self.dfList
                 self.closeImporter(mode=1)
                 return
 
@@ -197,6 +198,7 @@ class ProjectDataImporter(object):
             self.window.title('Project import')
             self.window.geometry('750x500')
             self.window.update_idletasks()
+            self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file='Img/ho2pt.png'))
             windowX = int(self.window.winfo_screenwidth()) * 0.5 - int(self.window.winfo_width()) * 0.5
             windowY = int(self.window.winfo_screenheight()) * 0.5 - int(self.window.winfo_height()) * 0.5
             self.window.geometry("+%d+%d" % ( windowX, windowY ))

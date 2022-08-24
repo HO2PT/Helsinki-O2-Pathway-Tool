@@ -10,6 +10,7 @@ class Help():
         self.window = Toplevel()
         self.window.title('Help')
         self.window.geometry('750x500')
+        self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file='Img/ho2pt.png'))
 
         windowX = app.root.winfo_rootx() + (app.root.winfo_reqwidth()/2)
         windowY = app.root.winfo_rooty() + (app.root.winfo_reqheight()/10)
@@ -21,15 +22,14 @@ class Help():
 
         self.progressionList = Listbox(self.leftPanel, width=25)
         options = [
-            'Getting started',
+            'Modeling',
             'Layout',
             'Side panel',
             'Details panel',
-            'Plotting panel',
+            'Plot panel',
             'Data import',
             'Data export',
             'Settings',
-            'Modeling',
             'How to',
             'Troubleshooting'
         ]
@@ -62,7 +62,7 @@ class Help():
 
         self.pixs = []
         self.index = 1
-        self.doc = fitz.open(r"C:/Koulu/Inssityö/Instructions/userInstructions_O2PT_test.pdf")
+        self.doc = fitz.open('userInstructions.pdf')
 
         self.window.mainloop()
 
@@ -99,8 +99,11 @@ class Help():
         self.content.bind('<Configure>', self.scale)
         self.canvas.bind('<MouseWheel>', self.handleMouseWheel)
 
-        if index == 0: # Getting started s.3
-            self.pix = self.doc[2].get_pixmap()
+        if index == 0: # Modelling s.5-7
+            for page in self.doc.pages(4, 7, 1):
+                self.pixs.append(page)
+            
+            self.pix = self.pixs[0].get_pixmap()
             mode = "RGBA" if self.pix.alpha else "RGB"
             self.img = Image.frombytes(mode, [self.pix.width, self.pix.height], self.pix.samples)
             
@@ -110,23 +113,10 @@ class Help():
             
             self.canvas.configure( scrollregion=(0, 0, img.width, img.height) )
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
-            self.currentPageLabel.config(text=f'1/1')
+            self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 1: # Layout s.4
-            self.pix = self.doc[3].get_pixmap()
-            mode = "RGBA" if self.pix.alpha else "RGB"
-            self.img = Image.frombytes(mode, [self.pix.width, self.pix.height], self.pix.samples)
-            
-            self.ratio = self.pix.height / self.pix.width
-            img = self.img.resize(( math.floor(self.content.winfo_width()), math.floor(self.ratio * self.content.winfo_width()) ))
-            self.tkimg = ImageTk.PhotoImage(img)
-            
-            self.canvas.configure( scrollregion=(0, 0, img.width, img.height) )
-            self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
-            self.currentPageLabel.config(text=f'1/1')
-
-        elif index == 2: # Side Panel s.5-6
-            for page in self.doc.pages(4, 6, 1):
+        elif index == 1: # Layout s.9-10
+            for page in self.doc.pages(8, 10, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -141,8 +131,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 3: # Details panel s.7-9
-            for page in self.doc.pages(6, 9, 1):
+        elif index == 2: # Side Panel s.11-14
+            for page in self.doc.pages(10, 14, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -157,23 +147,7 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 4: # Plotting panel s.10-12
-            for page in self.doc.pages(9, 12, 1):
-                self.pixs.append(page)
-
-            self.pix = self.pixs[0].get_pixmap()
-            mode = "RGBA" if self.pix.alpha else "RGB"
-            self.img = Image.frombytes(mode, [self.pix.width, self.pix.height], self.pix.samples)
-            
-            self.ratio = self.pix.height / self.pix.width
-            img = self.img.resize(( math.floor(self.content.winfo_width()), math.floor(self.ratio * self.content.winfo_width()) ))
-            self.tkimg = ImageTk.PhotoImage(img)
-            
-            self.canvas.configure( scrollregion=(0, 0, img.width, img.height) )
-            self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
-            self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
-
-        elif index == 5: # Data import s.15-18
+        elif index == 3: # Details panel s.15-18
             for page in self.doc.pages(14, 18, 1):
                 self.pixs.append(page)
 
@@ -189,7 +163,7 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 6: # Data export s.19-22
+        elif index == 4: # Plotting panel s.19-22
             for page in self.doc.pages(18, 22, 1):
                 self.pixs.append(page)
 
@@ -205,8 +179,11 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 7: # Settings s.13
-            self.pix = self.doc[12].get_pixmap()
+        elif index == 5: # Data import s.25-32
+            for page in self.doc.pages(24, 32, 1):
+                self.pixs.append(page)
+
+            self.pix = self.pixs[0].get_pixmap()
             mode = "RGBA" if self.pix.alpha else "RGB"
             self.img = Image.frombytes(mode, [self.pix.width, self.pix.height], self.pix.samples)
             
@@ -216,10 +193,13 @@ class Help():
             
             self.canvas.configure( scrollregion=(0, 0, img.width, img.height) )
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
-            self.currentPageLabel.config(text=f'1/1')
+            self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 8: # Modeling s. 14
-            self.pix = self.doc[13].get_pixmap()
+        elif index == 6: # Data export s.33-37
+            for page in self.doc.pages(32, 37, 1):
+                self.pixs.append(page)
+
+            self.pix = self.pixs[0].get_pixmap()
             mode = "RGBA" if self.pix.alpha else "RGB"
             self.img = Image.frombytes(mode, [self.pix.width, self.pix.height], self.pix.samples)
             
@@ -229,10 +209,26 @@ class Help():
             
             self.canvas.configure( scrollregion=(0, 0, img.width, img.height) )
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
-            self.currentPageLabel.config(text=f'1/1')
+            self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 9: # How to s.23-29
-            for page in self.doc.pages(22, 29, 1):
+        elif index == 7: # Settings s.23-24
+            for page in self.doc.pages(22, 24, 1):
+                self.pixs.append(page)
+
+            self.pix = self.pixs[0].get_pixmap()
+            mode = "RGBA" if self.pix.alpha else "RGB"
+            self.img = Image.frombytes(mode, [self.pix.width, self.pix.height], self.pix.samples)
+            
+            self.ratio = self.pix.height / self.pix.width
+            img = self.img.resize(( math.floor(self.content.winfo_width()), math.floor(self.ratio * self.content.winfo_width()) ))
+            self.tkimg = ImageTk.PhotoImage(img)
+            
+            self.canvas.configure( scrollregion=(0, 0, img.width, img.height) )
+            self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
+            self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
+
+        elif index == 8: # How to s.38-49
+            for page in self.doc.pages(37, 49, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -247,8 +243,11 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
         
-        elif index == 10: # Troubleshooting s.30
-            self.pix = self.doc[29].get_pixmap()
+        elif index == 9: # Troubleshooting s.50-51
+            for page in self.doc.pages(49, 51, 1):
+                self.pixs.append(page)
+
+            self.pix = self.pixs[0].get_pixmap()
             mode = "RGBA" if self.pix.alpha else "RGB"
             self.img = Image.frombytes(mode, [self.pix.width, self.pix.height], self.pix.samples)
             
@@ -258,7 +257,7 @@ class Help():
             
             self.canvas.configure( scrollregion=(0, 0, img.width, img.height) )
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
-            self.currentPageLabel.config(text=f'1/1')
+            self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
     def nextPage(self, e=None):
         if self.index < len(self.pixs):

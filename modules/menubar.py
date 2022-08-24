@@ -1,5 +1,6 @@
 from tkinter import *
 from modules.Help import Help
+from modules.About import About
 from objects.app import app
 from objects.test import Test
 from modules.notification import notification
@@ -74,7 +75,7 @@ class MenuBar(object):
         options = Menu(self.menuBar, tearoff = 0)
         self.menuBar.add_cascade(label ='Help', menu = options)
         options.add_command(label ='Help...', command = lambda: Help())
-        options.add_command(label ='About O2 Pathway Tool', command = None)
+        options.add_command(label ='About O2 Pathway Tool', command = lambda: About())
 
     def checkVisibility(self, object):
         if object == 'side':

@@ -50,12 +50,18 @@ root.geometry("+%d+%d" % ( initX, initY ))
 loaded = False
 
 # def debug():
-#     for d in app.getActiveTest().getWorkLoads():
-#         print(d.getDetails().getWorkLoadDetails())
+    # for d in app.getActiveTest().getWorkLoads():
+        # print(d.getDetails().getWorkLoadDetails())
+        # print(d.envDetails.getDetails())
+#     for p in app.plottingPanel.plots:
+#         print('TEST')
+#         for l in p.activeTest.workLoads:
+#             print(l.envDetails.getDetails())
+#             print(l.details.getWorkLoadDetails())
 # root.bind('<Tab>', lambda e: debug())
 
-def updateCursor(e):
-    print(mainframe.identify(e.x, e.y))
+# def updateCursor(e):
+#     print(mainframe.identify(e.x, e.y))
 
 sepStyle = ttk.Style()
 sepStyle.configure('asd.TSeparator', background = 'dark gray')

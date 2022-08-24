@@ -57,7 +57,7 @@ class PlottingPanel(ttk.Frame):
                 self.plotNotebook.pack(expand=TRUE, fill=BOTH)
 
             # Create tab for the plot
-            plotTabObject = PlotTab(self.plotNotebook, self.workLoadDetailsObjects)
+            plotTabObject = PlotTab(self.plotNotebook, self.workLoadDetailsObjects, copy.deepcopy(app.activeTest))
 
             # Add plot to the notebook and objects list of plots
             self.plotNotebook.add(plotTabObject, text=app.getActiveTest().id)
@@ -80,20 +80,20 @@ class PlottingPanel(ttk.Frame):
             self.plotNotebook.pack(expand=TRUE, fill=BOTH)
 
         # Create tab for the plot
-        plotTabObject = PlotTab(self.plotNotebook, workLoadDetailsObjects)
+        plotTabObject = PlotTab(self.plotNotebook, workLoadDetailsObjects, copy.deepcopy(app.activeTest))
 
         # Add plot to the notebook and objects list of plots
         self.plotNotebook.add(plotTabObject, text=app.getActiveTest().id)
         self.plots.append(plotTabObject)
 
 class PlotTab(ttk.Frame):
-    def __init__(self, parentFrame, workLoadDetailsObjects, *args, **kwargs):
+    def __init__(self, parentFrame, workLoadDetailsObjects, test, *args, **kwargs):
         ttk.Frame.__init__(self, parentFrame, *args, **kwargs)
         self.pack(expand=TRUE)
         
         self.plot = None
         self.loadTabs = []
-        self.activeTest = app.getActiveTest()
+        self.activeTest = test
         self.activeTestId = self.activeTest.id
         self.workLoadDetailsObjects = workLoadDetailsObjects # WorkloadDetails objects
 
@@ -451,11 +451,32 @@ class PlotLoadTab(ttk.Frame):
     def __init__(self, plotTab, index, testId, workLoadDetails, parentNotebook, plot, *args, **kwargs):
         ttk.Frame.__init__(self, plotTab, *args, **kwargs)
         self.configure(cursor='arrow')
+
+        self.upperPart = ttk.Frame(self)
+        self.upperPart.pack(fill=BOTH, expand=True)
+
+        self.canvas = Canvas(self.upperPart)
+        self.scrollbar = ttk.Scrollbar(self.upperPart, orient=VERTICAL, command=self.canvas.yview)
+        self.contentWrapper = ttk.Frame(self.canvas)
+        self.contentWrapper.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
+        self.canvas.create_window((0, 0), window=self.contentWrapper, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+        self.canvas.pack(side=LEFT, fill=BOTH, expand=True)
+
         self.parentObject = plotTab
         self.index = index
         self.testId = testId
         self.detailsObject = workLoadDetails # Workdetail object
         self.details = workLoadDetails.getWorkLoadDetails() # Workload details dict
+        self.envDetailsObject = self.parentObject.activeTest.workLoads[self.index].envDetails
+        self.envDetails = self.parentObject.activeTest.workLoads[self.index].envDetails.getDetails()
         self.parentNotebook = parentNotebook
         self.plot = plot
         self.rowElements = []
@@ -464,128 +485,116 @@ class PlotLoadTab(ttk.Frame):
         ## Details frame
         ##
 
-        ttk.Label(self, text='Value').grid(column=1, row=0)
-        ttk.Label(self, text='Unit').grid(column=2, row=0)
-        ttk.Label(self, text='Meas.').grid(column=3, row=0)
-        ttk.Label(self, text='Calc.').grid(column=4, row=0)
+        ttk.Label(self.contentWrapper, text='Value').grid(column=1, row=0)
+        ttk.Label(self.contentWrapper, text='Unit').grid(column=2, row=0)
+        ttk.Label(self.contentWrapper, text='Meas.').grid(column=3, row=0)
+        ttk.Label(self.contentWrapper, text='Calc.').grid(column=4, row=0)
         
         if app.settings.getTestDef()['loadMode'] == 0:
-            ttk.Label(self, text='Load').grid(column=0, row=1)
-            ttk.Label(self, text=self.details["Load"]).grid(column=1, row=1)
-            ttk.Label(self, text=self.details["Load_unit"]).grid(column=2, row=1)
+            ttk.Label(self.contentWrapper, text='Load').grid(column=0, row=1)
+            ttk.Label(self.contentWrapper, text=self.details["Load"]).grid(column=1, row=1)
+            ttk.Label(self.contentWrapper, text=self.details["Load_unit"]).grid(column=2, row=1)
         else:
-            ttk.Label(self, text='Velocity').grid(column=0, row=1)
-            ttk.Label(self, text=self.details["Velocity"]).grid(column=1, row=1)
-            ttk.Label(self, text=self.details["Velocity_unit"]).grid(column=2, row=1)
+            ttk.Label(self.contentWrapper, text='Velocity').grid(column=0, row=1)
+            ttk.Label(self.contentWrapper, text=self.details["Velocity"]).grid(column=1, row=1)
+            ttk.Label(self.contentWrapper, text=self.details["Velocity_unit"]).grid(column=2, row=1)
 
-            ttk.Label(self, text='Incline').grid(column=0, row=2)
-            ttk.Label(self, text=self.details["Incline"]).grid(column=1, row=2)
-            ttk.Label(self, text=self.details["Incline_unit"]).grid(column=2, row=2)
+            ttk.Label(self.contentWrapper, text='Incline').grid(column=0, row=2)
+            ttk.Label(self.contentWrapper, text=self.details["Incline"]).grid(column=1, row=2)
+            ttk.Label(self.contentWrapper, text=self.details["Incline_unit"]).grid(column=2, row=2)
 
         # VO2
         vo2Value = float(self.details['VO2'])
-        if self.details['VO2_unit'] == 'l/min':
-            self.vo2Row = LoadTabRow(self, self, 'VO2', vo2Value, self.index, self.testId, 3, (0,10), self.detailsObject)
-        else:
-            self.vo2Row = LoadTabRow(self, self, 'VO2', vo2Value, self.index, self.testId, 3, (0,10000), self.detailsObject)
+        self.vo2Row = LoadTabRow(self, self.contentWrapper, 'VO2', vo2Value, 3, self.index, self.detailsObject)
         self.rowElements.append(self.vo2Row)
 
         # Q
         qValue = float(self.details['Q'])
-        if self.details['Q_unit'] == 'l/min':
-            self.qRow = LoadTabRow(self, self, 'Q', qValue, self.index, self.testId, 4, (0,25), self.detailsObject)
-        else:
-            self.qRow = LoadTabRow(self, self, 'Q', qValue, self.index, self.testId, 4, (0,25000), self.detailsObject)
+        self.qRow = LoadTabRow(self, self.contentWrapper, 'Q', qValue, 4, self.index, self.detailsObject)
         self.rowElements.append(self.qRow)
 
         # Hb
         hbValue = float(self.details['[Hb]'])
-        if self.details['[Hb]_unit'] == 'g/dl':
-            self.hbRow = LoadTabRow(self, self, '[Hb]', hbValue, self.index, self.testId, 5, (0,20), self.detailsObject)
-        else:
-            hbValue = hbValue
-            self.hbRow = LoadTabRow(self, self, '[Hb]', hbValue, self.index, self.testId, 5, (0,200), self.detailsObject)
+        self.hbRow = LoadTabRow(self, self.contentWrapper, '[Hb]', hbValue, 5, self.index, self.detailsObject)
         self.rowElements.append(self.hbRow)
 
         # SaO2
         sao2Value = float(self.details['SaO2'])
-        self.sao2Row = LoadTabRow(self, self, 'SaO2', sao2Value, self.index, self.testId, 6, (80,100), self.detailsObject)
+        self.sao2Row = LoadTabRow(self, self.contentWrapper, 'SaO2', sao2Value, 6, self.index, self.detailsObject)
         self.rowElements.append(self.sao2Row)
 
         # SvO2
         svo2Value = float(self.details['SvO2'])
-        self.svo2Row = LoadTabRow(self, self, 'SvO2', svo2Value, self.index, self.testId, 7, (0,20), self.detailsObject)
+        self.svo2Row = LoadTabRow(self, self.contentWrapper, 'SvO2', svo2Value, 7, self.index, self.detailsObject)
         self.rowElements.append(self.svo2Row)
 
         # CaO2
         cao2Value = float(self.details['CaO2'])
-        if self.details['CaO2_unit'] == 'ml/dl':
-            self.cao2Row = LoadTabRow(self, self, 'CaO2', cao2Value, self.index, self.testId, 8, (0,100), self.detailsObject)
-        else:
-            self.cao2Row = LoadTabRow(self, self, 'CaO2', cao2Value, self.index, self.testId, 8, (0,1000), self.detailsObject)
+        self.cao2Row = LoadTabRow(self, self.contentWrapper, 'CaO2', cao2Value, 8, self.index, self.detailsObject)
         self.rowElements.append(self.cao2Row)
 
         # CvO2
         cvo2Value = float(self.details['CvO2'])
-        if self.details['CvO2_unit'] == 'ml/dl':
-            self.cvo2Row = LoadTabRow(self, self, 'CvO2', cvo2Value, self.index, self.testId, 9, (0,100), self.detailsObject)
-        else:
-            self.cvo2Row = LoadTabRow(self, self, 'CvO2', cvo2Value, self.index, self.testId, 9, (0,1000), self.detailsObject)
+        self.cvo2Row = LoadTabRow(self, self.contentWrapper, 'CvO2', cvo2Value, 9, self.index, self.detailsObject)
         self.rowElements.append(self.cvo2Row)
         
         # CavO2
         cavo2Value = float(self.details['C(a-v)O2'])
-        if self.details['C(a-v)O2_unit'] == 'ml/dl':
-            self.cavo2Row = LoadTabRow(self, self, 'C(a-v)O2', cavo2Value, self.index, self.testId, 10, (0,100), self.detailsObject)
-        else:
-            self.cavo2Row = LoadTabRow(self, self, 'C(a-v)O2', cavo2Value, self.index, self.testId, 10, (0,1000), self.detailsObject)
+        self.cavo2Row = LoadTabRow(self, self.contentWrapper, 'C(a-v)O2', cavo2Value, 10, self.index, self.detailsObject)
         self.rowElements.append(self.cavo2Row)
 
         # PvO2
         pvo2Value = self.details['PvO2']
-        self.pvo2Row = LoadTabRow(self, self, 'PvO2', pvo2Value, self.index, self.testId, 11, (0,100), self.detailsObject)
+        self.pvo2Row = LoadTabRow(self, self.contentWrapper, 'PvO2', pvo2Value, 11, self.index, self.detailsObject)
         self.rowElements.append(self.pvo2Row)
 
         # QaO2
         qao2Value = float(self.details['QaO2'])
-        if self.details['QaO2_unit'] == 'ml/min':
-            self.qao2Row = LoadTabRow(self, self, 'QaO2', qao2Value, self.index, self.testId, 12, (0,10000), self.detailsObject)
-        else:
-            self.qao2Row = LoadTabRow(self, self, 'QaO2', qao2Value, self.index, self.testId, 12, (0,10), self.detailsObject)
+        self.qao2Row = LoadTabRow(self, self.contentWrapper, 'QaO2', qao2Value, 12, self.index, self.detailsObject)
         self.rowElements.append(self.qao2Row)
 
         # DO2
         do2Value = self.details['DO2']
-        self.do2Row = LoadTabRow(self, self, 'DO2', do2Value, self.index, self.testId, 13, (0,100), self.detailsObject)
+        self.do2Row = LoadTabRow(self, self.contentWrapper, 'DO2', do2Value, 13, self.index, self.detailsObject)
         self.rowElements.append(self.do2Row)
 
         # T
         tValue = float(self.details['T'])
         if self.details['T_unit'] == 'F':
             tValue = (tValue - 32) / 1.8
-            self.tRow = LoadTabRow(self, self, 'T', tValue, self.index, self.testId, 14, (95,110), self.detailsObject)
         elif self.details['T_unit'] == 'K':
             tValue = tValue - 273.15
-            self.tRow = LoadTabRow(self, self, 'T', tValue, self.index, self.testId, 14, (300,320), self.detailsObject)
         else:
-            self.tRow = LoadTabRow(self, self, 'T', tValue, self.index, self.testId, 14, (35,42), self.detailsObject)
+            self.tRow = LoadTabRow(self, self.contentWrapper, 'T', tValue, 14, self.index, self.detailsObject)
         self.rowElements.append(self.tRow)
 
         # pH
         phValue = self.details['pH']
-        self.phRow = LoadTabRow(self, self, 'pH', phValue, self.index, self.testId, 15, (0,14), self.detailsObject)
+        self.phRow = LoadTabRow(self, self.contentWrapper, 'pH', phValue, 15, self.index, self.detailsObject)
         self.rowElements.append(self.phRow)
+
+        # Add environmental details
+        self.elevationRow = LoadTabRow(self, self.contentWrapper, 'Elevation', self.envDetails['Elevation'], 16, self.index, envDetailsObject=self.envDetailsObject)
+        self.rowElements.append(self.elevationRow)
+        self.ATMRow = LoadTabRow(self, self.contentWrapper, 'ATM', self.envDetails['ATM'], 17, self.index, envDetailsObject=self.envDetailsObject)
+        self.rowElements.append(self.ATMRow)
+        self.FiO2Row = LoadTabRow(self, self.contentWrapper, 'FiO2', self.envDetails['FiO2'], 18, self.index, envDetailsObject=self.envDetailsObject)
+        self.rowElements.append(self.FiO2Row)
+        self.TemperatureRow = LoadTabRow(self, self.contentWrapper, 'Temperature', self.envDetails['Temperature'], 19, self.index, envDetailsObject=self.envDetailsObject)
+        self.rowElements.append(self.TemperatureRow)
+        self.RhRow = LoadTabRow(self, self.contentWrapper, 'Rh', self.envDetails['Rh'], 20, self.index, envDetailsObject=self.envDetailsObject)
+        self.rowElements.append(self.RhRow)
 
         ##
         ## Options frame
         ##
 
         # Plot options
-        optionsFrame = ttk.Frame(self)
-        optionsFrame.grid(column=0, columnspan=5, row=16)
+        self.lowerPart = ttk.Frame(self)
+        self.lowerPart.pack(side=BOTTOM)
         
         # Plot options
-        PlotOptions(optionsFrame, self.plot, self.index)
+        PlotOptions(self.lowerPart, self.plot, self.index)
 
     def updateDetails(self):
         self.details = self.workLoad.getWorkLoadDetails()
@@ -760,18 +769,22 @@ class PlotOptions(object):
         self.plotObject[0].canvas.draw()
 
 class LoadTabRow(ttk.Frame):
-    def __init__(self, parentObject, parentFrame, label, value, index, id, row, scale, detailsObject, *args, **kwargs):
+    def __init__(self, parentObject, parentFrame, label, value, row, index, detailsObject=None, envDetailsObject=None, *args, **kwargs):
         ttk.Frame.__init__(self, parentFrame, *args, **kwargs)
         self.parentObject = parentObject
         self.parent = parentFrame
         self.label = label
         self.value = value
-        self.index = index
-        self.id = id
         self.row = row
-        self.scale = scale
+        self.index = index
         self.detailsObject = detailsObject
-        self.details = detailsObject.getWorkLoadDetails()
+        if detailsObject:
+            self.details = detailsObject.getWorkLoadDetails()
+            self.mode = 0
+        else:
+            self.envDetailsObject = envDetailsObject
+            self.envDetails = envDetailsObject.getDetails()
+            self.mode = 1
 
         # Adjust the number of decimal according to the used unit
         self.var = DoubleVar(self.parent, value=f'{"{0:.1f}".format(float(self.value))}')
@@ -787,37 +800,47 @@ class LoadTabRow(ttk.Frame):
         self.entry = ttk.Label(self.parent, textvariable=self.var, width=7, anchor='center')
         self.entry.grid(column=1, row=row)
 
+
         if self.label != 'pH':
             units = app.settings.getUnits()[f'{self.label}_units']
             if len(units) != 1:
                 # Unit entry
                 if self.label != 'pH\u209A\u2091\u2090\u2096':
                     self.menuButton = ttk.Menubutton(self.parent)
-                    self.menuButton.config(text=self.details[f'{self.label}_unit'])
+                    if self.mode == 0:
+                        self.menuButton.config(text=self.details[f'{self.label}_unit'])
+                    else:
+                        self.menuButton.config(text=self.envDetails[f'{self.label}_unit'])
                     tempMenu = Menu(self.menuButton, tearoff=False)
 
                     for i, u in enumerate(units):
-                        LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}')
+                        LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}', self.mode)
                     
                     self.menuButton['menu']=tempMenu
                     self.menuButton.grid(column=2, row=row)
             else:
                 ttk.Label(self.parent, text=units[0]).grid(column=2, row=row)
-            
-        # M/C Radiobuttons
-        self.mcVar = IntVar(value=self.details[f'{self.label}_MC'])
+        
+        if self.mode == 0:
+            # M/C Radiobuttons
+            self.mcVar = IntVar(value=self.details[f'{self.label}_MC'])
 
-        self.radio1 = ttk.Radiobutton(self.parent, value=0, variable=self.mcVar)
-        self.radio1.grid(column=3, row=row)
+            self.radio1 = ttk.Radiobutton(self.parent, value=0, variable=self.mcVar)
+            self.radio1.grid(column=3, row=row)
 
-        self.radio2 = ttk.Radiobutton(self.parent, value=1, variable=self.mcVar)
-        self.radio2.grid(column=4, row=row)
-        self.mcVar.trace('w', self.updateMc)
+            self.radio2 = ttk.Radiobutton(self.parent, value=1, variable=self.mcVar)
+            self.radio2.grid(column=4, row=row)
+            self.mcVar.trace('w', self.updateMc)
 
     def updateMc(self, name, index, mode):
         self.detailsObject.setMC(f'{self.label}_MC', self.mcVar.get())
 
     def updateEntryAndScale(self, unit, prevUnit):
+        if self.mode == 0:
+            value = float(self.details[self.label])
+        else:
+            value = float(self.envDetailsObject.getDetails()[self.label])
+        
         if unit != prevUnit:
             if unit == 'ml/min': # l/min -> ml/min
                 self.detailsObject.setValue(self.label, self.var.get()*1000)
@@ -851,29 +874,101 @@ class LoadTabRow(ttk.Frame):
                 self.detailsObject.setValue(self.label, self.var.get()*1000)
                 self.var.set(self.var.get()*1000)
 
-            elif unit == 'F': 
-                if prevUnit == '\N{DEGREE SIGN}C': # C -> F
-                    self.detailsObject.setValue(self.label, self.var.get() * 1.8 + 32)
-                    self.var.set( f'{"{0:.1f}".format( float(( self.var.get() * 1.8 + 32 )) )}' )
-                else: # K -> F
-                    self.detailsObject.setValue(self.label, 1.8 * (self.var.get() - 273) + 32)
-                    self.var.set( f'{"{0:.1f}".format( float(( 1.8 * (self.var.get() - 273) + 32)) )}' )
+            elif unit == 'F' or unit == 'K' or unit == '\N{DEGREE SIGN}C':
+                if prevUnit == 'F':
+                    if unit == 'K': #F -> K
+                        self.detailsObject.setValue(self.label, 5/9 * (value + 459.67)) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, 5/9 * (value + 459.67))
+                        self.var.set( f'{"{0:.0f}".format( float(( 5/9 * (value + 459.67) )) ) }' )
+                    elif unit == '\N{DEGREE SIGN}C': #F -> C
+                        self.detailsObject.setValue(self.label, (value - 32) / 1.8) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, (value - 32) / 1.8)
+                        self.var.set( f'{"{0:.1f}".format( float(( (value - 32) / 1.8)) ) }' )
 
-            elif unit == 'K':
-                if prevUnit == '\N{DEGREE SIGN}C': # C -> K
-                    self.detailsObject.setValue(self.label, self.var.get() + 273.15)
-                    self.var.set( f'{"{0:.1f}".format( float(( self.var.get() + 273.15)) )}' )
-                else: # F -> K
-                    self.detailsObject.setValue(self.label, 5/9 * (self.var.get() + 459.67))
-                    self.var.set( f'{"{0:.1f}".format( float(( 5/9 * (self.var.get() + 459.67) )) )}' )
-            
-            elif unit == '\N{DEGREE SIGN}C': # K/F -> C
-                if self.var.get() > 94 and self.var.get() < 111: # F
-                    self.detailsObject.setValue(self.label, (self.var.get() - 32) / 1.8)
-                    self.var.set( f'{"{0:.1f}".format( float(( (self.var.get() - 32) / 1.8)) )}' )
-                else: # K
-                    self.detailsObject.setValue(self.label, self.var.get() - 273.15)
-                    self.var.set( f'{"{0:.1f}".format( float(( self.var.get() - 273.15)) ) }' )
+                elif prevUnit == 'K':
+                    if unit == 'F': #K -> F
+                        self.detailsObject.setValue(self.label, 1.8 * (value - 273) + 32) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, 1.8 * (value - 273) + 32)
+                        self.var.set( f'{"{0:.1f}".format( float(( 1.8 * (value - 273) + 32 )) ) }' )
+                    elif unit == '\N{DEGREE SIGN}C': #K -> C
+                        self.detailsObject.setValue(self.label, value - 273.15) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, value - 273.15)
+                        self.var.set( f'{"{0:.1f}".format( float(( value - 273.15)) ) }' )
+                
+                elif prevUnit == '\N{DEGREE SIGN}C':
+                    if unit == 'K': #C -> K
+                        self.detailsObject.setValue(self.label, value + 273.15) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, value + 273.15)
+                        self.var.set( f'{"{0:.1f}".format( float(( value + 273.15)) ) }' )
+                    elif unit == 'F': #C -> F
+                        self.detailsObject.setValue(self.label, value * 1.8 + 32) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, value * 1.8 + 32)
+                        self.var.set( f'{"{0:.1f}".format( float(( value * 1.8 + 32)) ) }' )
+
+            elif unit == 'm' or unit == 'km' or unit == 'ft':
+                if prevUnit == 'm':
+                    if unit == 'km': #m -> km
+                        self.envDetailsObject.setDetail(self.label, float(value / 1000))
+                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
+                        self.var.set( f'{"{0:.1f}".format( float(( value / 1000 )) )}' )
+                    elif unit == 'ft': #m -> ft
+                        self.envDetailsObject.setDetail(self.label, float(value * 3.2808399))
+                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 3.2808399 )) )}' )
+                elif prevUnit == 'km':
+                    if unit == 'm': #km -> m
+                        self.envDetailsObject.setDetail(self.label, float(value * 1000))
+                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 1000 )) )}' )
+                    elif unit == 'ft': #km -> ft
+                        self.envDetailsObject.setDetail(self.label, float(value * 3280.8399))
+                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 3280.8399 )) )}' )
+                elif prevUnit == 'ft':
+                    if unit == 'm': #ft -> m
+                        self.envDetailsObject.setDetail(self.label, float(value * 0.3048))
+                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.3048 )) )}' )
+                    elif unit == 'km': #ft -> km
+                        self.envDetailsObject.setDetail(self.label, float(value * 0.0003048))
+                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
+                        self.var.set( f'{"{0:.1f}".format( float(( value * 0.0003048 )) )}' )
+
+            elif unit == 'kPa' or unit == 'bar' or unit == 'psi' or unit == 'mmHg':
+                if prevUnit == 'kPa':
+                    if unit == 'bar': #kPa -> bar
+                        self.envDetailsObject.setDetail(self.label, float( value * 0.01 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.01 )) )}' )
+                    elif unit == 'psi': #kPa -> psi
+                        self.envDetailsObject.setDetail(self.label, float( value * 0.145037738 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.145037738 )) )}' )
+                    elif unit == 'mmHg': #kPa -> mmHg
+                        self.envDetailsObject.setDetail(self.label, float( value * 7.50061683 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 7.50061683 )) )}' )
+                elif prevUnit == 'bar':
+                    if unit == 'kPa': #bar -> kPa
+                        self.envDetailsObject.setDetail(self.label, float( value * 100 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 100 )) )}' )
+                    elif unit == 'psi': #bar -> psi
+                        self.envDetailsObject.setDetail(self.label, float( value * 14.5037738 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 14.5037738 )) )}' )
+                    elif unit == 'mmHg': #bar -> mmHg
+                        self.envDetailsObject.setDetail(self.label, float( value * 750.061683 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 750.061683 )) )}' )
+                elif prevUnit == 'psi':
+                    if unit == 'kPa': #psi -> kPa
+                        self.envDetailsObject.setDetail(self.label, float( value * 6.89475729 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 6.89475729 )) )}' )
+                    elif unit == 'bar': #psi -> bar
+                        self.envDetailsObject.setDetail(self.label, float( value * 0.0689475729 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.0689475729 )) )}' )
+                    elif unit == 'mmHg': #psi -> mmHg
+                        self.envDetailsObject.setDetail(self.label, float( value * 51.7149326 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 51.7149326 )) )}' )
+                elif prevUnit == 'mmHg':
+                    if unit == 'kPa': #mmHg -> kPa
+                        self.envDetailsObject.setDetail(self.label, float( value * 0.133322368 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.133322368 )) )}' )
+                    elif unit == 'bar': #mmHg -> bar
+                        self.envDetailsObject.setDetail(self.label, float( value * 0.00133322368 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.00133322368 )) )}' )
+                    elif unit == 'psi': #mmHg -> psi
+                        self.envDetailsObject.setDetail(self.label, float( value * 0.0193367747 ))
+                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.0193367747 )) )}' )
 
     def getValue(self):
         return self.var.get()
@@ -882,11 +977,12 @@ class LoadTabRow(ttk.Frame):
         self.entry.configure(text=f'{"{0:.1f}".format(float(details[self.label]))}')
 
 class LoadMenuElem(object):
-    def __init__(self, parentObject, menu, menuButton, var, label, index, unitElems, name):
+    def __init__(self, parentObject, menu, menuButton, var, label, index, unitElems, name, mode):
         self.parentObject = parentObject
         self.menu = menu
         self.menuButton = menuButton
         self.var = var
+        self.mode = mode # 0: test details / 1: env details
         self.label = label
         self.index = index
         self.unitElems = unitElems
@@ -899,32 +995,54 @@ class LoadMenuElem(object):
         unit = self.unitElems[self.index]
         self.menuButton.config(text=unit)
         
-        # update unit change to every loadtab workload details
-        plotTabWorkloads = self.parentObject.parentObject.parentObject.workLoadDetailsObjects
-        for l in plotTabWorkloads:
-            l.setUnit(f'{self.name}_unit', unit)
-            self.parentObject.updateText(l.getWorkLoadDetails())
+        if self.mode == 0:
+            # update unit change to every loadtab workload details
+            plotTabWorkloads = self.parentObject.parentObject.parentObject.workLoadDetailsObjects
+            for l in plotTabWorkloads:
+                l.setUnit(f'{self.name}_unit', unit)
+                self.parentObject.updateText(l.getWorkLoadDetails())
 
-        # update unit change to every loadtab
-        for tab in self.parentObject.parentObject.parentObject.loadTabs:
-            for elem in tab.rowElements:
-                if elem.label == self.name:
-                    elem.updateEntryAndScale(unit, prevUnit)
-                    elem.menuButton.config(text=unit)
-        if unit != prevUnit:
-            if self.name == 'VO2':
-                plotIndex = app.getPlottingPanel().plotNotebook.index('current')
+            # update unit change to every loadtab
+            for tab in self.parentObject.parentObject.parentObject.loadTabs:
+                for elem in tab.rowElements:
+                    if elem.label == self.name:
+                        elem.updateEntryAndScale(unit, prevUnit)
+                        elem.menuButton.config(text=unit)
+            if unit != prevUnit:
+                if self.name == 'VO2':
+                    plotIndex = app.getPlottingPanel().plotNotebook.index('current')
 
-                # Update figure
-                yValueVar = app.getPlottingPanel().plots[plotIndex].yValue
-                yValue = float(yValueVar.get())
+                    # Update figure
+                    yValueVar = app.getPlottingPanel().plots[plotIndex].yValue
+                    yValue = float(yValueVar.get())
 
-                if unit == 'l/min':
-                    plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
-                    yValueVar.set(yValue/1000)
-                elif unit == 'ml/min':
-                    plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
-                    yValueVar.set(yValue*1000)
+                    if unit == 'l/min':
+                        plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
+                        yValueVar.set(yValue/1000)
+                    elif unit == 'ml/min':
+                        plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
+                        yValueVar.set(yValue*1000)
 
-                figure = app.getPlottingPanel().plots[plotIndex].plot[0]
-                figure.canvas.draw()
+                    figure = app.getPlottingPanel().plots[plotIndex].plot[0]
+                    figure.canvas.draw()
+
+
+
+
+
+
+
+        else:
+            # update unit change to every loadtab env details
+            workLoads = self.parentObject.parentObject.parentObject.activeTest.workLoads
+            for l in workLoads:
+                l.envDetails.setDetail(f'{self.name}_unit', unit)
+                self.parentObject.updateText(l.envDetails.getDetails())
+            
+            # update unit change to every loadtab
+            for tab in self.parentObject.parentObject.parentObject.loadTabs:
+                for elem in tab.rowElements:
+                    if elem.label == self.name:
+                        elem.updateEntryAndScale(unit, prevUnit)
+                        elem.menuButton.config(text=unit)
+                        break

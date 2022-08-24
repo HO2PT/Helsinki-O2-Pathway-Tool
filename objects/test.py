@@ -12,7 +12,7 @@ class Test(object):
         self.date = None
         self.data = None
         self.subjectDetails = None
-        self.envDetails = EnvDetails()
+        # self.envDetails = EnvDetails()
         self.workLoadCount = None
         self.endWorkLoad = None
         self.workLoads = []
@@ -44,8 +44,8 @@ class Test(object):
     def nWorkLoads(self):
         return len(self.workLoads)
 
-    def getEnvDetails(self):
-        return self.envDetails
+    # def getEnvDetails(self):
+    #     return self.envDetails
 
     def setId(self, id):
         self.id = id
@@ -65,6 +65,7 @@ class Load(object):
         self.parentTest = parentTest
         self.name = f'Load{len(self.parentTest.workLoads)+1}'
         self.details = WorkLoadDetails(name=self.name)
+        self.envDetails = EnvDetails()
     
     def getDetails(self):
         return self.details

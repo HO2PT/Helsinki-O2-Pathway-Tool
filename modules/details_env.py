@@ -9,7 +9,7 @@ class EnvDetailModule(ttk.Labelframe):
 
         self.labels = []
         self.detailRows = []
-        self.vars = ['Elevation', 'ATM', 'FiO2', 'Temp', 'Rh']
+        self.vars = ['Elevation', 'ATM', 'FiO2', 'Temperature', 'Rh']
 
         if app.settings.visDefaults['envDetails']:
             self.pack(side = LEFT, padx=(5,5), anchor='n')
@@ -59,7 +59,11 @@ class EnvDetailModule(ttk.Labelframe):
         self.rhLabel.grid(column=0, row=4)
         self.calcMethod.grid(column=0, row=5, columnspan=3)
 
-        self.envDetails = app.getActiveTest().getEnvDetails().getDetails()
+        # Get the current load
+        nb = app.testDetailModule.loadNotebook.loadbook.notebookTab
+        loadIndex = nb.index(nb.select())
+        
+        self.envDetails = app.activeTest.workLoads[loadIndex].envDetails.getDetails()
 
         for i, v in enumerate(self.vars):
             self.detailRows[i].var.set(self.envDetails[v])
@@ -112,7 +116,11 @@ class envDetailRow(object):
                 ttk.Label(self.container, text='%').grid(column=col+1, row=row)
 
     def updateVar(self, name, index, mode):
-        app.getActiveTest().getEnvDetails().setDetail(self.label, self.var.get())
+        # Get the current load
+        nb = app.testDetailModule.loadNotebook.loadbook.notebookTab
+        loadIndex = nb.index(nb.select())
+
+        app.activeTest.workLoads[loadIndex].envDetails.setDetail(self.label, self.var.get())
 
 class EnvMenuElem(object):
     def __init__(self, menu, menuButton, unit, index, units, name=None):
@@ -126,4 +134,9 @@ class EnvMenuElem(object):
 
     def updateValue(self):
         self.menuButton.config(text=self.units[self.index])
-        app.getActiveTest().getEnvDetails().setDetail(self.name, self.units[self.index])
+
+        # Get the current load
+        nb = app.testDetailModule.loadNotebook.loadbook.notebookTab
+        loadIndex = nb.index(nb.select())
+
+        app.activeTest.workLoads[loadIndex].envDetails.setDetail(self.name, self.units[self.index])

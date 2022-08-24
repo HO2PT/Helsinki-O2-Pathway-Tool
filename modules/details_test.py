@@ -2,7 +2,6 @@ import gc
 from tkinter import *
 from tkinter import ttk
 from objects.app import app
-from objects.test import Test
 from modules.ScrollableNotebook import ScrollableNotebook
 
 class TestDetailModule(ttk.Labelframe):
@@ -128,12 +127,12 @@ class LoadNotebook(object):
         # Add linear change
         for i, w in enumerate(activeTest.getWorkLoads()):
             details = w.getDetails()
-            pHValue = pHrest - (i * pHstep)
-            pHvalues.append(f'{"{0:.2f}".format(pHValue)}')
+            pHValue = float(f'{"{0:.2f}".format(pHrest - (i * pHstep))}')
+            pHvalues.append(pHValue)
             details.setValue('pH', pHValue)
 
-            Tvalue = Trest + (i * Tstep)
-            Tvalues.append(f'{"{0:.1f}".format(Tvalue)}')
+            Tvalue = float(f'{"{0:.1f}".format(Trest + (i * Tstep))}')
+            Tvalues.append(Tvalue)
             details.setValue('T', Tvalue)
 
         return pHvalues, Tvalues
