@@ -90,6 +90,7 @@ class PlotTab(ttk.Frame):
     def __init__(self, parentFrame, workLoadDetailsObjects, test, *args, **kwargs):
         ttk.Frame.__init__(self, parentFrame, *args, **kwargs)
         self.pack(expand=TRUE)
+        self.parentFrame = parentFrame
         
         self.plot = None
         self.loadTabs = []
@@ -130,13 +131,14 @@ class PlotTab(ttk.Frame):
         # Figure instructions
         self.instructions = ttk.Frame(self.canvasFrame)
         self.instructions.pack()
-        wrap = ttk.Frame(self.instructions)
-        wrap.grid()
-        ttk.Label(wrap, text='Left click - show/hide').grid(column=0, row=0, sticky=NSEW)
-        wrap.grid_columnconfigure(1, weight=1, minsize=50)
-        ttk.Label(wrap, text='Middle click - show all').grid(column=2, row=0, sticky=NSEW)
-        wrap.grid_columnconfigure(3, weight=1, minsize=50)
-        ttk.Label(wrap, text='Right click - hide all').grid(column=4, row=0, sticky=NSEW)
+        self.wrap = ttk.Frame(self.instructions)
+        self.wrap.grid()
+
+        ttk.Label(self.wrap, text='Left click - show/hide').grid(column=0, row=0, sticky=NSEW)
+        self.wrap.grid_columnconfigure(1, weight=1, minsize=15)
+        ttk.Label(self.wrap, text='Middle click - show all').grid(column=2, row=0, sticky=NSEW)
+        self.wrap.grid_columnconfigure(3, weight=1, minsize=15)
+        ttk.Label(self.wrap, text='Right click - hide all').grid(column=4, row=0, sticky=NSEW)
 
         self.plotFrame = ttk.Frame(self.canvasFrame)
         self.plotFrame.pack(fill=BOTH, expand=1)
@@ -177,32 +179,36 @@ class PlotTab(ttk.Frame):
         self.yEntry.grid(column=0, row=1)
         ttk.Button(setYLimFrame, text='Set', command=lambda: self.setYLim()).grid(column=1, row=1)
 
-        self.toolbarWrapper.grid_columnconfigure(2, minsize=25)
+        # self.toolbarWrapper.grid_columnconfigure(2, minsize=25)
 
         # Set plot title
         setTitleFrame = ttk.Labelframe(self.toolbarWrapper, text='Set plot title', padding=(5,5))
-        setTitleFrame.grid(column=2, row=0, sticky='w', padx=(5,5))
+        setTitleFrame.grid(column=1, row=0, sticky='w', padx=(5,5))
         self.titleEntry = ttk.Entry(setTitleFrame)
-        self.titleEntry.grid(column=2, row=1)
+        self.titleEntry.grid(column=0, row=1)
         setTitleButton = ttk.Button(setTitleFrame, text='Set', command=self.setPlotTitle)
-        setTitleButton.grid(column=3, row=1)
+        setTitleButton.grid(column=1, row=1)
 
         # Set tick size
-        setTicksFrame = ttk.Labelframe(self.toolbarWrapper, text='Set axis ticks', padding=(5,5))
-        setTicksFrame.grid(column=4, row=0, columnspan=4, padx=(5,5))
+        self.setTicksFrame = ttk.Labelframe(self.toolbarWrapper, text='Set axis ticks', padding=(5,5))
+        self.setTicksFrame.grid(column=2, row=0, padx=(5,5))
 
         # Set Y tick size
-        ttk.Label(setTicksFrame, text='Y-axis').grid(column=4, row=0, columnspan=2)
-        ttk.Button(setTicksFrame, text='+', width=3 ,command=lambda: self.incTicks('y')).grid(column=4, row=1)
-        ttk.Button(setTicksFrame, text='-', width=3, command=lambda: self.decTicks('y')).grid(column=5, row=1)
+        ttk.Label(self.setTicksFrame, text='Y-axis').grid(column=0, row=0, columnspan=2)
+        ttk.Button(self.setTicksFrame, text='+', width=3 ,command=lambda: self.incTicks('y')).grid(column=0, row=1)
+        ttk.Button(self.setTicksFrame, text='-', width=3, command=lambda: self.decTicks('y')).grid(column=1, row=1)
 
         # Set X tick size
-        ttk.Label(setTicksFrame, text='X-axis').grid(column=6, row=0, columnspan=2)
-        ttk.Button(setTicksFrame, text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=6, row=1)
-        ttk.Button(setTicksFrame, text='-', width=3, command=lambda: self.decTicks('x')).grid(column=7, row=1)
+        ttk.Label(self.setTicksFrame, text='X-axis').grid(column=2, row=0, columnspan=2)
+        ttk.Button(self.setTicksFrame, text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=2, row=1)
+        ttk.Button(self.setTicksFrame, text='-', width=3, command=lambda: self.decTicks('x')).grid(column=3, row=1)
 
         # Hide legend button
-        ttk.Button(self.toolbarWrapper, text='Toggle\nlegend', command=lambda: self.hideLegend()).grid(column=8, row=0, padx=(5,5))
+        self.hideLegendBtn = ttk.Button(self.toolbarWrapper, text='Toggle\nlegend', command=lambda: self.hideLegend())
+        self.hideLegendBtn.grid(column=3, row=0, padx=(5,5))
+
+        self.toolbarWrapper.update_idletasks()
+        self.toolbarReqWidth = self.toolbarWrapper.winfo_reqwidth()
 
     def createRightSide(self):
         self.indicator = ttk.Label(self, text='', anchor='center')
@@ -283,8 +289,18 @@ class PlotTab(ttk.Frame):
             self.plot[0].canvas.draw()
 
     def finishResize(self, event):
+        width = self.loadNotebookFrame.winfo_width() - event.x
+        p = self.parentFrame.winfo_width()
+
+        # Reorganize toolbar buttons if necessary
+        if (p-width) < self.toolbarReqWidth:
+            self.setTicksFrame.grid(column=1, row=1, padx=(5,5))
+            self.hideLegendBtn.grid(column=0, row=1, padx=(5,5))
+        else:
+            self.setTicksFrame.grid(column=2, row=0, padx=(5,5))
+            self.hideLegendBtn.grid(column=3, row=0, padx=(5,5))
+
         if event.x != self.posX:
-            width = self.loadNotebookFrame.winfo_width() - event.x
             self.separator.place_forget()
 
             if width > 10:
@@ -453,7 +469,7 @@ class PlotLoadTab(ttk.Frame):
         self.configure(cursor='arrow')
 
         self.upperPart = ttk.Frame(self)
-        self.upperPart.pack(fill=BOTH, expand=True)
+        self.upperPart.pack(fill=Y, expand=True, anchor='nw')
 
         self.canvas = Canvas(self.upperPart)
         self.scrollbar = ttk.Scrollbar(self.upperPart, orient=VERTICAL, command=self.canvas.yview)
@@ -591,10 +607,15 @@ class PlotLoadTab(ttk.Frame):
 
         # Plot options
         self.lowerPart = ttk.Frame(self)
-        self.lowerPart.pack(side=BOTTOM)
+        self.lowerPart.pack(side=BOTTOM, anchor='nw', pady=5)
         
         # Plot options
-        PlotOptions(self.lowerPart, self.plot, self.index)
+        plotopt = PlotOptions(self.lowerPart, self.plot, self.index)
+
+        # Config canvas width
+        self.update_idletasks()
+        self.canvas.config(width=self.contentWrapper.winfo_reqwidth())
+        self.lowerPart.pack_configure(padx=[plotopt.plotOptions.winfo_width()/4, 0])
 
     def updateDetails(self):
         self.details = self.workLoad.getWorkLoadDetails()
@@ -1025,12 +1046,6 @@ class LoadMenuElem(object):
 
                     figure = app.getPlottingPanel().plots[plotIndex].plot[0]
                     figure.canvas.draw()
-
-
-
-
-
-
 
         else:
             # update unit change to every loadtab env details

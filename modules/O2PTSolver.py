@@ -66,9 +66,16 @@ class O2PTSolver():
         else:
             return Q
 
-    def formatVO2(self, Q):
-        VO2 = float(self.d['VO2'])
+    def formatVO2(self, Q, VO2 = None):
         unit = self.d['VO2_unit']
+
+        if VO2 == None:
+            VO2 = float(self.d['VO2'])
+        else:
+            if unit == 'l/min':
+                VO2 = VO2/1000
+            else:
+                VO2 = VO2
 
         if VO2 == 0:
             CavO2 = float(self.d['C(a-v)O2'])
@@ -264,16 +271,19 @@ class O2PTSolver():
 
     def phTempCorrection(self, pH0, pH, T0, T, PvO2_calc):
         lnPvO2 = np.log(PvO2_calc)
+        isCorrected = False
+
         if pH != pH0 or T != T0:
             lnPO2pH = (pH - pH0) * (-1.1)
             lnPO2Temp = (T-T0) * 0.058 * np.float_power(0.243 * np.float_power(PvO2_calc/100, 3.88) + 1, -1) + (T-T0) * 0.013
+            isCorrected = True
         else:
             lnPO2pH = 0
             lnPO2Temp = 0
 
         PvO2_calc = np.exp( lnPvO2 + lnPO2Temp + lnPO2pH )
 
-        return PvO2_calc
+        return PvO2_calc, isCorrected
 
     def formatT(self, label):
         T = float(self.d[label])
@@ -325,10 +335,11 @@ class O2PTSolver():
         T = self.formatT('T')
         T0 = self.formatT('Tc @ rest')
 
-        PvO2_calc = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
+        PvO2_calc, isCorrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 
         DO2 = self.solveDO2(VO2, PvO2_calc)
 
+        # Calculate datapoints for diffusion line
         PvO2 = np.arange(0,100,1)
         y = 2 * DO2 * PvO2
 
@@ -344,6 +355,7 @@ class O2PTSolver():
         if self.d['[Hb]_unit'] == 'g/l': # -> g/dl
             Hb = Hb / 10
 
+        # Calculate datapoints for convective curve
         y2 = Q * ( 1.34 * Hb * ( SaO2/ 100 - SvO2 ) ) * 10
 
         # Correction and calculation of intersection point
@@ -363,6 +375,13 @@ class O2PTSolver():
         constant = np.where( np.abs(yDiff) == np.amin(np.abs(yDiff)) )[0] / 10
         yi = float( Q * ( 1.34 * Hb * ( SaO2/ 100 - np.float_power( ( 23400 * np.float_power( (PvO2[idx]+constant)**3 + 150*(PvO2[idx]+constant), -1 ) ) + 1, -1 ) ) ) * 10 )
         xi = float(PvO2[idx]+constant)
+
+        if isCorrected:
+            VO2 = self.formatVO2(Q=Q, VO2=yi)
+            CavO2 = self.formatCavO2(VO2, Q, CaO2)
+            SvO2_calc = self.formatSvO2(CavO2, CaO2, Hb*10)
+            CvO2 = self.formatCvO2(Hb, CaO2, CavO2, SvO2_calc)
+            QaO2 = self.formatQaO2(Q, CaO2)
 
         if self.d['[Hb]_unit'] == 'g/l': # g/dl -> g/l
             Hb = Hb * 10

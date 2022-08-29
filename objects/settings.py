@@ -489,11 +489,13 @@ class Settings(object):
                         for t in tests:
                             loads = t.getWorkLoads()
                             for l in loads:
-                                for key, val in self.unitDefaults.items():
-                                    l.getDetails().setUnit(key, val)
-                                for key, val in self.testDefaults.items():
-                                    l.getDetails().setValue(key, val)
-                            self.updatePhAndTemp(t)
+                                if l.details.isImported == False:
+                                    for key, val in self.unitDefaults.items():
+                                        l.getDetails().setUnit(key, val)
+                                    for key, val in self.testDefaults.items():
+                                        l.getDetails().setValue(key, val)
+                            if loads[0].details.isImported == False:
+                                self.updatePhAndTemp(t)
 
         elif option == 1: # Environmental
             # Values
@@ -526,10 +528,11 @@ class Settings(object):
                         tests = s.getTests()
                         for t in tests:
                             for l in t.workLoads:
-                                for key, val in self.unitDefaults.items():
-                                    l.envDetails.setDetail(key, val)
-                                for key, val in self.envDefaults.items():
-                                    l.envDetails.setDetail(key, val)
+                                if l.details.isImported == False:
+                                    for key, val in self.unitDefaults.items():
+                                        l.envDetails.setDetail(key, val)
+                                    for key, val in self.envDefaults.items():
+                                        l.envDetails.setDetail(key, val)
                             
 
         settingsFile = open('settings.pkl', 'wb')
@@ -566,10 +569,15 @@ class Settings(object):
         # Filter possible empty loads
         nFilteredLoads = 0
         filteredLoads = []
+
         for i, l in enumerate(test.workLoads):
             detailsDict = l.getDetails().getWorkLoadDetails()
                         
-            if i == 0 or detailsDict['Load'] != 0:
+            if l.details.isImported:
+                if i == 0 or detailsDict['Load'] != 0:
+                    nFilteredLoads += 1
+                    filteredLoads.append(l)
+            else:
                 nFilteredLoads += 1
                 filteredLoads.append(l)
 

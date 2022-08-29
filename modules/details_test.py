@@ -104,7 +104,8 @@ class LoadNotebook(object):
         activeTest = app.getActiveTest()
 
         # Add linear change in pH and T
-        pHrest = float(app.settings.testDefaults['pH @ rest'])
+        # pHrest = float(app.settings.testDefaults['pH @ rest'])
+        pHrest = float(activeTest.workLoads[0].details.pHrest)
         Trest = float(app.settings.testDefaults['Tc @ rest'])
         pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
         Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
@@ -478,6 +479,12 @@ class TestDetailRow(ttk.Frame):
             self.traceids.append(mctraceid)
         
     def updateValue(self, name, index, mode):
+        if self.workLoadObject.name == app.activeTest.workLoads[0].details.name:
+            for l in app.activeTest.workLoads:
+                if self.label == 'pH':
+                    l.details.pHrest = self.valueVar.get()
+                elif self.label == 'T':
+                    l.details.Trest = self.valueVar.get()
         self.workLoadObject.setValue(self.label, self.valueVar.get())
 
     def updateUnit(self, name, index, mode):
