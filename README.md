@@ -24,6 +24,8 @@ You can also input information about:
 - core temperature
 - pH
 
+<p>See the more detailed information about the tool and its function in the userInstructions.pdf or inside the tool's Help menu</p>
+
 <h2>How to get started?</h2>
 
 <h3>Windows</h3>
