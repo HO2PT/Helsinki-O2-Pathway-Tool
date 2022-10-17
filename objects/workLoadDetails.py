@@ -19,7 +19,7 @@ class WorkLoadDetails(object):
         self.CvO2 = 0
         self.CavO2 = 0
         self.QaO2 = 0
-        self.Trest = testDefaults['Tc @ rest']
+        self.Trest = testDefaults['T @ rest']
         self.pHrest = testDefaults['pH @ rest']
         self.T = testDefaults['Tc\u209A\u2091\u2090\u2096']
         self.pH = testDefaults['pH\u209A\u2091\u2090\u2096']
@@ -47,7 +47,7 @@ class WorkLoadDetails(object):
         self.CvO2_unit = defUnits['CvO2_unit']
         self.CavO2_unit = defUnits['C(a-v)O2_unit']
         self.QaO2_unit = defUnits['QaO2_unit']
-        self.Trest_unit = defUnits['Tc @ rest_unit']
+        self.Trest_unit = defUnits['T @ rest_unit']
         self.T_unit = defUnits['Tc\u209A\u2091\u2090\u2096_unit']
         self.pHrest_unit = 0
         self.pH_unit = 0
@@ -69,7 +69,7 @@ class WorkLoadDetails(object):
         self.CvO2_MC = defMc['CvO2_mc']
         self.CavO2_MC = defMc['C(a-v)O2_mc']
         self.QaO2_MC = defMc['QaO2_mc']
-        self.Trest_MC = defMc['Tc @ rest_mc']
+        self.Trest_MC = defMc['T @ rest_mc']
         self.T_MC = defMc['Tc\u209A\u2091\u2090\u2096_mc']
         self.pHrest_MC = defMc['pH @ rest_mc']
         self.pH_MC = defMc['pH\u209A\u2091\u2090\u2096_mc']
@@ -122,7 +122,7 @@ class WorkLoadDetails(object):
         if label == 'T_unit': 
             self.T_unit = unit
 
-        if label == 'Tc @ rest_unit': 
+        if label == 'T @ rest_unit': 
             self.Trest_unit = unit
 
         if label == 'Tc\u209A\u2091\u2090\u2096_unit': 
@@ -226,7 +226,7 @@ class WorkLoadDetails(object):
         if label == 'QaO2': 
             self.QaO2 = value
 
-        if label == 'Tc @ rest': 
+        if label == 'T @ rest': 
             self.Trest = value
 
         if label == 'Tc\u209A\u2091\u2090\u2096': 
@@ -315,9 +315,9 @@ class WorkLoadDetails(object):
             'T_unit': self.T_unit,
             'T_MC': self.T_MC,
 
-            'Tc @ rest': self.Trest,
-            'Tc @ rest_unit': self.Trest_unit,
-            'Tc @ rest_MC': self.Trest_MC,
+            'T @ rest': self.Trest,
+            'T @ rest_unit': self.Trest_unit,
+            'T @ rest_MC': self.Trest_MC,
 
             'pH @ rest': self.pHrest,
             'pH @ rest_unit': self.pHrest_unit,

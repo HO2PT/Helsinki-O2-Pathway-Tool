@@ -50,9 +50,9 @@ root.geometry("+%d+%d" % ( initX, initY ))
 loaded = False
 
 # def debug():
-    # for d in app.getActiveTest().getWorkLoads():
-        # print(d.getDetails().getWorkLoadDetails())
-        # print(d.envDetails.getDetails())
+#     for d in app.getActiveTest().getWorkLoads():
+#         print(d.getDetails().getWorkLoadDetails())
+#         print(d.envDetails.getDetails())
 #     for p in app.plottingPanel.plots:
 #         print('TEST')
 #         for l in p.activeTest.workLoads:

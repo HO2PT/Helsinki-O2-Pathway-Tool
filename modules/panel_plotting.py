@@ -152,7 +152,7 @@ class PlotTab(ttk.Frame):
         yfmt = ticker.FuncFormatter(self.numfmt)
         plt.gca().yaxis.set_major_formatter(yfmt)
         if vo2unit == 'l/min':
-            plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
+            plt.gca().yaxis.set_label_text('VO\u2082 (L/min)')
             yLimit = self.plot[1].get_ylim()[1] / 1000
         elif vo2unit == 'ml/min':
             plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
@@ -340,7 +340,7 @@ class PlotTab(ttk.Frame):
         self.plot[0].canvas.draw()
 
     def createPlot(self):
-        PvO2 = np.arange(0,100,1)
+        PvO2 = np.arange(0,100,0.1)
         self.plot = plt.subplots(constrained_layout=True)
         self.fig, self.ax = self.plot
 
@@ -359,9 +359,9 @@ class PlotTab(ttk.Frame):
 
             ylim.append(y2[0])
 
-            line, = self.ax.plot(PvO2, y, lw=2, color=f'C{i}', label=w.name)
-            curve, = self.ax.plot(PvO2, y2, lw=2, color=f'C{i}', label=w.name)
-            dot, = self.ax.plot(xi, yi, 'o', color='red', label=w.name)
+            line, = self.ax.plot(PvO2, y, scalex=True, lw=2, color=f'C{i}', label=w.name)
+            curve, = self.ax.plot(PvO2, y2, scalex=True, lw=2, color=f'C{i}', label=w.name)
+            dot, = self.ax.plot(xi, yi, 'o', scalex=True, color='red', label=w.name)
 
             line.set_picker(5)
             curve.set_picker(5)
@@ -574,6 +574,16 @@ class PlotLoadTab(ttk.Frame):
         self.do2Row = LoadTabRow(self, self.contentWrapper, 'DO2', do2Value, 13, self.index, self.detailsObject)
         self.rowElements.append(self.do2Row)
 
+        # T0
+        tValue = float(self.details['T @ rest'])
+        if self.details['T_unit'] == 'F':
+            tValue = (tValue - 32) / 1.8
+        elif self.details['T_unit'] == 'K':
+            tValue = tValue - 273.15
+        else:
+            self.tRestRow = LoadTabRow(self, self.contentWrapper, 'T @ rest', tValue, 14, self.index, self.detailsObject)
+        self.rowElements.append(self.tRestRow)
+
         # T
         tValue = float(self.details['T'])
         if self.details['T_unit'] == 'F':
@@ -581,24 +591,29 @@ class PlotLoadTab(ttk.Frame):
         elif self.details['T_unit'] == 'K':
             tValue = tValue - 273.15
         else:
-            self.tRow = LoadTabRow(self, self.contentWrapper, 'T', tValue, 14, self.index, self.detailsObject)
+            self.tRow = LoadTabRow(self, self.contentWrapper, 'T', tValue, 15, self.index, self.detailsObject)
         self.rowElements.append(self.tRow)
+
+        # pH0
+        phValue = self.details['pH @ rest']
+        self.phRestRow = LoadTabRow(self, self.contentWrapper, 'pH @ rest', phValue, 16, self.index, self.detailsObject)
+        self.rowElements.append(self.phRestRow)
 
         # pH
         phValue = self.details['pH']
-        self.phRow = LoadTabRow(self, self.contentWrapper, 'pH', phValue, 15, self.index, self.detailsObject)
+        self.phRow = LoadTabRow(self, self.contentWrapper, 'pH', phValue, 17, self.index, self.detailsObject)
         self.rowElements.append(self.phRow)
 
         # Add environmental details
-        self.elevationRow = LoadTabRow(self, self.contentWrapper, 'Elevation', self.envDetails['Elevation'], 16, self.index, envDetailsObject=self.envDetailsObject)
+        self.elevationRow = LoadTabRow(self, self.contentWrapper, 'Elevation', self.envDetails['Elevation'], 18, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.elevationRow)
-        self.ATMRow = LoadTabRow(self, self.contentWrapper, 'ATM', self.envDetails['ATM'], 17, self.index, envDetailsObject=self.envDetailsObject)
+        self.ATMRow = LoadTabRow(self, self.contentWrapper, 'ATM', self.envDetails['ATM'], 19, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.ATMRow)
-        self.FiO2Row = LoadTabRow(self, self.contentWrapper, 'FiO2', self.envDetails['FiO2'], 18, self.index, envDetailsObject=self.envDetailsObject)
+        self.FiO2Row = LoadTabRow(self, self.contentWrapper, 'FiO2', self.envDetails['FiO2'], 20, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.FiO2Row)
-        self.TemperatureRow = LoadTabRow(self, self.contentWrapper, 'Temperature', self.envDetails['Temperature'], 19, self.index, envDetailsObject=self.envDetailsObject)
+        self.TemperatureRow = LoadTabRow(self, self.contentWrapper, 'Temperature', self.envDetails['Temperature'], 21, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.TemperatureRow)
-        self.RhRow = LoadTabRow(self, self.contentWrapper, 'Rh', self.envDetails['Rh'], 20, self.index, envDetailsObject=self.envDetailsObject)
+        self.RhRow = LoadTabRow(self, self.contentWrapper, 'Rh', self.envDetails['Rh'], 22, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.RhRow)
 
         ##
@@ -808,7 +823,7 @@ class LoadTabRow(ttk.Frame):
             self.mode = 1
 
         # Adjust the number of decimal according to the used unit
-        self.var = DoubleVar(self.parent, value=f'{"{0:.1f}".format(float(self.value))}')
+        self.var = DoubleVar(self.parent, value=f'{"{0:.2f}".format(float(self.value))}')
 
         # Label
         if '2' in self.label:
@@ -1038,7 +1053,7 @@ class LoadMenuElem(object):
                     yValue = float(yValueVar.get())
 
                     if unit == 'l/min':
-                        plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
+                        plt.gca().yaxis.set_label_text('VO\u2082 (L/min)')
                         yValueVar.set(yValue/1000)
                     elif unit == 'ml/min':
                         plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')

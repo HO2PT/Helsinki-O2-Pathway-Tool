@@ -89,7 +89,7 @@ class DataExporter(object):
 
             temp = WorkLoadDetails(name='dummy')
             for i, key in enumerate(temp.getWorkLoadDetails().keys()):
-                if '_unit' not in key and '_MC' not in key and key != 'id' and key != 'Tc @ rest' and key != 'pH @ rest':
+                if '_unit' not in key and '_MC' not in key and key != 'id':
                     if loadMode == 0: # Loads
                         if key != 'Velocity' and key != 'Incline':
                             var = IntVar(value=1, name=key)

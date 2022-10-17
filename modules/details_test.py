@@ -105,8 +105,15 @@ class LoadNotebook(object):
 
         # Add linear change in pH and T
         # pHrest = float(app.settings.testDefaults['pH @ rest'])
-        pHrest = float(activeTest.workLoads[0].details.pHrest)
-        Trest = float(app.settings.testDefaults['Tc @ rest'])
+        if len(activeTest.getWorkLoads()) == 1:
+            # print('VAIN YKSI')
+            pHrest = float(app.settings.testDefaults['pH @ rest'])
+            Trest = float(app.settings.testDefaults['T @ rest'])
+        else:
+            # print('USEITA')
+            pHrest = float(activeTest.workLoads[0].details.pHrest)
+            Trest = float(activeTest.workLoads[0].details.Trest)
+        
         pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
         Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
         pHDif = float(pHrest) - float(pHpeak)
@@ -479,7 +486,9 @@ class TestDetailRow(ttk.Frame):
             self.traceids.append(mctraceid)
         
     def updateValue(self, name, index, mode):
-        if self.workLoadObject.name == app.activeTest.workLoads[0].details.name:
+        # If updating the first load's pH or T AND there is more than one load 
+        # update the values of pHrest and Trest in workloadDetails
+        if len(app.activeTest.workLoads) > 1 and self.workLoadObject.name == app.activeTest.workLoads[0].details.name:
             for l in app.activeTest.workLoads:
                 if self.label == 'pH':
                     l.details.pHrest = self.valueVar.get()

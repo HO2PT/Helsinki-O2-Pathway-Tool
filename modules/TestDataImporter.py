@@ -1152,7 +1152,7 @@ class TestDataImporter():
             details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')
     
     def addLinearDistT(self, test):
-        Trest = float(app.settings.testDefaults['Tc @ rest'])
+        Trest = float(app.settings.testDefaults['T @ rest'])
         Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
         Tdif = float(Tpeak) - float(Trest)
 

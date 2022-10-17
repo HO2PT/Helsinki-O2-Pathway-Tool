@@ -30,7 +30,7 @@ class Settings(object):
                 },
                 "testDefaults":{
                     "loadMode": 0,
-                    "Tc @ rest": 37,
+                    "T @ rest": 37,
                     "Tc\u209A\u2091\u2090\u2096": 37,
                     "pH @ rest": 7.4,
                     "pH\u209A\u2091\u2090\u2096": 7.4
@@ -51,7 +51,7 @@ class Settings(object):
                     "C(a-v)O2": 'ml/l',
                     "QaO2": 'ml/min',
                     "T": '\N{DEGREE SIGN}C',
-                    "Tc @ rest": '\N{DEGREE SIGN}C',
+                    "T @ rest": '\N{DEGREE SIGN}C',
                     "Tc\u209A\u2091\u2090\u2096": '\N{DEGREE SIGN}C',
                     "pH @ rest": '',
                     "pH\u209A\u2091\u2090\u2096": '',
@@ -79,7 +79,7 @@ class Settings(object):
                     "C(a-v)O2": ["ml/l", "ml/dl"],
                     "QaO2": ["ml/min", "l/min"],
                     "T": ['\N{DEGREE SIGN}C', 'F', 'K'],
-                    "Tc @ rest": ['\N{DEGREE SIGN}C', 'F', 'K'],
+                    "T @ rest": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "Tc\u209A\u2091\u2090\u2096": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "pH": [""],
                     "pH @ rest": [""],
@@ -105,7 +105,7 @@ class Settings(object):
                     "C(a-v)O2": 0,
                     "QaO2": 0,
                     "T": 0,
-                    "Tc @ rest": 0,
+                    "T @ rest": 0,
                     "Tc\u209A\u2091\u2090\u2096": 0,
                     "pH @ rest": 0,
                     "pH\u209A\u2091\u2090\u2096": 0,
@@ -142,7 +142,7 @@ class Settings(object):
 
         self.testDefaults = {
             "loadMode": self.data['testDefaults']['loadMode'],
-            "Tc @ rest": self.data['testDefaults']['Tc @ rest'],
+            "T @ rest": self.data['testDefaults']['T @ rest'],
             "Tc\u209A\u2091\u2090\u2096": self.data['testDefaults']['Tc\u209A\u2091\u2090\u2096'],
             "pH @ rest": self.data['testDefaults']['pH @ rest'],
             "pH\u209A\u2091\u2090\u2096": self.data['testDefaults']['pH\u209A\u2091\u2090\u2096']
@@ -164,7 +164,7 @@ class Settings(object):
             "C(a-v)O2_unit": self.data['unitDefaults']['C(a-v)O2'],
             "QaO2_unit": self.data['unitDefaults']['QaO2'],
             "T_unit": self.data['unitDefaults']['T'],
-            "Tc @ rest_unit": self.data['unitDefaults']['Tc @ rest'],
+            "T @ rest_unit": self.data['unitDefaults']['T @ rest'],
             "Tc\u209A\u2091\u2090\u2096_unit": self.data['unitDefaults']['Tc\u209A\u2091\u2090\u2096'],
             "pH_unit": '',
             "pH @ rest_unit": self.data['unitDefaults']['pH @ rest'],
@@ -193,7 +193,7 @@ class Settings(object):
             "C(a-v)O2_units": self.data['units']['C(a-v)O2'],
             "QaO2_units": self.data['units']['QaO2'],
             "T_units": self.data['units']['T'],
-            "Tc @ rest_units": self.data['units']['Tc @ rest'],
+            "T @ rest_units": self.data['units']['T @ rest'],
             "Tc\u209A\u2091\u2090\u2096_units": self.data['units']['Tc\u209A\u2091\u2090\u2096'],
             "pH_units": '',
             "pH @ rest_units": self.data['units']['pH @ rest'],
@@ -219,7 +219,7 @@ class Settings(object):
             "CvO2_mc": self.data['mcDefaults']['CvO2'],
             "C(a-v)O2_mc": self.data['mcDefaults']['C(a-v)O2'],
             "QaO2_mc": self.data['mcDefaults']['QaO2'],
-            "Tc @ rest_mc": self.data['mcDefaults']['Tc @ rest'],
+            "T @ rest_mc": self.data['mcDefaults']['T @ rest'],
             "Tc\u209A\u2091\u2090\u2096_mc": self.data['mcDefaults']['Tc\u209A\u2091\u2090\u2096'],
             "pH @ rest_mc": self.data['mcDefaults']['pH @ rest'],
             "pH\u209A\u2091\u2090\u2096_mc": self.data['mcDefaults']['pH\u209A\u2091\u2090\u2096'],
@@ -372,7 +372,7 @@ class Settings(object):
                 'CvO2',
                 'C(a-v)O2',
                 'QaO2',
-                'Tc @ rest',
+                'T @ rest',
                 'Tc\u209A\u2091\u2090\u2096',
                 'pH @ rest',
                 'pH\u209A\u2091\u2090\u2096',
@@ -380,7 +380,7 @@ class Settings(object):
             ]
 
             for i, v in enumerate(vars):
-                if v == 'Tc @ rest' or v == 'Tc\u209A\u2091\u2090\u2096' or v == 'pH @ rest' or v == 'pH\u209A\u2091\u2090\u2096':
+                if v == 'T @ rest' or v == 'Tc\u209A\u2091\u2090\u2096' or v == 'pH @ rest' or v == 'pH\u209A\u2091\u2090\u2096':
                     SettingsRow(self, container, v, 1, i+1)
                 else:
                     SettingsRow(self, container, v, 0, i+1)
@@ -560,7 +560,7 @@ class Settings(object):
     def updatePhAndTemp(self, test):
         # Add linear change in pH and T
         pHrest = float(app.settings.testDefaults['pH @ rest'])
-        Trest = float(app.settings.testDefaults['Tc @ rest'])
+        Trest = float(app.settings.testDefaults['T @ rest'])
         pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
         Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
         pHDif = float(pHrest) - float(pHpeak)
