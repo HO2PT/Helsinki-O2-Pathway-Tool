@@ -359,15 +359,20 @@ class PlotTab(ttk.Frame):
 
             ylim.append(y2[0])
 
-            line, = self.ax.plot(PvO2, y, scalex=True, lw=2, color=f'C{i}', label=w.name)
-            curve, = self.ax.plot(PvO2, y2, scalex=True, lw=2, color=f'C{i}', label=w.name)
-            dot, = self.ax.plot(xi, yi, 'o', scalex=True, color='red', label=w.name)
+            if 'Q1' == w.name or 'Q3' == w.name or '-1 SD' == w.name or '+1 SD' == w.name or '2.5%' == w.name or '97.5%' == w.name: 
+                line, = self.ax.plot(PvO2, y, '--', scalex=True, lw=2, color='C7', visible=False, label=w.name)
+                curve, = self.ax.plot(PvO2, y2, '--', scalex=True, lw=2, color='C7', visible=False, label=w.name)
+                dot, = self.ax.plot(-1, -1, 'o', scalex=True, color='red', visible=False, label=w.name)
+            else:
+                line, = self.ax.plot(PvO2, y, scalex=True, lw=2, color=f'C{i}', label=w.name)
+                curve, = self.ax.plot(PvO2, y2, scalex=True, lw=2, color=f'C{i}', label=w.name)
+                dot, = self.ax.plot(xi, yi, 'o', scalex=True, color='red', label=w.name)
 
-            line.set_picker(5)
-            curve.set_picker(5)
-            dot.set_picker(5)
+                line.set_picker(5)
+                curve.set_picker(5)
+                dot.set_picker(5)
 
-            self.handles.insert(i, line)
+                self.handles.insert(i, line)
 
         if max(ylim) > 50: # ml/min
             ylim = 1000 * math.ceil( max(ylim) / 1000 )
@@ -411,31 +416,54 @@ class PlotTab(ttk.Frame):
         legline = event.artist
         index = None
         # Detect click on legend or plot itself
-        try:
-            origline = self.lined[legline]
-        except:
-            for l in plt.gca().get_legend_handles_labels()[0]:
-                for i, (key, value) in enumerate(self.lined.items()):
-                    if legline in value:
-                        index = i
-                        origline.append(value)
-            origline = origline[0]
 
+        linelist = self.removeHidden(plt.gca().get_legend_handles_labels())
+        visibleLegendLines = list(dict.fromkeys(linelist[1]))
+
+        try: # Legend
+            origline = linelist[0][legline]
+        except: # Plot
+            index = []
+            for i, value in enumerate(linelist[0]):
+                if legline._label == value._label:
+                    index = visibleLegendLines.index(value._label)
+                    origline.append(value)
+            
         for line in origline:
-            vis = not line.get_visible()
-            line.set_visible(vis)
-
-            # Change the alpha on the line in the legend so we can see what lines
-            # have been toggled
-            if vis:
-                legline.set_alpha(1.0)
-                if index != None:
-                    self.leg.get_lines()[index].set_alpha(1.0)
+            if 'Q1' == line._label or 'Q3' == line._label or '-1 SD' == line._label or '+1 SD' == line._label or '2.5%' == line._label or '97.5%' == line._label:
+                pass
             else:
-                legline.set_alpha(0.2)
-                if index != None:
-                    self.leg.get_lines()[index].set_alpha(0.2)
+                vis = not line.get_visible()
+                line.set_visible(vis)
+
+                # Change the alpha on the line in the legend so we can see what lines
+                # have been toggled
+                if vis:
+                    legline.set_alpha(1.0)
+                    if index != None:
+                        self.leg.get_lines()[index].set_alpha(1.0)
+                else:
+                    legline.set_alpha(0.2)
+                    if index != None:
+                        self.leg.get_lines()[index].set_alpha(0.2)
         self.fig.canvas.draw()
+
+    def removeHidden(self, lines):
+        filteredLines = [[],[]]
+        idxs = []
+
+        # Collect indexes to remove
+        for idx, i in enumerate(lines[1]):
+            if 'Q1' == i or 'Q3' == i or '-1 SD' == i or '+1 SD' == i or '2.5%' == i or '97.5%' == i:
+                pass
+            else:
+                idxs.append(idx)
+
+        for i in idxs:
+            filteredLines[0].append(lines[0][i])
+            filteredLines[1].append(lines[1][i])
+
+        return filteredLines
 
     def on_click(self, event):
         # If middle or righbutton is pressed -> show/hide all lines
@@ -453,7 +481,10 @@ class PlotTab(ttk.Frame):
         legLines = self.leg.get_lines()
 
         for line in lines:
-            line.set_visible(visible)
+            if 'Q1' == line._label or 'Q3' == line._label or '-1 SD' == line._label or '+1 SD' == line._label or '2.5%' == line._label or '97.5%' == line._label:
+                pass
+            else:
+                line.set_visible(visible)
 
         for legLine in legLines:
             legLine.set_alpha(alpha)
@@ -746,8 +777,12 @@ class PlotOptions(object):
             self.lineColorMenuButton.config(text='Cyan')
 
         # Update legend
-        legend = self.plotObject[1].get_legend().get_lines()[self.loadIndex]
-        legend.set_color(f'C{color}')
+        if len(self.plotObject[1].get_legend().get_lines()) > 1:
+            legend = self.plotObject[1].get_legend().get_lines()[self.loadIndex]
+            legend.set_color(f'C{color}')
+        else:
+            legend = self.plotObject[1].get_legend().get_lines()[0]
+            legend.set_color(f'C{color}')
 
         self.plotObject[0].canvas.draw()
 
@@ -761,8 +796,12 @@ class PlotOptions(object):
         self.lineTypeMenuButton.config(text=f"{styles[type]}".title())
 
         # Update legend
-        legend = self.plotObject[1].get_legend().get_lines()[self.loadIndex]
-        legend.set_linestyle(styles[type])
+        if len(self.plotObject[1].get_legend().get_lines()) > 1:
+            legend = self.plotObject[1].get_legend().get_lines()[self.loadIndex]
+            legend.set_linestyle(styles[type])
+        else:
+            legend = self.plotObject[1].get_legend().get_lines()[0]
+            legend.set_linestyle(styles[type])
         self.plotObject[0].canvas.draw()
 
     def mapLines(self):
@@ -817,13 +856,14 @@ class LoadTabRow(ttk.Frame):
         if detailsObject:
             self.details = detailsObject.getWorkLoadDetails()
             self.mode = 0
+            self.decimals = self.formatValue(label=self.label, details=self.details)
         else:
             self.envDetailsObject = envDetailsObject
             self.envDetails = envDetailsObject.getDetails()
             self.mode = 1
+            self.decimals = self.formatValue(label=self.label, details=self.envDetails)
 
-        # Adjust the number of decimal according to the used unit
-        self.var = DoubleVar(self.parent, value=f'{"{0:.2f}".format(float(self.value))}')
+        self.var = DoubleVar(self.parent, value=f'{"{0:.{decimals}f}".format(float(self.value), decimals=self.decimals)}')
 
         # Label
         if '2' in self.label:
@@ -836,12 +876,11 @@ class LoadTabRow(ttk.Frame):
         self.entry = ttk.Label(self.parent, textvariable=self.var, width=7, anchor='center')
         self.entry.grid(column=1, row=row)
 
-
         if self.label != 'pH':
             units = app.settings.getUnits()[f'{self.label}_units']
             if len(units) != 1:
                 # Unit entry
-                if self.label != 'pH\u209A\u2091\u2090\u2096':
+                if self.label != 'pH':
                     self.menuButton = ttk.Menubutton(self.parent)
                     if self.mode == 0:
                         self.menuButton.config(text=self.details[f'{self.label}_unit'])
@@ -872,145 +911,201 @@ class LoadTabRow(ttk.Frame):
         self.detailsObject.setMC(f'{self.label}_MC', self.mcVar.get())
 
     def updateEntryAndScale(self, unit, prevUnit):
-        if self.mode == 0:
-            value = float(self.details[self.label])
-        else:
-            value = float(self.envDetailsObject.getDetails()[self.label])
-        
         if unit != prevUnit:
             if unit == 'ml/min': # l/min -> ml/min
-                self.detailsObject.setValue(self.label, self.var.get()*1000)
-                self.var.set(self.var.get()*1000)
+                value = float(self.detailsObject.getWorkLoadDetails()[self.label])*1000
+                self.detailsObject.setValue(self.label, value)
+                decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
             
             elif unit == 'l/min': # ml/min -> l/min
-                self.detailsObject.setValue(self.label, self.var.get()/1000)
-                self.var.set(self.var.get()/1000)
+                value = float(self.detailsObject.getWorkLoadDetails()[self.label])/1000
+                self.detailsObject.setValue(self.label, value)
+                decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
             elif unit == 'g/l': # g/dl -> g/l
-                self.detailsObject.setValue(self.label, self.var.get()*10)
-                self.var.set(self.var.get()*10)
+                value = float(self.detailsObject.getWorkLoadDetails()[self.label])*10
+                self.detailsObject.setValue(self.label, value)
+                decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
             elif unit == 'g/dl': # g/l -> g/dl
-                self.detailsObject.setValue(self.label, self.var.get()/10)
-                self.var.set(self.var.get()/10)
+                value = float(self.detailsObject.getWorkLoadDetails()[self.label])/10
+                self.detailsObject.setValue(self.label, value)
+                decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
             elif unit == 'ml/l': # ml/dl -> ml/l
-                self.detailsObject.setValue(self.label, self.var.get()*10)
-                self.var.set(self.var.get()*10)
+                value = float(self.detailsObject.getWorkLoadDetails()[self.label])*10
+                self.detailsObject.setValue(self.label, value)
+                decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
             elif unit == 'ml/dl': # ml/l -> ml/dl
-                self.detailsObject.setValue(self.label, self.var.get()/10)
-                self.var.set(self.var.get()/10)
+                value = float(self.detailsObject.getWorkLoadDetails()[self.label])/10
+                self.detailsObject.setValue(self.label, value)
+                decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
             
             elif unit == 'l': #ml -> l
-                self.detailsObject.setValue(self.label, self.var.get()/1000)
-                self.var.set(self.var.get()/1000)
+                value = float(self.detailsObject.getWorkLoadDetails()[self.label])/1000
+                self.detailsObject.setValue(self.label, value)
+                decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
             elif unit == 'ml': #l -> ml
-                self.detailsObject.setValue(self.label, self.var.get()*1000)
-                self.var.set(self.var.get()*1000)
+                value = float(self.detailsObject.getWorkLoadDetails()[self.label])*1000
+                self.detailsObject.setValue(self.label, value)
+                decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
             elif unit == 'F' or unit == 'K' or unit == '\N{DEGREE SIGN}C':
+                if self.mode == 0:
+                    value = float(self.detailsObject.getWorkLoadDetails()[self.label])
+                else:
+                    value = float(self.envDetailsObject.getDetails()[self.label])
+
                 if prevUnit == 'F':
                     if unit == 'K': #F -> K
-                        self.detailsObject.setValue(self.label, 5/9 * (value + 459.67)) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, 5/9 * (value + 459.67))
-                        self.var.set( f'{"{0:.0f}".format( float(( 5/9 * (value + 459.67) )) ) }' )
+                        value = 5/9 * (value + 459.67)
                     elif unit == '\N{DEGREE SIGN}C': #F -> C
-                        self.detailsObject.setValue(self.label, (value - 32) / 1.8) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, (value - 32) / 1.8)
-                        self.var.set( f'{"{0:.1f}".format( float(( (value - 32) / 1.8)) ) }' )
-
+                        value = (value - 32) / 1.8
                 elif prevUnit == 'K':
                     if unit == 'F': #K -> F
-                        self.detailsObject.setValue(self.label, 1.8 * (value - 273) + 32) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, 1.8 * (value - 273) + 32)
-                        self.var.set( f'{"{0:.1f}".format( float(( 1.8 * (value - 273) + 32 )) ) }' )
+                        value = 1.8 * (value - 273) + 32
                     elif unit == '\N{DEGREE SIGN}C': #K -> C
-                        self.detailsObject.setValue(self.label, value - 273.15) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, value - 273.15)
-                        self.var.set( f'{"{0:.1f}".format( float(( value - 273.15)) ) }' )
-                
+                        value = value - 273.15
                 elif prevUnit == '\N{DEGREE SIGN}C':
                     if unit == 'K': #C -> K
-                        self.detailsObject.setValue(self.label, value + 273.15) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, value + 273.15)
-                        self.var.set( f'{"{0:.1f}".format( float(( value + 273.15)) ) }' )
+                        value = value + 273.15
                     elif unit == 'F': #C -> F
-                        self.detailsObject.setValue(self.label, value * 1.8 + 32) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, value * 1.8 + 32)
-                        self.var.set( f'{"{0:.1f}".format( float(( value * 1.8 + 32)) ) }' )
+                        value = value * 1.8 + 32
+
+                self.detailsObject.setValue(self.label, value) if self.mode == 0 else self.envDetailsObject.setDetail(self.label, value)
+                if self.mode == 0:
+                    decimals = self.formatValue(self.label, self.detailsObject.getWorkLoadDetails())
+                else:
+                    decimals = self.formatValue(self.label, self.envDetailsObject.getDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
             elif unit == 'm' or unit == 'km' or unit == 'ft':
+                value = float(self.envDetailsObject.getDetails()[self.label])
+
                 if prevUnit == 'm':
                     if unit == 'km': #m -> km
-                        self.envDetailsObject.setDetail(self.label, float(value / 1000))
-                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
-                        self.var.set( f'{"{0:.1f}".format( float(( value / 1000 )) )}' )
+                        value = float(value / 1000)
                     elif unit == 'ft': #m -> ft
-                        self.envDetailsObject.setDetail(self.label, float(value * 3.2808399))
-                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 3.2808399 )) )}' )
+                        value = float(value * 3.2808399)
                 elif prevUnit == 'km':
                     if unit == 'm': #km -> m
-                        self.envDetailsObject.setDetail(self.label, float(value * 1000))
-                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 1000 )) )}' )
+                        value = float(value * 1000)
                     elif unit == 'ft': #km -> ft
-                        self.envDetailsObject.setDetail(self.label, float(value * 3280.8399))
-                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 3280.8399 )) )}' )
+                        value = float(value * 3280.8399)
                 elif prevUnit == 'ft':
                     if unit == 'm': #ft -> m
-                        self.envDetailsObject.setDetail(self.label, float(value * 0.3048))
-                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.3048 )) )}' )
+                        value = float(value * 0.3048)
                     elif unit == 'km': #ft -> km
-                        self.envDetailsObject.setDetail(self.label, float(value * 0.0003048))
-                        self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
-                        self.var.set( f'{"{0:.1f}".format( float(( value * 0.0003048 )) )}' )
+                        value = float(value * 0.0003048)
+
+                self.envDetailsObject.setDetail(self.label, value)
+                self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
+                decimals = self.formatValue(self.label, self.envDetailsObject.getDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
             elif unit == 'kPa' or unit == 'bar' or unit == 'psi' or unit == 'mmHg':
+                value = float(self.envDetailsObject.getDetails()[self.label])
+
                 if prevUnit == 'kPa':
                     if unit == 'bar': #kPa -> bar
-                        self.envDetailsObject.setDetail(self.label, float( value * 0.01 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.01 )) )}' )
+                        value = float( value * 0.01 )
                     elif unit == 'psi': #kPa -> psi
-                        self.envDetailsObject.setDetail(self.label, float( value * 0.145037738 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.145037738 )) )}' )
+                        value = float( value * 0.145037738 )
                     elif unit == 'mmHg': #kPa -> mmHg
-                        self.envDetailsObject.setDetail(self.label, float( value * 7.50061683 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 7.50061683 )) )}' )
+                        value = float( value * 7.50061683 )
                 elif prevUnit == 'bar':
                     if unit == 'kPa': #bar -> kPa
-                        self.envDetailsObject.setDetail(self.label, float( value * 100 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 100 )) )}' )
+                        value = float( value * 100 )
                     elif unit == 'psi': #bar -> psi
-                        self.envDetailsObject.setDetail(self.label, float( value * 14.5037738 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 14.5037738 )) )}' )
+                        value = float( value * 14.5037738 )
                     elif unit == 'mmHg': #bar -> mmHg
-                        self.envDetailsObject.setDetail(self.label, float( value * 750.061683 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 750.061683 )) )}' )
+                        value = float( value * 750.061683 )
                 elif prevUnit == 'psi':
                     if unit == 'kPa': #psi -> kPa
-                        self.envDetailsObject.setDetail(self.label, float( value * 6.89475729 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 6.89475729 )) )}' )
+                        value = float( value * 6.89475729 )
                     elif unit == 'bar': #psi -> bar
-                        self.envDetailsObject.setDetail(self.label, float( value * 0.0689475729 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.0689475729 )) )}' )
+                        value = float( value * 0.0689475729 )
                     elif unit == 'mmHg': #psi -> mmHg
-                        self.envDetailsObject.setDetail(self.label, float( value * 51.7149326 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 51.7149326 )) )}' )
+                        value = float( value * 51.7149326 )
                 elif prevUnit == 'mmHg':
                     if unit == 'kPa': #mmHg -> kPa
-                        self.envDetailsObject.setDetail(self.label, float( value * 0.133322368 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.133322368 )) )}' )
+                        value = float( value * 0.133322368 )
                     elif unit == 'bar': #mmHg -> bar
-                        self.envDetailsObject.setDetail(self.label, float( value * 0.00133322368 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.00133322368 )) )}' )
+                        value = float( value * 0.00133322368 )
                     elif unit == 'psi': #mmHg -> psi
-                        self.envDetailsObject.setDetail(self.label, float( value * 0.0193367747 ))
-                        self.var.set( f'{"{0:.0f}".format( float(( value * 0.0193367747 )) )}' )
+                        value = float( value * 0.0193367747 )
+
+                self.envDetailsObject.setDetail(self.label, value)
+                self.envDetailsObject.setDetail(f'{self.label}_unit', unit)
+                decimals = self.formatValue(self.label, self.envDetailsObject.getDetails())
+                self.var.set(f'{"{0:.{decimals}f}".format(float(value), decimals=decimals)}')
 
     def getValue(self):
         return self.var.get()
     
     def updateText(self, details):
-        self.entry.configure(text=f'{"{0:.1f}".format(float(details[self.label]))}')
+        decimals = self.formatValue(label=self.label, details=details)
+        self.entry.configure(text=f'{"{0:.{decimals}f}".format(float(details[self.label]), decimals=decimals)}')
+
+    def formatValue(self, label, details=None):
+        if self.mode == 0:
+            if details[f'{label}_unit'] == 'l/min':
+                decimals = app.settings.decimals['l/min']
+            elif details[f'{label}_unit'] == 'ml/min':
+                decimals = app.settings.decimals['ml/min']
+            elif details[f'{label}_unit'] == 'ml/l':
+                decimals = app.settings.decimals['ml/l']
+            elif details[f'{label}_unit'] == 'ml/dl':
+                decimals = app.settings.decimals['ml/dl']
+            elif details[f'{label}_unit'] == 'ml/min/mmHg':
+                decimals = app.settings.decimals['ml/min/mmHg']
+            elif details[f'{label}_unit'] == 'g/l':
+                decimals = app.settings.decimals['g/l']
+            elif details[f'{label}_unit'] == 'mmHg':
+                decimals = app.settings.decimals['mmHg']
+            elif details[f'{label}_unit'] == '\N{DEGREE SIGN}C':
+                decimals = app.settings.decimals['\N{DEGREE SIGN}C']
+            elif details[f'{label}_unit'] == 'K':
+                decimals = app.settings.decimals['K']
+            elif details[f'{label}_unit'] == 'F':
+                decimals = app.settings.decimals['F']
+            elif details[f'{label}_unit'] == 'ml':
+                decimals = app.settings.decimals['ml']
+            elif details[f'{label}_unit'] == 'bmp':
+                decimals = app.settings.decimals['bpm']
+            elif details[f'{label}_unit'] == '%':
+                decimals = app.settings.decimals['%']
+            else:
+                decimals = 2
+        else:
+            if details[f'{label}_unit'] == 'm':
+                decimals = app.settings.decimals['m']
+            elif details[f'{label}_unit'] == 'km':
+                decimals = app.settings.decimals['km']
+            elif details[f'{label}_unit'] == 'ft':
+                decimals = app.settings.decimals['ft']
+            elif details[f'{label}_unit'] == 'kPa':
+                decimals = app.settings.decimals['kPa']
+            elif details[f'{label}_unit'] == 'bar':
+                decimals = app.settings.decimals['bar']
+            elif details[f'{label}_unit'] == 'psi':
+                decimals = app.settings.decimals['psi']
+            elif details[f'{label}_unit'] == '%':
+                decimals = app.settings.decimals['%']
+            else:
+                decimals = 2
+
+        return decimals
 
 class LoadMenuElem(object):
     def __init__(self, parentObject, menu, menuButton, var, label, index, unitElems, name, mode):
@@ -1036,7 +1131,7 @@ class LoadMenuElem(object):
             plotTabWorkloads = self.parentObject.parentObject.parentObject.workLoadDetailsObjects
             for l in plotTabWorkloads:
                 l.setUnit(f'{self.name}_unit', unit)
-                self.parentObject.updateText(l.getWorkLoadDetails())
+                self.parentObject.updateText(details=l.getWorkLoadDetails())
 
             # update unit change to every loadtab
             for tab in self.parentObject.parentObject.parentObject.loadTabs:
@@ -1067,7 +1162,7 @@ class LoadMenuElem(object):
             workLoads = self.parentObject.parentObject.parentObject.activeTest.workLoads
             for l in workLoads:
                 l.envDetails.setDetail(f'{self.name}_unit', unit)
-                self.parentObject.updateText(l.envDetails.getDetails())
+                self.parentObject.updateText(details=l.envDetails.getDetails())
             
             # update unit change to every loadtab
             for tab in self.parentObject.parentObject.parentObject.loadTabs:

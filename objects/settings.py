@@ -31,9 +31,9 @@ class Settings(object):
                 "testDefaults":{
                     "loadMode": 0,
                     "T @ rest": 37,
-                    "Tc\u209A\u2091\u2090\u2096": 37,
+                    "T": 37,
                     "pH @ rest": 7.4,
-                    "pH\u209A\u2091\u2090\u2096": 7.4
+                    "pH": 7.4
                 },
                 "unitDefaults":{
                     "Load": 'W',
@@ -52,9 +52,8 @@ class Settings(object):
                     "QaO2": 'ml/min',
                     "T": '\N{DEGREE SIGN}C',
                     "T @ rest": '\N{DEGREE SIGN}C',
-                    "Tc\u209A\u2091\u2090\u2096": '\N{DEGREE SIGN}C',
                     "pH @ rest": '',
-                    "pH\u209A\u2091\u2090\u2096": '',
+                    "pH": '',
                     "PvO2": 'mmHg',
                     "DO2": 'ml/min/mmHg',
                     "Elevation": 'm',
@@ -80,10 +79,8 @@ class Settings(object):
                     "QaO2": ["ml/min", "l/min"],
                     "T": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "T @ rest": ['\N{DEGREE SIGN}C', 'F', 'K'],
-                    "Tc\u209A\u2091\u2090\u2096": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "pH": [""],
                     "pH @ rest": [""],
-                    "pH\u209A\u2091\u2090\u2096": [""],
                     "PvO2": ["mmHg"],
                     "DO2": ["ml/min/mmHg"],
                     "Elevation": ['m', 'km', 'ft'],
@@ -106,11 +103,37 @@ class Settings(object):
                     "QaO2": 0,
                     "T": 0,
                     "T @ rest": 0,
-                    "Tc\u209A\u2091\u2090\u2096": 0,
+                    "pH": 0,
                     "pH @ rest": 0,
-                    "pH\u209A\u2091\u2090\u2096": 0,
                     "PvO2": 0,
                     "DO2": 1
+                },
+                "decimals":{
+                    'l/min': 1,
+                    'ml/min': 2,
+                    'ml/l':  2,
+                    'ml/dl': 2,
+                    'ml/min/mmHg': 1,
+                    'g/l': 1,
+                    'g/dl': 1,
+                    'mmHg': 2,
+                    '\N{DEGREE SIGN}C': 1,
+                    'K': 1,
+                    'F': 1,
+                    'ml': 0,
+                    'bpm': 0,
+                    '%': 0,
+                    'm': 0,
+                    'km': 1,
+                    'ft': 0,
+                    'kPa': 1,
+                    'bar': 1,
+                    'psi': 0,
+                    'W': 0,
+                    'kJ': 0,
+                    'km/h': 1,
+                    'm/s': 1,
+                    'mph': 1
                 }
             }
 
@@ -143,9 +166,9 @@ class Settings(object):
         self.testDefaults = {
             "loadMode": self.data['testDefaults']['loadMode'],
             "T @ rest": self.data['testDefaults']['T @ rest'],
-            "Tc\u209A\u2091\u2090\u2096": self.data['testDefaults']['Tc\u209A\u2091\u2090\u2096'],
+            "T": self.data['testDefaults']['T'],
             "pH @ rest": self.data['testDefaults']['pH @ rest'],
-            "pH\u209A\u2091\u2090\u2096": self.data['testDefaults']['pH\u209A\u2091\u2090\u2096']
+            "pH": self.data['testDefaults']['pH']
         }
 
         self.unitDefaults = {
@@ -165,10 +188,8 @@ class Settings(object):
             "QaO2_unit": self.data['unitDefaults']['QaO2'],
             "T_unit": self.data['unitDefaults']['T'],
             "T @ rest_unit": self.data['unitDefaults']['T @ rest'],
-            "Tc\u209A\u2091\u2090\u2096_unit": self.data['unitDefaults']['Tc\u209A\u2091\u2090\u2096'],
             "pH_unit": '',
             "pH @ rest_unit": self.data['unitDefaults']['pH @ rest'],
-            "pH\u209A\u2091\u2090\u2096_unit": self.data['unitDefaults']['pH\u209A\u2091\u2090\u2096'],
             "PvO2_unit": self.data['unitDefaults']['PvO2'],
             "DO2_unit": self.data['unitDefaults']['DO2'],
             "Elevation_unit": self.data['unitDefaults']['Elevation'],
@@ -194,10 +215,8 @@ class Settings(object):
             "QaO2_units": self.data['units']['QaO2'],
             "T_units": self.data['units']['T'],
             "T @ rest_units": self.data['units']['T @ rest'],
-            "Tc\u209A\u2091\u2090\u2096_units": self.data['units']['Tc\u209A\u2091\u2090\u2096'],
             "pH_units": '',
             "pH @ rest_units": self.data['units']['pH @ rest'],
-            "pH\u209A\u2091\u2090\u2096_units": self.data['units']['pH\u209A\u2091\u2090\u2096'],
             "PvO2_units": self.data['units']['PvO2'],
             "DO2_units": self.data['units']['DO2'],
             "Elevation_units": self.data['units']['Elevation'],
@@ -220,11 +239,39 @@ class Settings(object):
             "C(a-v)O2_mc": self.data['mcDefaults']['C(a-v)O2'],
             "QaO2_mc": self.data['mcDefaults']['QaO2'],
             "T @ rest_mc": self.data['mcDefaults']['T @ rest'],
-            "Tc\u209A\u2091\u2090\u2096_mc": self.data['mcDefaults']['Tc\u209A\u2091\u2090\u2096'],
+            "T_mc": self.data['mcDefaults']['T'],
             "pH @ rest_mc": self.data['mcDefaults']['pH @ rest'],
-            "pH\u209A\u2091\u2090\u2096_mc": self.data['mcDefaults']['pH\u209A\u2091\u2090\u2096'],
+            "pH_mc": self.data['mcDefaults']['pH'],
             "PvO2_mc": self.data['mcDefaults']['PvO2'],
             "DO2_mc": self.data['mcDefaults']['DO2']
+        }
+
+        self.decimals = {
+            'l/min': self.data['decimals']['l/min'],
+            'ml/min': self.data['decimals']['ml/min'],
+            'ml/l':  self.data['decimals']['ml/l'],
+            'ml/dl': self.data['decimals']['ml/dl'],
+            'ml/min/mmHg': self.data['decimals']['ml/min/mmHg'],
+            'g/l': self.data['decimals']['g/l'],
+            'g/dl': self.data['decimals']['g/dl'],
+            'mmHg': self.data['decimals']['mmHg'],
+            '\N{DEGREE SIGN}C': self.data['decimals']['\N{DEGREE SIGN}C'],
+            'K': self.data['decimals']['K'],
+            'F': self.data['decimals']['F'],
+            'ml': self.data['decimals']['ml'],
+            'bpm': self.data['decimals']['bpm'],
+            '%': self.data['decimals']['%'],
+            'm': self.data['decimals']['m'],
+            'km': self.data['decimals']['km'],
+            'ft': self.data['decimals']['ft'],
+            'kPa': self.data['decimals']['kPa'],
+            'bar': self.data['decimals']['bar'],
+            'psi': self.data['decimals']['psi'],
+            'W': self.data['decimals']['W'],
+            'kJ': self.data['decimals']['kJ'],
+            'km/h': self.data['decimals']['km/h'],
+            'm/s': self.data['decimals']['m/s'],
+            'mph': self.data['decimals']['mph']
         }
 
     def getUnitDef(self):
@@ -241,6 +288,9 @@ class Settings(object):
 
     def getMcDef(self):
         return self.mcDefaults
+
+    def getDecimals(self):
+        return self.decimals
 
     def saveLayout(self, side, details, project, test, env):
         self.data['layout']['sideMenu'] = side
@@ -373,14 +423,14 @@ class Settings(object):
                 'C(a-v)O2',
                 'QaO2',
                 'T @ rest',
-                'Tc\u209A\u2091\u2090\u2096',
+                'T',
                 'pH @ rest',
-                'pH\u209A\u2091\u2090\u2096',
+                'pH',
                 'PvO2'
             ]
 
             for i, v in enumerate(vars):
-                if v == 'T @ rest' or v == 'Tc\u209A\u2091\u2090\u2096' or v == 'pH @ rest' or v == 'pH\u209A\u2091\u2090\u2096':
+                if v == 'T @ rest' or v == 'T' or v == 'pH @ rest' or v == 'pH':
                     SettingsRow(self, container, v, 1, i+1)
                 else:
                     SettingsRow(self, container, v, 0, i+1)
@@ -464,8 +514,8 @@ class Settings(object):
         
         if option == 0: # Test
             for key, val in self.entries.items():
-                    self.testDefaults[key] = val.get()
-                    self.data['testDefaults'][key] = val.get()
+                self.testDefaults[key] = val.get()
+                self.data['testDefaults'][key] = val.get()
                 
             for key, val in self.menuButtons.items():
                 self.unitDefaults[key+'_unit'] = val.cget('text')
@@ -489,9 +539,9 @@ class Settings(object):
                         for t in tests:
                             loads = t.getWorkLoads()
                             for l in loads:
-                                if l.details.isImported == False:
-                                    for key, val in self.unitDefaults.items():
-                                        l.getDetails().setUnit(key, val)
+                                for key, val in self.unitDefaults.items():
+                                    l.getDetails().setUnit(key, val)
+                                # if l.details.isImported == False:
                                     for key, val in self.testDefaults.items():
                                         l.getDetails().setValue(key, val)
                             if loads[0].details.isImported == False:
@@ -561,12 +611,20 @@ class Settings(object):
         # Add linear change in pH and T
         pHrest = float(app.settings.testDefaults['pH @ rest'])
         Trest = float(app.settings.testDefaults['T @ rest'])
-        pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
-        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
-        pHDif = float(pHrest) - float(pHpeak)
-        Tdif = float(Tpeak) - float(Trest)
+        pHpeak = float(app.settings.testDefaults['pH'])
+        Tpeak = float(app.settings.testDefaults['T'])
+        # pHDif = float(pHrest) - float(pHpeak)
+        # Tdif = float(Tpeak) - float(Trest)
 
-        # Filter possible empty loads
+        for l in test.workLoads:
+            l.details.setValue('pH', f'{"{0:.2f}".format(pHpeak)}')
+            l.details.setValue('pH @ rest', f'{"{0:.2f}".format(pHrest)}')
+
+            decimals = self.decimals[test.workLoads[0].details.getWorkLoadDetails()['T_unit']]
+            l.details.setValue('T', f'{"{0:.{decimals}f}".format(Tpeak, decimals=decimals)}')
+            l.details.setValue('T @ rest', f'{"{0:.{decimals}f}".format(Trest, decimals=decimals)}')
+
+        """ # Filter possible empty loads
         nFilteredLoads = 0
         filteredLoads = []
 
@@ -594,14 +652,24 @@ class Settings(object):
             pHstep = 0
             Tstep = 0
 
-        # Add linear change
-        for i, w in enumerate(filteredLoads):
-            details = w.getDetails()
-            pHValue = pHrest - (i * pHstep)
-            details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')
+        if len(filteredLoads) > 1:
+            # Add linear change
+            for i, w in enumerate(filteredLoads):
+                details = w.getDetails()
+                pHValue = pHrest - (i * pHstep)
+                details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')
 
-            Tvalue = Trest + (i * Tstep)
-            details.setValue('T', f'{"{0:.1f}".format(Tvalue)}')
+                Tvalue = Trest + (i * Tstep)
+                decimals = self.decimals[test.workLoads[0].details.getWorkLoadDetails()['T_unit']]
+                details.setValue('T', f'{"{0:.{decimals}f}".format(Tvalue, decimals=decimals)}')
+        else:
+            details = filteredLoads[0].getDetails()
+            details.setValue('pH', f'{"{0:.2f}".format(pHpeak)}')
+            details.setValue('pH @ rest', f'{"{0:.2f}".format(pHrest)}')
+
+            decimals = self.decimals[test.workLoads[0].details.getWorkLoadDetails()['T_unit']]
+            details.setValue('T', f'{"{0:.{decimals}f}".format(Tpeak, decimals=decimals)}')
+            details.setValue('T @ rest', f'{"{0:.{decimals}f}".format(Trest, decimals=decimals)}') """
         
     def createNotification(self, type, text, timeout):
         def destroy():
@@ -663,7 +731,7 @@ class SettingsRow(object):
             if len(settings.units[f"{label}_units"]) != 1:
                 menu = Menu(self.menuButton, tearoff=False)
                 units = settings.units[f"{label}_units"]
-                if units != None and label != 'pH\u209A\u2091\u2090\u2096' and label != 'pH @ rest':
+                if units != None and label != 'pH' and label != 'pH @ rest':
                     for i, u in enumerate(units):
                         MenuElem(menu, self.menuButton, u, i, units)
                     self.menuButton['menu']=menu

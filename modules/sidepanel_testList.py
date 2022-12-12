@@ -62,7 +62,7 @@ class TestList(object):
         subject = app.getActiveSubject()
 
         if app.activeTest == None:
-            emptyTest = Test(id='Joined tests')
+            emptyTest = Test(id='Joined data', parentSubject=subject)
             emptyTest.workLoads = []
 
             for tindex in self.testList.curselection():
@@ -76,9 +76,9 @@ class TestList(object):
         else:
             newTest = deepcopy(app.activeTest)
             app.activeTest = newTest
-            if app.activeTest.id != 'Joined tests':
-                app.activeTest.workLoads[0].name = f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}'
-                app.activeTest.id = 'Joined tests'
+            if app.activeTest.id != 'Joined data':
+                # app.activeTest.workLoads[0].name = f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}'
+                app.activeTest.id = 'Joined data'
 
             for tindex in self.testList.curselection():
                 lastLoad = subject.tests[tindex].workLoads[-1]
@@ -100,20 +100,38 @@ class TestList(object):
 
     def plotMeanSd(self):
         subjects = []
-        subjects.append(app.getActiveSubject())
-        emptyTest = Test()
-        app.plotMean(test=emptyTest, subjects=subjects) # FIXAA
+        # subjects.append(app.getActiveSubject())
+        for j,i in enumerate(self.testList.curselection()):
+            test = app.activeSubject.tests[i]
+            testCopy = deepcopy(test)
+            dummySubject = Subject()
+            dummySubject.addTest(testCopy)
+            subjects.append(dummySubject)
+        emptyTest = Test(parentSubject=app.activeSubject)
+        app.plotMean(test=emptyTest, subjects=subjects)
     
     def plotMeanIqr(self):
         subjects = []
-        subjects.append(app.getActiveSubject())
-        emptyTest = Test()
+        # subjects.append(app.getActiveSubject())
+        for j,i in enumerate(self.testList.curselection()):
+            test = app.activeSubject.tests[i]
+            testCopy = deepcopy(test)
+            dummySubject = Subject()
+            dummySubject.addTest(testCopy)
+            subjects.append(dummySubject)
+        emptyTest = Test(parentSubject=app.activeSubject)
         app.plotMean(test=emptyTest, subjects=subjects, iqr=True)
 
     def plotMean95(self):
         subjects = []
-        subjects.append(app.getActiveSubject())
-        emptyTest = Test()
+        # subjects.append(app.getActiveSubject())
+        for j,i in enumerate(self.testList.curselection()):
+            test = app.activeSubject.tests[i]
+            testCopy = deepcopy(test)
+            dummySubject = Subject()
+            dummySubject.addTest(testCopy)
+            subjects.append(dummySubject)
+        emptyTest = Test(parentSubject=app.activeSubject)
         app.plotMean(test=emptyTest, subjects=subjects, ci95=True)
 
     def handleMultiSelect(self, e):
@@ -131,7 +149,7 @@ class TestList(object):
             notification.create('error', 'Select at least 2 tests for comparison', '5000')
 
     def compareTests(self, mode):
-        comparisonTest = Test()
+        comparisonTest = Test(parentSubject=Subject(parentProject=Project()))
         comparisonTest.setId('Test comparison')
         comparisonTest.workLoads = []
 
@@ -300,10 +318,7 @@ class Options():
         if index != None:
             self.index = index
         
-        if self.mode == 'mean':
-            self.height = 4
-        else:
-            self.height = 3
+        self.height = 3
 
         self.win = Toplevel(width=self.parent.editButton.winfo_reqwidth() * 3, height=self.parent.editButton.winfo_reqheight() * self.height, bg='#4eb1ff', borderwidth=3)
         self.win.overrideredirect(True)
@@ -336,8 +351,8 @@ class Options():
             opt1.grid(column=1, row=0, sticky='w')
             opt2 = ttk.Radiobutton(container, text='Median (IQR)', variable=self.var, value=1)
             opt2.grid(column=1, row=1, sticky='w')
-            opt3 = ttk.Radiobutton(container, text='Mean (95% CI)', variable=self.var, value=2)
-            opt3.grid(column=1, row=2, sticky='w')
+            # opt3 = ttk.Radiobutton(container, text='Mean (95% CI)', variable=self.var, value=2)
+            # opt3.grid(column=1, row=2, sticky='w')
             ttk.Button(footer, text='Plot', command=self.plotMean).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
 

@@ -4,6 +4,7 @@ class O2PTSolver():
     def __init__(self, workloadObject, detailsDict):
         self.w = workloadObject
         self.d = detailsDict
+        self.preventCorrection = False
 
     def formatQ(self):
         try:
@@ -266,6 +267,7 @@ class O2PTSolver():
         if PvO2 == 0:
             return np.float_power( a+b, (1/3)) - np.float_power( b-a, (1/3))
         else:
+            self.preventCorrection = True
             return PvO2
 
     def phTempCorrection(self, pH0, pH, T0, T, PvO2):
@@ -293,13 +295,21 @@ class O2PTSolver():
         else:
             return T
 
-    def solveDO2(self, VO2, PvO2_calc):
+    def solveDO2(self, VO2, PvO2):
         VO2Unit = self.d['VO2_unit']
+        try:
+            DO2 = float(self.d['DO2'])
+        except ValueError:
+            DO2 = 0
+        # self.w.setMC('DO2_MC', 1)
 
-        if VO2Unit == 'ml/min': # -> l/min
-            VO2 = VO2 / 1000
-        
-        return VO2 / 2 / PvO2_calc * 1000
+        if DO2 == 0:
+            if VO2Unit == 'ml/min': # -> l/min
+                VO2 = VO2 / 1000
+            
+            return VO2 / 2 / PvO2 * 1000
+        else:
+            return DO2
 
     def calc(self): #w=workload object, details=dict
         validValues = True
@@ -332,19 +342,16 @@ class O2PTSolver():
         T = self.formatT('T')
         T0 = self.formatT('T @ rest')
 
-        PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
+        if self.preventCorrection:
+            PvO2_corrected = PvO2_calc
+        else:
+            PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
 
         DO2 = self.solveDO2(VO2, PvO2_corrected)
 
         # Calculate datapoints for diffusion line
         PvO2 = np.arange(0,100,0.1)
         y = 2 * DO2 * PvO2
-
-        # Prevent runtimewarning (divide by 0)
-        with np.errstate(divide='ignore'):
-            SvO2_cor = np.float_power( ( 23400 * np.float_power( (PvO2)**3 + 150*PvO2, -1 ) ) + 1, -1 )
-        SvO2_cor[np.isnan(SvO2_cor)] = 0
-        # SvO2_cor = np.float_power( ( 23400 * np.float_power( (PvO2)**3 + 150*PvO2, -1 ) ) + 1, -1 )
 
         # Convert to l/min
         if self.d['Q_unit'] == 'ml/min':
@@ -354,41 +361,18 @@ class O2PTSolver():
             Hb = Hb / 10
 
         # Calculate datapoints for convective curve
-        # y2 = Q * ( 1.34 * Hb * ( SaO2/ 100 - SvO2 ) ) * 10
-
-        p50S = 26.67
+        p50S = 26.86
         p50pH = p50S-25.535*(pH-pH0)+10.646*(pH-pH0)**2-1.764*(pH-pH0)**3
         p50T = p50S+1.435*(T-T0) + np.float_power(4.163, -2)*(T-T0)**2 + np.float_power(6.86, -4)*(T-T0)**3
         p50 = p50S * (p50pH/p50S) * (p50T/p50S)
-        # print(f'p50: {p50}')
-
-        # SvO2_cor=np.float_power( ( 23400 * np.float_power( (PvO2*(p50/26.67))**3 + 150*PvO2*(p50/26.67), -1 ) ) + 1, -1 )
-        # S = np.float_power(( np.float_power((PvO2*(p50/26.86))**3+150*PvO2*(p50/26.86),-1) * 23400) + 1, -1)
-        # y2 = Q(*1.34*Hb*(SaO2/100) * (1-S)) * 10
-        # y2 = Q * (Hb * 1.34 * (0.99 - SvO2_cor) )*10
         
-        n = 2.5
-        y2 = Q*1.34*Hb*(SaO2/100) * (1-((PvO2/p50)**n) / (1+(PvO2/p50)**n)) * 10
+        n = 2.7
+        y2 = Q * 1.34 * Hb * (SaO2/100 - ((PvO2/p50)**n) / (1+(PvO2/p50)**n)) * 10
 
-        # Correction and calculation of intersection point
+        # Calculation of intersection point
         idx = np.argwhere(np.diff(np.sign(y - y2))).flatten()
-        yDiff = []
-
-        for i in np.arange(0, 1, 0.1):
-            y_temp = 2* DO2 * (PvO2[idx]+i)
-            # y2_temp = Q * ( 1.34 * Hb * ( SaO2/ 100 - np.float_power( ( 23400 * np.float_power( (PvO2[idx]+i)**3 + 150*(PvO2[idx]+i), -1 ) ) + 1, -1 ) ) ) * 10
-            y2_temp = 10*Q*1.34*Hb*(SaO2/100)*(1-((PvO2[idx]+i)/p50)**n/(1+((PvO2[idx]+i)/p50)**n))
-
-            try:
-                yDiff.append( (float(y_temp)-float(y2_temp)) )
-            except TypeError:
-                validValues = False
-                return validValues
-
-        constant = np.where( np.abs(yDiff) == np.amin(np.abs(yDiff)) )[0] / 10
-        # yi = float( Q * ( 1.34 * Hb * ( SaO2/ 100 - np.float_power( ( 23400 * np.float_power( (PvO2[idx]+constant)**3 + 150*(PvO2[idx]+constant), -1 ) ) + 1, -1 ) ) ) * 10 )
-        yi = 10*Q*1.34*Hb*(SaO2/100)*(1-((PvO2[idx]+constant)/p50)**n/(1+((PvO2[idx]+constant)/p50)**n))
-        xi = float(PvO2[idx]+constant)
+        xi = idx/10+0.05
+        yi = Q * 1.34 * Hb * (SaO2/100 - ((xi/p50)**n) / (1+(xi/p50)**n)) * 10
 
         if self.d['[Hb]_unit'] == 'g/l': # g/dl -> g/l
             Hb = Hb * 10
@@ -398,6 +382,6 @@ class O2PTSolver():
 
         SvO2 = SvO2 * 100
 
-        self.w.setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_corrected, DO2)
+        self.w.setCalcResults(y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, T0, T, pH0, pH, PvO2_corrected, DO2, p50)
 
         return validValues

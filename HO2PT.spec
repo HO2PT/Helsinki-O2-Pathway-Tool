@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['O2PathwayTool.py'],
+a = Analysis(['HO2PT.py'],
              pathex=[],
              binaries=[],
              datas=[('Img', 'Img'), ('userInstructions.pdf', '.')],
@@ -24,7 +24,7 @@ exe = EXE(pyz,
           a.scripts, 
           [],
           exclude_binaries=True,
-          name='O2PathwayTool',
+          name='HO2PT',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -41,4 +41,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='O2PathwayTool')
+               name='HO2PT')

@@ -172,10 +172,12 @@ class SubjectDataImporter(object):
                             pHAddLinearity = True
 
                     if tempAddLinearity:
-                        self.addLinearDistT(t)
+                        # self.addLinearDistT(t)
+                        self.applyDefaultPHandT(t)
 
                     if pHAddLinearity:
-                        self.addLinearDistPH(t)
+                        # self.addLinearDistPH(t)
+                        self.applyDefaultPHandT(t)
                 
             if self.templateUsed:
                 self.closeImporter(mode=1)
@@ -1225,19 +1227,35 @@ class SubjectDataImporter(object):
         if self.imported[17] == False:
             for s in project.subjects:
                 for t in s.tests:
-                    self.addLinearDistT(t)
+                    # self.addLinearDistT(t)
+                    self.applyDefaultPHandT(t)
 
         if self.imported[18] == False:
             for s in project.subjects:
                 for t in s.tests:
-                    self.addLinearDistPH(t)
+                    # self.addLinearDistPH(t)
+                    self.applyDefaultPHandT(t)
 
         self.window.destroy()
         del self
-
-    def addLinearDistPH(self, test):
+    
+    def applyDefaultPHandT(self, test):
         pHrest = float(app.settings.testDefaults['pH @ rest'])
-        pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
+        Trest = float(app.settings.testDefaults['T @ rest'])
+        pHpeak = float(app.settings.testDefaults['pH'])
+        Tpeak = float(app.settings.testDefaults['T'])
+
+        for l in test.workLoads:
+            l.details.setValue('pH', f'{"{0:.2f}".format(pHpeak)}')
+            l.details.setValue('pH @ rest', f'{"{0:.2f}".format(pHrest)}')
+
+            decimals = app.settings.decimals[test.workLoads[0].details.getWorkLoadDetails()['T_unit']]
+            l.details.setValue('T', f'{"{0:.{decimals}f}".format(Tpeak, decimals=decimals)}')
+            l.details.setValue('T @ rest', f'{"{0:.{decimals}f}".format(Trest, decimals=decimals)}')
+
+    """ def addLinearDistPH(self, test):
+        pHrest = float(app.settings.testDefaults['pH @ rest'])
+        pHpeak = float(app.settings.testDefaults['pH'])
         pHDif = float(pHrest) - float(pHpeak)
 
         # Filter possible empty loads
@@ -1266,7 +1284,7 @@ class SubjectDataImporter(object):
     
     def addLinearDistT(self, test):
         Trest = float(app.settings.testDefaults['T @ rest'])
-        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
+        Tpeak = float(app.settings.testDefaults['T'])
         Tdif = float(Tpeak) - float(Trest)
 
         # Filter possible empty loads
@@ -1292,7 +1310,7 @@ class SubjectDataImporter(object):
             details = w.getDetails()
 
             Tvalue = Trest + (i * Tstep)
-            details.setValue('T', f'{"{0:.1f}".format(Tvalue)}')
+            details.setValue('T', f'{"{0:.1f}".format(Tvalue)}') """
 
 class DataMenuElem(object):
     def __init__(self, importer, menu, menuButton, option, isExporter = False):

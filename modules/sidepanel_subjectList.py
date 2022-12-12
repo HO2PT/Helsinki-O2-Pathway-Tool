@@ -63,7 +63,7 @@ class SubjectList(object):
         project = app.getActiveProject()
 
         if app.activeTest == None:
-            emptyTest = Test(id='Joined subjects')
+            emptyTest = Test(id='Joined data')
             emptyTest.workLoads = []
 
             for sindex in self.subjectList.curselection():
@@ -78,9 +78,9 @@ class SubjectList(object):
         else:
             newTest = deepcopy(app.activeTest)
             app.activeTest = newTest
-            if app.activeTest.id != 'Joined subjects':
-                app.activeTest.workLoads[0].setName(f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}')
-                app.activeTest.id = 'Joined subjects'
+            if app.activeTest.id != 'Joined data':
+                # app.activeTest.workLoads[0].setName(f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}')
+                app.activeTest.id = 'Joined data'
 
             for sindex in self.subjectList.curselection():
                 lastTest = project.getSubjects()[sindex].tests[-1]
@@ -95,21 +95,24 @@ class SubjectList(object):
         subjects = []
         for i in self.subjectList.curselection():
             subjects.append(app.getActiveProject().getSubjects()[i])
-        emptyTest = Test()
+        parentSubject = Subject(parentProject=Project())
+        emptyTest = Test(parentSubject=parentSubject)
         app.plotMean(test=emptyTest, subjects=subjects)
     
     def plotMeanIqr(self):
         subjects = []
         for i in self.subjectList.curselection():
             subjects.append(app.getActiveProject().getSubjects()[i])
-        emptyTest = Test()
+        parentSubject = Subject(parentProject=Project())
+        emptyTest = Test(parentSubject=parentSubject)
         app.plotMean(test=emptyTest, subjects=subjects, iqr=True)
     
     def plotMean95(self):
         subjects = []
         for i in self.subjectList.curselection():
             subjects.append(app.getActiveProject().getSubjects()[i])
-        emptyTest = Test()
+        parentSubject = Subject(parentProject=app.activeProject)
+        emptyTest = Test(parentSubject=parentSubject)
         app.plotMean(test=emptyTest, subjects=subjects, ci95=True)
 
     def handleShiftSelect(self,e):
@@ -125,7 +128,8 @@ class SubjectList(object):
             self.subjectList.selection_set(index)
 
     def compareSubjects(self, n):
-        comparisonTest = Test()
+        parentSubject = Subject(parentProject=Project())
+        comparisonTest = Test(parentSubject=parentSubject)
         comparisonTest.setId('Subject comparison')
         comparisonTest.workLoads = []
 
@@ -282,7 +286,7 @@ class Options():
         if index != None:
             self.index = index
 
-        if self.mode == 'compare' or self.mode == 'mean' or self.mode == 'add':
+        if self.mode == 'compare' or self.mode == 'add' or self.mode == 'mean':
             self.height = 4
         else:
             self.height = 3

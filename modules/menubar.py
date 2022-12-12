@@ -3,6 +3,8 @@ from modules.Help import Help
 from modules.About import About
 from objects.app import app
 from objects.test import Test
+from objects.subject import Subject
+from objects.project import Project
 from modules.notification import notification
 from modules.ProjectDataImporter import ProjectDataImporter
 from modules.DataExporter import DataExporter
@@ -113,7 +115,9 @@ class MenuBar(object):
         return self.menuBar
 
     def createDemoGraph(self):
-        demoTest = Test()
+        parentProject = Project()
+        parentSubject = Subject(parentProject=parentProject)
+        demoTest = Test(parentSubject=parentSubject)
         demoTest.workLoads[0].setDemoDetails()
         app.setActiveTest(demoTest)
         app.sidepanel_testList.refreshList()

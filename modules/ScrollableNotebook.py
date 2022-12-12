@@ -72,7 +72,7 @@ class ScrollableNotebook(ttk.Frame):
                         del self.parentObj.loadTabs[clickedTabIndex]
                         del app.getActiveTest().workLoads[clickedTabIndex]
                         # Update ph & temp
-                        app.testDetailModule.loadNotebook.updatePhAndTemp()
+                        # app.testDetailModule.loadNotebook.updatePhAndTemp()
                         app.testDetailModule.loadNotebook.refresh()
                             
                     if len(self.notebookTab.tabs()) == 0:

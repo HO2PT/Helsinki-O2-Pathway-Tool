@@ -35,28 +35,6 @@ class DataExporter(object):
         self.images = {}
         self.dfs= {}
 
-        # Number of digits for units
-        self.l_min_Dig = 1
-        self.ml_min_Dig = 2
-        self.ml_l_Dig = 2
-        self.ml_dl_Dig = 2
-        self.ml_min_mmHg_Dig = 1
-        self.g_l_Dig = 1
-        self.g_dl_Dig = 1
-        self.mmHg_Dig = 2
-        self.c_Dig = 1
-        self.k_Dig = 1
-        self.f_Dig = 1
-        self.ml_Dig = 0
-        self.bpm_Dig = 0
-        self.perc_Dig = 0
-        self.m_Dig = 0
-        self.km_Dig = 1
-        self.ft_Dig = 0
-        self.kPa_Dig = 1
-        self.bar_Dig = 1
-        self.psi_Dig = 0
-
     def closeOptions(self):
         try:
             self.overLay.destroy()
@@ -89,7 +67,7 @@ class DataExporter(object):
 
             temp = WorkLoadDetails(name='dummy')
             for i, key in enumerate(temp.getWorkLoadDetails().keys()):
-                if '_unit' not in key and '_MC' not in key and key != 'id':
+                if '_unit' not in key and '_MC' not in key and key != 'id' and key != 'p50':
                     if loadMode == 0: # Loads
                         if key != 'Velocity' and key != 'Incline':
                             var = IntVar(value=1, name=key)
@@ -457,7 +435,7 @@ class DataExporter(object):
                 self.dfs[s.id] = dfSubject
 
             # Create mass info sheet
-            self.dfs['Data'] = self.createDataDumpSheet()
+            self.dfs['Data'] = self.createDataDumpSheet(project)
 
             # Create excel
             try:
@@ -493,8 +471,7 @@ class DataExporter(object):
 
             self.exportOptions.destroy()
 
-    def createDataDumpSheet(self):
-        project = app.getActiveProject()
+    def createDataDumpSheet(self, project):
         subjects = project.getSubjects()
         nLoads = 0
         df = pd.DataFrame()
@@ -512,12 +489,13 @@ class DataExporter(object):
         for v in self.vars:
             unit = subjects[0].tests[0].workLoads[0].details.getWorkLoadDetails()[f'{v}_unit']
             for i in range(nLoads):
-                if i == 0:
-                    headerRow.append(f'{v}-Rest({unit})')
-                elif i == nLoads-1:
-                    headerRow.append(f'{v}-Max({unit})')
-                else:
-                    headerRow.append(f'{v}-{i}({unit})')
+                # if i == 0:
+                #     headerRow.append(f'{v}-Rest({unit})')
+                # elif i == nLoads-1:
+                #     headerRow.append(f'{v}-Max({unit})')
+                # else:
+                #     headerRow.append(f'{v}-{i}({unit})')
+                headerRow.append(f'{v}({unit})')
         # Add environment details
         for ev in self.envVars:
             try:
@@ -525,12 +503,13 @@ class DataExporter(object):
             except KeyError:
                 unit = ''
             for i in range(nLoads):
-                if i == 0:
-                    headerRow.append(f'{ev}-Rest({unit})')
-                elif i == nLoads-1:
-                    headerRow.append(f'{ev}-Max({unit})')
-                else:
-                    headerRow.append(f'{ev}-{i}({unit})')
+                # if i == 0:
+                #     headerRow.append(f'{ev}-Rest({unit})')
+                # elif i == nLoads-1:
+                #     headerRow.append(f'{ev}-Max({unit})')
+                # else:
+                #     headerRow.append(f'{ev}-{i}({unit})')
+                headerRow.append(f'{ev}({unit})')
 
         headerRow = pd.Series(headerRow)
         df = pd.concat([df, headerRow.to_frame().T], axis=0, ignore_index=True)
@@ -897,7 +876,7 @@ class DataExporter(object):
         return ordered, units, mcs
 
     def createPlot(self, workLoads, id, sid=None): #workloads = workloaddetails object
-        PvO2 = np.arange(0,100,1)
+        PvO2 = np.arange(0,100,0.1)
         plot = plt.subplots(constrained_layout=True)
         fig, ax = plot
 
@@ -1196,107 +1175,14 @@ class DataExporter(object):
 
     def formatValue(self, value, unit):
         res = []
-        if unit == 'l/min':
+        try:
+            decimals = app.settings.decimals[unit]
             for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.l_min_Dig)
+                v = '{0:.{decimals}f}'.format(float(v), decimals=decimals)
                 res.append(v)
             return res
-        elif unit == 'ml/min':
+        except:
             for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.ml_min_Dig)
+                v = '{0:.2f}'.format(float(v))
                 res.append(v)
-            return res
-        elif unit == 'ml/l':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.ml_l_Dig)
-                res.append(v)
-            return res
-        elif unit == 'ml/dl':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.ml_dl_Dig)
-                res.append(v)
-            return res
-        elif unit == 'ml/min/mmHg':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.ml_min_mmHg_Dig)
-                res.append(v)
-            return res
-        elif unit == 'g/l':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.g_l_Dig)
-                res.append(v)
-            return res
-        elif unit == 'g/dl':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.g_dl_Dig)
-                res.append(v)
-            return res
-        elif unit == 'mmHg':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.mmHg_Dig)
-                res.append(v)
-            return res
-        elif unit == '\N{DEGREE SIGN}C':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.c_Dig)
-                res.append(v)
-            return res
-        elif unit == 'K':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.k_Dig)
-                res.append(v)
-            return res
-        elif unit == 'F':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.f_Dig)
-                res.append(v)
-            return res
-        elif unit == '%':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.perc_Dig)
-                res.append(v)
-            return res
-        elif unit == 'ml':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.ml_Dig)
-                res.append(v)
-            return res
-        elif unit == 'bpm':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.bpm_Dig)
-                res.append(v)
-            return res
-        elif unit == 'm':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.m_Dig)
-                res.append(v)
-            return res
-        elif unit == 'km':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.km_Dig)
-                res.append(v)
-            return res
-        elif unit == 'ft':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.ft_Dig)
-                res.append(v)
-            return res
-        elif unit == 'kPa':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.kPa_Dig)
-                res.append(v)
-            return res
-        elif unit == 'bar':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.bar_Dig)
-                res.append(v)
-            return res
-        elif unit == 'psi':
-            for v in value:
-                v = '{0:.{1}f}'.format(float(v), self.psi_Dig)
-                res.append(v)
-            return res
-        else:
-            for v in value:
-                res.append(str(v))
             return res

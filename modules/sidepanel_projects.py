@@ -2,9 +2,11 @@ from tkinter import *
 from tkinter import ttk
 from objects.app import app
 from objects.project import Project
+from objects.subject import Subject
 from objects.test import Test
 from modules.notification import notification
 from modules.ProjectDataImporter import ProjectDataImporter
+from copy import deepcopy
 
 class ProjectList(object):
     def __init__(self, sidePanel):
@@ -24,7 +26,8 @@ class ProjectList(object):
 
         buttonContainer = ttk.Frame(self.container)
         buttonContainer.pack()
-        self.createButton = ttk.Button(buttonContainer, text='Add...', command=lambda: self.createProject())
+        # self.createButton = ttk.Button(buttonContainer, text='Add...', command=lambda: self.createProject())
+        self.createButton = ttk.Button(buttonContainer, text='Add...', command=lambda: self.showCreateOptions())
         self.createButton.grid(column=0, row=0)
         self.editButton = ttk.Button(buttonContainer, text='Edit...', command=lambda: self.editProject())
         self.editButton.grid(column=1, row=0)
@@ -44,16 +47,22 @@ class ProjectList(object):
         app.projectDetailModule.refreshDetails()
 
     def plotMeanSd(self):
-        emptyTest = Test()
+        parentSubject = Subject(parentProject=app.activeProject)
+        emptyTest = Test(parentSubject=parentSubject)
         app.plotMean(emptyTest, plotProject=True)
     
     def plotMeanIqr(self):
-        emptyTest = Test()
+        parentSubject = Subject(parentProject=app.activeProject)
+        emptyTest = Test(parentSubject=parentSubject)
         app.plotMean(emptyTest, plotProject=True, iqr=True)
 
     def plotMean95(self):
-        emptyTest = Test()
+        parentSubject = Subject(parentProject=app.activeProject)
+        emptyTest = Test(parentSubject=parentSubject)
         app.plotMean(emptyTest, plotProject=True, ci95=True)
+
+    def showCreateOptions(self):
+        Options(self, 'add')
 
     def showMeanOptions(self):
         if len(self.projectList.curselection()) == 1:
@@ -130,6 +139,52 @@ class ProjectList(object):
         app.sidepanel_testList.refreshList()
         app.projectDetailModule.refreshDetails()
 
+    def addMeanToActiveTest(self):
+        parentSubject = Subject(parentProject=app.activeProject)
+        emptyTest = Test(parentSubject=parentSubject)
+        app.plotMean(emptyTest, plotProject=True, export=True) # Use the export to prevent plotting
+
+        if app.activeTest == None:
+            emptyTest.id = 'Joined data'
+            # emptyTest.workLoads[0].name = f'{app.activeProject.id}(Mean)'
+            app.setActiveTest(deepcopy(emptyTest))
+
+        else:
+            newTest = deepcopy(app.activeTest)
+            app.activeTest = newTest
+            if app.activeTest.id != 'Joined data':
+                # app.activeTest.workLoads[0].setName(f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}')
+                app.activeTest.id = 'Joined data'
+
+            loadCopy = deepcopy(emptyTest.workLoads[1])
+            loadCopy.setName(f'{app.activeProject.id}-Mean')
+            app.activeTest.addWorkLoad(loadCopy)
+
+        app.testDetailModule.refreshTestDetails()
+
+    def addMedianToActiveTest(self):
+        parentSubject = Subject(parentProject=app.activeProject)
+        emptyTest = Test(parentSubject=parentSubject)
+        app.plotMean(emptyTest, plotProject=True, iqr=True, export=True) # Use the export to prevent plotting
+
+        if app.activeTest == None:
+            emptyTest.id = 'Joined data'
+            # emptyTest.workLoads[0].name = f'{app.activeProject.id}(Median)'
+            app.setActiveTest(deepcopy(emptyTest))
+
+        else:
+            newTest = deepcopy(app.activeTest)
+            app.activeTest = newTest
+            if app.activeTest.id != 'Joined data':
+                # app.activeTest.workLoads[0].setName(f'{app.activeTest.parentSubject.parentProject.id}-{app.activeTest.workLoads[0].parentTest.id}')
+                app.activeTest.id = 'Joined data'
+
+            loadCopy = deepcopy(emptyTest.workLoads[1])
+            loadCopy.setName(f'{app.activeProject.id}-Median')
+            app.activeTest.addWorkLoad(loadCopy)
+
+        app.testDetailModule.refreshTestDetails()
+
     def handleListboxSelect(self):
         # Set selected project as active project by clicked index
         try:
@@ -155,7 +210,7 @@ class Options():
         if index != None:
             self.index = index
 
-        if self.mode == 'compare' or self.mode == 'mean':
+        if self.mode == 'compare' or self.mode == 'add' or self.mode == 'mean':
             self.height = 4
         else:
             self.height = 3
@@ -208,6 +263,17 @@ class Options():
             self.opt32.grid(column=2, row=2, sticky='w')
             ttk.Button(footer, text='Save', command=lambda: None).pack(side=LEFT, fill=X, expand=True)
             ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
+
+        elif self.mode == 'add':
+            self.var = IntVar(value=0)
+            opt1 = ttk.Radiobutton(container, text='Create project', variable=self.var, value=0)
+            opt1.grid(column=0, row=0, sticky='w', columnspan=2)
+            opt2 = ttk.Radiobutton(container, text="Add mean values as tab", variable=self.var, value=1)
+            opt2.grid(column=0, row=1, sticky='w', columnspan=2)
+            opt3 = ttk.Radiobutton(container, text="Add median values as tab", variable=self.var, value=2)
+            opt3.grid(column=0, row=2, sticky='w', columnspan=2)
+            ttk.Button(footer, text='Next', command=self.add).pack(side=LEFT, fill=X, expand=True)
+            ttk.Button(footer, text='Close', command=self.close).pack(side=LEFT, fill=X, expand=True)
         
         self.win.bind('<KeyPress-Escape>', self.close)
 
@@ -231,6 +297,15 @@ class Options():
             self.parent.plotMeanIqr()
         else:
             self.parent.plotMean95()
+        self.close()
+
+    def add(self):
+        if self.var.get() == 0:
+            self.parent.createProject()
+        elif self.var.get() == 1:
+            self.parent.addMeanToActiveTest()
+        else:
+            self.parent.addMedianToActiveTest()
         self.close()
     
     def close(self, *args):

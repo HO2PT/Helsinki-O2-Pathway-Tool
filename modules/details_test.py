@@ -100,7 +100,7 @@ class LoadNotebook(object):
         self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())
         self.editButton = ttk.Button(parent, text='Edit...', command=lambda: self.editLoad())
 
-    def updatePhAndTemp(self):
+    """ def updatePhAndTemp(self):
         activeTest = app.getActiveTest()
 
         # Add linear change in pH and T
@@ -114,8 +114,8 @@ class LoadNotebook(object):
             pHrest = float(activeTest.workLoads[0].details.pHrest)
             Trest = float(activeTest.workLoads[0].details.Trest)
         
-        pHpeak = float(app.settings.testDefaults['pH\u209A\u2091\u2090\u2096'])
-        Tpeak = float(app.settings.testDefaults['Tc\u209A\u2091\u2090\u2096'])
+        pHpeak = float(app.settings.testDefaults['pH'])
+        Tpeak = float(app.settings.testDefaults['T'])
         pHDif = float(pHrest) - float(pHpeak)
         Tdif = float(Tpeak) - float(Trest)
 
@@ -143,21 +143,21 @@ class LoadNotebook(object):
             Tvalues.append(Tvalue)
             details.setValue('T', Tvalue)
 
-        return pHvalues, Tvalues
+        return pHvalues, Tvalues """
 
     def addLoad(self):
         # Add load to active test
         activeTest = app.getActiveTest()
-        isImported = False
+        # isImported = False
 
-        for w in activeTest.workLoads:
-            if w.details.isImported:
-                isImported = True
+        # for w in activeTest.workLoads:
+        #     if w.details.isImported:
+        #         isImported = True
 
         workLoadObject = activeTest.createLoad()
         i = len(self.loadTabs)
-        if not isImported:
-            pHvalues, Tvalues = self.updatePhAndTemp()
+        # if not isImported:
+        #     pHvalues, Tvalues = self.updatePhAndTemp()
         details = workLoadObject.getDetails()
 
         newLoad = LoadTab(i, workLoadObject, details, self.loadbook)
@@ -168,10 +168,10 @@ class LoadNotebook(object):
         self.loadbook.add(newLoad.loadFrame, text=newLoad.getName())
         self.loadbook.select(tabCount) 
 
-        if not isImported:
-            for i, l in enumerate(self.loadTabs):
-                l.updateValues('pH', pHvalues[i])
-                l.updateValues('T', Tvalues[i])
+        # if not isImported:
+        #     for i, l in enumerate(self.loadTabs):
+        #         l.updateValues('pH', pHvalues[i])
+        #         l.updateValues('T', Tvalues[i])
 
         self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
         self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
@@ -334,7 +334,7 @@ class LoadTab(object):
         temp = []
         items1 = ['VO2','[Hb]','SaO2']
         items2 = ['CaO2', 'CvO2','C(a-v)O2','QaO2','SvO2','PvO2']
-        items3 = ['T', 'pH']
+        items3 = ['T @ rest', 'T', 'pH @ rest', 'pH']
 
         loadDetails = self.details.getWorkLoadDetails()
 
@@ -390,7 +390,7 @@ class LoadTab(object):
 
         # Details - Load/Speed/Incline
         extra2 = ttk.Labelframe(self.loadFrame3, text='Details')
-        extra2.grid(column=0, row=4, columnspan=5, sticky='we', pady=(30,0), padx=5)
+        extra2.grid(column=0, row=5, columnspan=5, sticky='we', pady=(30,0), padx=5)
         
         if app.settings.getTestDef()['loadMode'] == 0:
             temp = ['Load', loadDetails['Load'], loadDetails['Load_unit']]
@@ -488,12 +488,12 @@ class TestDetailRow(ttk.Frame):
     def updateValue(self, name, index, mode):
         # If updating the first load's pH or T AND there is more than one load 
         # update the values of pHrest and Trest in workloadDetails
-        if len(app.activeTest.workLoads) > 1 and self.workLoadObject.name == app.activeTest.workLoads[0].details.name:
-            for l in app.activeTest.workLoads:
-                if self.label == 'pH':
-                    l.details.pHrest = self.valueVar.get()
-                elif self.label == 'T':
-                    l.details.Trest = self.valueVar.get()
+        # if len(app.activeTest.workLoads) > 1 and self.workLoadObject.name == app.activeTest.workLoads[0].details.name:
+        #     for l in app.activeTest.workLoads:
+        #         if self.label == 'pH':
+        #             l.details.pHrest = self.valueVar.get()
+        #         elif self.label == 'T':
+        #             l.details.Trest = self.valueVar.get()
         self.workLoadObject.setValue(self.label, self.valueVar.get())
 
     def updateUnit(self, name, index, mode):
