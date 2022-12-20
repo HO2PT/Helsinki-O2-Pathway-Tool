@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter.messagebox import askokcancel
 from tkinter import ttk, font
+from sys import platform
 from objects.app import app
 from objects.settings import Settings
 from modules.menubar import MenuBar
@@ -9,7 +10,15 @@ from modules.panel_side import SidePanel
 from modules.panel_details import DetailsPanel
 from modules.panel_plotting import PlottingPanel
 
-root = Tk()
+from ttkthemes import ThemedTk
+
+app.platform = platform
+if platform == 'linux':
+    root = ThemedTk(theme='clearlooks')
+    root.configure(bg='#EFEBE7')
+    
+else:
+    root = Tk()
 
 app.defaultFont = font.nametofont("TkDefaultFont")
 app.defaultFont.configure(family="Arial",size=9)

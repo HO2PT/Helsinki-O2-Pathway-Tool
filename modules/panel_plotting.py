@@ -165,6 +165,11 @@ class PlotTab(ttk.Frame):
 
         # Figure toolbar
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.toolbarContainer, pack_toolbar=False)
+        if app.platform == 'linux':
+            self.toolbar.configure(bg='#EFEBE7')
+            self.toolbar._message_label.config(background='#EFEBE7')
+            for c in self.toolbar.winfo_children():
+                c.config(background='#EFEBE7')
         self.toolbar.update()
         self.toolbar.pack(fill=X)
         
@@ -194,15 +199,18 @@ class PlotTab(ttk.Frame):
         self.setTicksFrame = ttk.Labelframe(self.toolbarWrapper, text='Set axis ticks', padding=(5,5))
         self.setTicksFrame.grid(column=2, row=0, padx=(5,5))
 
+        ss = ttk.Style()
+        ss.configure('ss.TButton', anchor='center')
+
         # Set Y tick size
         ttk.Label(self.setTicksFrame, text='Y-axis').grid(column=0, row=0, columnspan=2)
-        ttk.Button(self.setTicksFrame, text='+', width=3 ,command=lambda: self.incTicks('y')).grid(column=0, row=1)
-        ttk.Button(self.setTicksFrame, text='-', width=3, command=lambda: self.decTicks('y')).grid(column=1, row=1)
+        ttk.Button(self.setTicksFrame, style='ss.TButton', text='+', width=3, command=lambda: self.incTicks('y')).grid(column=0, row=1)
+        ttk.Button(self.setTicksFrame, style='ss.TButton', text='-', width=3, command=lambda: self.decTicks('y')).grid(column=1, row=1)
 
         # Set X tick size
         ttk.Label(self.setTicksFrame, text='X-axis').grid(column=2, row=0, columnspan=2)
-        ttk.Button(self.setTicksFrame, text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=2, row=1)
-        ttk.Button(self.setTicksFrame, text='-', width=3, command=lambda: self.decTicks('x')).grid(column=3, row=1)
+        ttk.Button(self.setTicksFrame, style='ss.TButton', text='+', width=3 ,command=lambda: self.incTicks('x')).grid(column=2, row=1)
+        ttk.Button(self.setTicksFrame, style='ss.TButton', text='-', width=3, command=lambda: self.decTicks('x')).grid(column=3, row=1)
 
         # Hide legend button
         self.hideLegendBtn = ttk.Button(self.toolbarWrapper, text='Toggle\nlegend', command=lambda: self.hideLegend())
@@ -216,7 +224,7 @@ class PlotTab(ttk.Frame):
         self.indicator.pack(side=LEFT, fill=Y)
 
         # Create loads notebook frame and loadnotebook
-        self.loadNotebookFrame = ttk.Frame(self, style='loadNoteBookFrame.TFrame', borderwidth=10)
+        self.loadNotebookFrame = ttk.Frame(self, style='loadNoteBookFrame.TFrame', borderwidth=5)
         self.loadNotebookFrame.pack(side=RIGHT, fill=Y)
 
         self.loadNotebookFrame.bind('<Motion>', self.changeCursor)
@@ -683,7 +691,10 @@ class PlotOptions(object):
         # Set line shape
         ttk.Label(self.plotOptions, text='Change line type').grid(column=0, row=0)
         self.lineTypeMenuButton = ttk.Menubutton(self.plotOptions)
-        lineTypeMenu = Menu(self.lineTypeMenuButton, tearoff=False)
+        if app.platform == 'linux':
+            lineTypeMenu = Menu(self.lineTypeMenuButton, tearoff=False, background='#EFEBE7')
+        else:
+            lineTypeMenu = Menu(self.lineTypeMenuButton, tearoff=False)
         lineTypeMenu.add_command(label='Solid', command=lambda: self.changeLineType(0))
         lineTypeMenu.add_command(label='Dotted', command=lambda: self.changeLineType(1))
         lineTypeMenu.add_command(label='Dashed', command=lambda: self.changeLineType(2))
@@ -705,7 +716,10 @@ class PlotOptions(object):
         ttk.Label(self.plotOptions, text='Change line color').grid(column=0, row=1)
         self.lineColorMenuButton = ttk.Menubutton(self.plotOptions)
 
-        lineColorMenu = Menu(self.lineColorMenuButton, tearoff=False)
+        if app.platform == 'linux':
+            lineColorMenu = Menu(self.lineColorMenuButton, tearoff=False, background='#EFEBE7')
+        else:
+            lineColorMenu = Menu(self.lineColorMenuButton, tearoff=False)
         lineColorMenu.add_command(label='Blue', command=lambda: self.changeColor(0))
         lineColorMenu.add_command(label='Orange', command=lambda: self.changeColor(1))
         lineColorMenu.add_command(label='Green', command=lambda: self.changeColor(2))
@@ -890,7 +904,10 @@ class LoadTabRow(ttk.Frame):
                         self.menuButton.config(text=self.details[f'{self.label}_unit'])
                     else:
                         self.menuButton.config(text=self.envDetails[f'{self.label}_unit'])
-                    tempMenu = Menu(self.menuButton, tearoff=False)
+                    if app.platform == 'linux':
+                        tempMenu = Menu(self.menuButton, tearoff=False, background='#EFEBE7')
+                    else:
+                        tempMenu = Menu(self.menuButton, tearoff=False)
 
                     for i, u in enumerate(units):
                         LoadMenuElem(self, tempMenu, self.menuButton, self.var, u, i, units, f'{self.label}', self.mode)

@@ -10,7 +10,7 @@ from modules.SubjectDataImporter import SubjectDataImporter
 
 class SubjectList(object):
     def __init__(self, sidePanel):
-        self.container = LabelFrame(sidePanel, text="Subjects")
+        self.container = ttk.LabelFrame(sidePanel, text="Subjects")
         self.container.pack(fill = BOTH, expand=TRUE)
         self.container.configure(cursor='arrow')
         self.startSel = None
@@ -304,10 +304,14 @@ class Options():
 
         self.bindId = app.root.bind('<Configure>', self.move)
 
-        container = Frame(self.win, bd=0)
-        container.pack(fill=BOTH, expand=True)
+        if app.platform == 'linux':
+            container = Frame(self.win, bd=0, bg='#EFEBE7')
+            footer = Frame(self.win, bd=0, bg='#EFEBE7')
+        else:
+            container = Frame(self.win, bd=0)
+            footer = Frame(self.win, bd=0)
         
-        footer = Frame(self.win, bd=0)
+        container.pack(fill=BOTH, expand=True)
         footer.pack(fill=BOTH, expand=True)
                 
         if self.mode == 'add':

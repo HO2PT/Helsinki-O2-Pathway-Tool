@@ -109,7 +109,10 @@ class envDetailRow(object):
             self.menuButton = ttk.Menubutton(self.container)
             self.menuButtons[label] = self.menuButton
 
-            varMenu = Menu(self.menuButton, tearoff=False)
+            if app.platform == 'linux':
+                varMenu = Menu(self.menuButton, tearoff=False, background='#EFEBE7')
+            else:
+                varMenu = Menu(self.menuButton, tearoff=False)
             units = self.envUnits[f'{label}_units']
             if len(units) > 1:
                 for i, u in enumerate(units):

@@ -19,7 +19,7 @@ class SidePanel(ttk.Frame):
             relief='raised'
         )
         
-        self.frame_thickness = 10
+        self.frame_thickness = 5
 
         self.sidePanel = ttk.Frame(self, style="sidePanel.TFrame", borderwidth=self.frame_thickness)
         if app.settings.visDefaults['sideMenu']:

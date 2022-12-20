@@ -12,7 +12,7 @@ class ProjectList(object):
     def __init__(self, sidePanel):
         self.startSel = None
 
-        self.container = LabelFrame(sidePanel, text="Projects")
+        self.container = ttk.LabelFrame(sidePanel, text="Projects")
         self.container.pack(fill = BOTH, expand=TRUE)
         self.container.configure(cursor='arrow')
 
@@ -235,10 +235,14 @@ class Options():
 
         self.bindId = app.root.bind('<Configure>', self.move)
 
-        container = Frame(self.win, bd=0)
-        container.pack(fill=BOTH, expand=True)
+        if app.platform == 'linux':
+            container = Frame(self.win, bd=0, bg='#EFEBE7')
+            footer = Frame(self.win, bd=0, bg='#EFEBE7')
+        else:
+            container = Frame(self.win, bd=0)
+            footer = Frame(self.win, bd=0)
         
-        footer = Frame(self.win, bd=0)
+        container.pack(fill=BOTH, expand=True)
         footer.pack(fill=BOTH, expand=True)
 
         if self.mode == 'mean':

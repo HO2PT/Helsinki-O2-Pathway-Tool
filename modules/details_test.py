@@ -260,10 +260,14 @@ class LoadNotebook(object):
 
         self.bindId = app.root.bind('<Configure>', move)
 
-        container = Frame(editscreen, bd=0, padx=10, pady=10)
-        container.pack(fill=BOTH, expand=True)
+        if app.platform == 'linux':
+            container = Frame(editscreen, bd=0, padx=10, pady=10,bg='#EFEBE7')
+            footer = Frame(editscreen, bd=0, padx=10, bg='#EFEBE7')
+        else:
+            container = Frame(editscreen, bd=0, padx=10, pady=10)
+            footer = Frame(editscreen, bd=0, padx=10)
         
-        footer = Frame(editscreen, bd=0, padx=10)
+        container.pack(fill=BOTH, expand=True)
         footer.pack(fill=BOTH, expand=True)
         ttk.Label(container, text='Set load name').pack()
         nameEntry = ttk.Entry(container, width=30)
@@ -464,7 +468,10 @@ class TestDetailRow(ttk.Frame):
                 self.tempMenuButton = ttk.Menubutton(rowFrame)
                 self.tempMenuButton.config(text=self.unit)
 
-                tempMenu = Menu(self.tempMenuButton, tearoff=False)
+                if app.platform == 'linux':
+                    tempMenu = Menu(self.tempMenuButton, tearoff=False, background='#EFEBE7')
+                else:
+                    tempMenu = Menu(self.tempMenuButton, tearoff=False)
                 for i, u in enumerate(units):
                     menuelem = TestDetailMenuElem(tempMenu, self.tempMenuButton, u, i, units, f'{self.label}_unit', self.workLoadObject)
                     self.objects.append(menuelem)

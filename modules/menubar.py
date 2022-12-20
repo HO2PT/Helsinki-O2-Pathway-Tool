@@ -13,30 +13,48 @@ from modules.SubjectDataImporter import SubjectDataImporter
 
 class MenuBar(object):
     def __init__(self, root):
-        self.menuBar = Menu(root)
+        if app.platform == 'linux':
+            self.menuBar = Menu(root, background='#EFEBE7')
+            file = Menu(self.menuBar, tearoff = 0, background='#EFEBE7')
+            importFile = Menu(self.menuBar, tearoff = 0, background='#EFEBE7')
+            exportMenuProject = Menu(self.menuBar, tearoff=0, background='#EFEBE7')
+            exportMenuPlots = Menu(self.menuBar, tearoff=0, background='#EFEBE7')
+            exportMenu = Menu(self.menuBar, tearoff=0, background='#EFEBE7')
+            settings = Menu(self.menuBar, tearoff = 0, background='#EFEBE7')
+            self.view = Menu(self.menuBar, tearoff = 0, background='#EFEBE7')
+            options = Menu(self.menuBar, tearoff = 0, background='#EFEBE7')
+        else:
+            self.menuBar = Menu(root)
+            file = Menu(self.menuBar, tearoff = 0)
+            importFile = Menu(self.menuBar, tearoff = 0)
+            exportMenuProject = Menu(self.menuBar, tearoff=0)
+            exportMenuPlots = Menu(self.menuBar, tearoff=0)
+            exportMenu = Menu(self.menuBar, tearoff=0)
+            settings = Menu(self.menuBar, tearoff = 0)
+            self.view = Menu(self.menuBar, tearoff = 0)
+            options = Menu(self.menuBar, tearoff = 0)
 
         # Adding File Menu and commands
-        file = Menu(self.menuBar, tearoff = 0)
         self.menuBar.add_cascade(label ='File', menu = file)
         
         # File... -> Import...
-        importFile = Menu(self.menuBar, tearoff = 0)
+        #importFile = Menu(self.menuBar, tearoff = 0)
         importFile.add_command(label ='Project...', command = lambda: ProjectDataImporter())
         importFile.add_command(label ='Subject...', command = lambda: SubjectDataImporter())
         importFile.add_command(label ='Test...', command = lambda: TestDataImporter())
         
         # File... -> Export... -> Project...
-        exportMenuProject = Menu(self.menuBar, tearoff=0)
+        #exportMenuProject = Menu(self.menuBar, tearoff=0)
         exportMenuProject.add_command(label='Project to new file...', command=lambda: DataExporter(toNew=1))
         exportMenuProject.add_command(label='Project to imported file...', command=lambda: DataExporter(toNew=0))
         
         # File... -> Export... -> Plots
-        exportMenuPlots = Menu(self.menuBar, tearoff=0)
+        #exportMenuPlots = Menu(self.menuBar, tearoff=0)
         exportMenuPlots.add_command(label='Plots to new file...', command=lambda: DataExporter(toNew=1, onlyPlots=1))
         exportMenuPlots.add_command(label='Plots to imported file...', command=lambda: DataExporter(toNew=0, onlyPlots=1))
         
         # File... -> Export...
-        exportMenu = Menu(self.menuBar, tearoff=0)
+        #exportMenu = Menu(self.menuBar, tearoff=0)
         exportMenu.add_cascade(label='Project...', menu=exportMenuProject)
         exportMenu.add_cascade(label='Subject...', state=DISABLED)
         exportMenu.add_cascade(label='Test...', state=DISABLED)
@@ -49,14 +67,14 @@ class MenuBar(object):
         file.add_command(label ='Exit', command = root.destroy)
 
         # Settings
-        settings = Menu(self.menuBar, tearoff = 0)
+        #settings = Menu(self.menuBar, tearoff = 0)
         self.menuBar.add_cascade(label ='Settings', menu = settings)
 
         # Settings - default settings
         settings.add_command(label ='Settings...', command = lambda: app.settings.openSettings())
         
         # View
-        self.view = Menu(self.menuBar, tearoff = 0)
+        #self.view = Menu(self.menuBar, tearoff = 0)
         self.menuBar.add_cascade(label ='View', menu = self.view)
         # Check if hidden on startup
         text = self.checkVisibility('side')
@@ -74,7 +92,7 @@ class MenuBar(object):
         self.menuBar.add_command(label ='Create demo graph', command=lambda: self.createDemoGraph())
 
         # About
-        options = Menu(self.menuBar, tearoff = 0)
+        #options = Menu(self.menuBar, tearoff = 0)
         self.menuBar.add_cascade(label ='Help', menu = options)
         options.add_command(label ='Help...', command = lambda: Help())
         options.add_command(label ='About O2 Pathway Tool', command = lambda: About())

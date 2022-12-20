@@ -11,7 +11,7 @@ from modules.notification import notification
 
 class TestList(object):
     def __init__(self, sidePanel):
-        self.container = LabelFrame(sidePanel, text="Tests")
+        self.container = ttk.LabelFrame(sidePanel, text="Tests")
         self.container.pack(fill = BOTH, expand=TRUE)
         self.container.configure(cursor='arrow')
         self.startSel = None
@@ -333,10 +333,14 @@ class Options():
 
         self.bindId = app.root.bind('<Configure>', self.move)
 
-        container = Frame(self.win, bd=0)
-        container.pack(fill=BOTH, expand=True)
+        if app.platform == 'linux':
+            container = Frame(self.win, bd=0, bg='#EFEBE7')
+            footer = Frame(self.win, bd=0, bg='#EFEBE7')
+        else:
+            container = Frame(self.win, bd=0)
+            footer = Frame(self.win, bd=0)
         
-        footer = Frame(self.win, bd=0)
+        container.pack(fill=BOTH, expand=True)
         footer.pack(fill=BOTH, expand=True)
             
         if self.mode == 'compare':

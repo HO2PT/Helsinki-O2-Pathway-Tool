@@ -52,15 +52,18 @@ class DataExporter(object):
 
                 if excel == None:
                     raise AttributeError
-            
-            self.exportOptions = Toplevel(borderwidth=10)
+
+            if app.platform == 'linux':
+                self.exportOptions = Toplevel(borderwidth=10, bg='#EFEBE7')
+            else:
+                self.exportOptions = Toplevel(borderwidth=10)
             self.exportOptions.title("Export options")
-            self.exportOptions.focus_force()
+            #self.exportOptions.focus_force()
             self.exportOptions.protocol("WM_DELETE_WINDOW", self.closeOptions)
             self.exportOptions.tk.call('wm', 'iconphoto', self.exportOptions._w, PhotoImage(file='Img/ho2pt.png'))
 
             # Choose test details to be exported
-            self.testContainer = ttk.Labelframe(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
+            self.testContainer = ttk.LabelFrame(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
             self.testContainer.pack(side=LEFT, fill=Y, padx=10)
 
             self.vars = []
@@ -387,9 +390,16 @@ class DataExporter(object):
 
             # Create excel
             try:
+                if app.platform == 'linux':
+                    self.exportOptions.withdraw()
+                    self.overLay.withdraw()
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                 if saveFile:
-                    with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
+                    if app.platform == 'linux':
+                        name = saveFile
+                    else:
+                        name = f'{saveFile}.xlsx'
+                    with pd.ExcelWriter(name, engine='xlsxwriter') as writer:
                         for i, (key, value) in enumerate(self.dfs.items()):
                             value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
                             worksheet = writer.sheets[str(key)[0:30]]
@@ -446,9 +456,16 @@ class DataExporter(object):
 
             # Create excel
             try:
+                if app.platform == 'linux':
+                    self.exportOptions.withdraw()
+                    self.overLay.withdraw()
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                 if saveFile:
-                    with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
+                    if app.platform == 'linux':
+                        name = saveFile
+                    else:
+                        name = f'{saveFile}.xlsx'
+                    with pd.ExcelWriter(name, engine='xlsxwriter') as writer:
                         for key, value in self.dfs.items():
                             value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
                             worksheet = writer.sheets[str(key)[0:30]]
@@ -578,9 +595,16 @@ class DataExporter(object):
 
             # Create excel
             try:
+                if app.platform == 'linux':
+                    self.exportOptions.withdraw()
+                    self.overLay.withdraw()
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                 if saveFile:
-                    with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
+                    if app.platform == 'linux':
+                        name = saveFile
+                    else:
+                        name = f'{saveFile}.xlsx'
+                    with pd.ExcelWriter(name, engine='xlsxwriter') as writer:
                         for sheet in self.sheetNames:
                             df = pd.DataFrame.from_dict(excel[sheet])
                             df.to_excel(writer, sheet_name=sheet, index=False, header=False)
@@ -744,10 +768,17 @@ class DataExporter(object):
 
             if noErrors:
                 try:
+                    if app.platform == 'linux':
+                        self.exportOptions.withdraw()
+                        self.overLay.withdraw()
                     saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                     if saveFile:
                         # Create excel
-                        with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
+                        if app.platform == 'linux':
+                            name = saveFile
+                        else:
+                            name = f'{saveFile}.xlsx'
+                        with pd.ExcelWriter(name, engine='xlsxwriter') as writer:
                             for sheet in self.sheetNames:
                                 df = pd.DataFrame.from_dict(excel[sheet])
                                 df.to_excel(writer, sheet_name=sheet, index=False, header=False)

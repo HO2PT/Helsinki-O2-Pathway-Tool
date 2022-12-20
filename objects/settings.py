@@ -324,7 +324,10 @@ class Settings(object):
 
         self.rightContainer = ttk.Frame(self.settingsWindow)
         self.notification = ttk.Frame(self.rightContainer, height=20)
-        self.canvas = Canvas(self.rightContainer)
+        if app.platform == 'linux':
+            self.canvas = Canvas(self.rightContainer, bg='#EFEBE7')
+        else:
+            self.canvas = Canvas(self.rightContainer)
         self.scrollbar = ttk.Scrollbar(self.rightContainer, orient=VERTICAL, command=self.canvas.yview)
         self.contentWrapper = ttk.Frame(self.canvas)
         self.footer = ttk.Frame(self.rightContainer)
@@ -454,7 +457,10 @@ class Settings(object):
             self.menuButtons['Elevation'] = elevMenuButton
             elevMenuButton.config(text=self.unitDefaults['Elevation_unit'])
 
-            elevMenu = Menu(elevMenuButton, tearoff=False)
+            if app.platform == 'linux':
+                elevMenu = Menu(elevMenuButton, tearoff=False, background='#EFEBE7')
+            else:
+                elevMenu = Menu(elevMenuButton, tearoff=False)
             for i, u in enumerate(units):
                 MenuElem(elevMenu, elevMenuButton, u, i, units)
             elevMenuButton['menu']=elevMenu
@@ -472,7 +478,10 @@ class Settings(object):
             self.menuButtons['ATM'] = atmMenuButton
             atmMenuButton.config(text=self.unitDefaults['ATM_unit'])
 
-            atmMenu = Menu(atmMenuButton, tearoff=False)
+            if app.platform == 'linux':
+                atmMenu = Menu(atmMenuButton, tearoff=False, background='#EFEBE7')
+            else:
+                atmMenu = Menu(atmMenuButton, tearoff=False)
             for i, u in enumerate(units):
                 MenuElem(atmMenu, atmMenuButton, u, i, units)
             atmMenuButton['menu']=atmMenu
@@ -497,7 +506,10 @@ class Settings(object):
             self.menuButtons['Temperature'] = tempMenuButton
             tempMenuButton.config(text=self.unitDefaults['Temperature_unit'])
 
-            tempMenu = Menu(tempMenuButton, tearoff=False)
+            if app.platform == 'linux':
+                tempMenu = Menu(tempMenuButton, tearoff=False, background='#EFEBE7')
+            else:
+                tempMenu = Menu(tempMenuButton, tearoff=False)
             for i, u in enumerate(units):
                 MenuElem(tempMenu, tempMenuButton, u, i, units)
             tempMenuButton['menu']=tempMenu
@@ -731,7 +743,10 @@ class SettingsRow(object):
             self.menuButton.config(text=settings.unitDefaults[f'{label}_unit'])
 
             if len(settings.units[f"{label}_units"]) != 1:
-                menu = Menu(self.menuButton, tearoff=False)
+                if app.platform == 'linux':
+                    menu = Menu(self.menuButton, tearoff=False, background='#EFEBE7')
+                else:
+                    menu = Menu(self.menuButton, tearoff=False)
                 units = settings.units[f"{label}_units"]
                 if units != None and label != 'pH' and label != 'pH @ rest':
                     for i, u in enumerate(units):

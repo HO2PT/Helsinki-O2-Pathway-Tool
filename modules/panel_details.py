@@ -19,7 +19,7 @@ class DetailsPanel(ttk.Frame):
             relief='raised'
         )
 
-        self.frame_thickness = 10
+        self.frame_thickness = 5
         self.defHeight = 50
 
         self.upPart = ttk.Frame(self)
@@ -52,14 +52,17 @@ class DetailsPanel(ttk.Frame):
             text='PLOT', 
             bg='#1d7eb5',
             fg = 'white',
-            font='Helvetica 9 bold',
+            font='Arial 9 bold',
             bd= 5,
             relief='raised',
             command=self.plotData
         )
         self.plotButton.pack(fill=BOTH, expand=True)
 
-        self.clearButton = ttk.Button(self.buttonWrap, text='Clear', command=self.clear)
+        if app.platform == 'linux':
+            self.clearButton = Button(self.buttonWrap, text='Clear', command=self.clear)
+        else:
+            self.clearButton = ttk.Button(self.buttonWrap, text='Clear', command=self.clear)
         self.clearButton.pack(fill=Y, expand=True)
 
         self.indicator = ttk.Label(self, text='', anchor='center')
