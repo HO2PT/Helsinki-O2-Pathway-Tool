@@ -60,6 +60,7 @@ class Help():
         self.index = 1
         self.doc = fitz.open('userInstructions.pdf')
 
+        self.window.update_idletasks()
         windowX = app.root.winfo_rootx() + (app.root.winfo_width()/2) - self.window.winfo_width()/2
         windowY = app.root.winfo_rooty() + (app.root.winfo_height()/2) - self.window.winfo_height()/2
         self.window.geometry("+%d+%d" % ( windowX, windowY ))

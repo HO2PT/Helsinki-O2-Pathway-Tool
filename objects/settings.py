@@ -109,7 +109,7 @@ class Settings(object):
                     "DO2": 1
                 },
                 "decimals":{
-                    'l/min': 1,
+                    'l/min': 2,
                     'ml/min': 2,
                     'ml/l':  2,
                     'ml/dl': 2,

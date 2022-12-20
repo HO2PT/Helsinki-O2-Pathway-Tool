@@ -352,6 +352,13 @@ class O2PTSolver():
             self.validValues = False
             return self.validValues
 
+    def solveP50(self, pH0, pH, T0, T):
+        p50S = 26.86
+        p50pH = p50S-25.535*(pH-pH0)+10.646*(pH-pH0)**2-1.764*(pH-pH0)**3
+        p50T = p50S+1.435*(T-T0) + np.float_power(4.163, -2)*(T-T0)**2 + np.float_power(6.86, -4)*(T-T0)**3
+        p50 = p50S * (p50pH/p50S) * (p50T/p50S)
+        return p50
+
     def calc(self): #w=workload object, details=dict
         # validValues = True
         Q = self.formatQ()
@@ -386,7 +393,30 @@ class O2PTSolver():
         if self.preventCorrection:
             PvO2_corrected = PvO2_calc
         else:
-            PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
+            # Modeling from 37/7.4 -> 38.5/7.03 should produce same results as 38.5/7.03
+            if (pH0 == pH and T0 == T):
+                # If no change in pH or T values, check if normal physiological conditions
+                if pH0 != 7.4 and T0 == 37:
+                    PvO2_corrected = self.phTempCorrection(7.4, pH, T0, T, PvO2_calc)
+                    p50 = self.solveP50(7.4, pH, T0, T)
+                elif T0 != 37 and pH0 == 7.4:
+                    PvO2_corrected = self.phTempCorrection(pH0, pH, 37, T, PvO2_calc)
+                    p50 = self.solveP50(pH0, pH, 37, T)
+                else:
+                    PvO2_corrected = self.phTempCorrection(7.4, pH, 37, T, PvO2_calc)
+                    p50 = self.solveP50(7.4, pH, 37, T)
+            elif pH0 != 7.4 or T0 != 37:
+                # If initial values for pH/T are different than physiological normals e.g. pH0= 7.2
+                # E.g. 7.2/37.5 -> 7.0/39
+                # Correct first to normal physiological conditions
+                PvO2_corrected = self.phTempCorrection(7.4, pH0, 37, T0, PvO2_calc)
+                # Then to the final peak value
+                PvO2_corrected = self.phTempCorrection(7.4, pH, 37, T, PvO2_corrected)
+                p50 = self.solveP50(7.4, pH, 37, T)
+            else:
+                # If initial values are equal to normal physiological conditions
+                PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
+                p50 = self.solveP50(pH0, pH, T0, T)
 
         DO2 = self.solveDO2(VO2, PvO2_corrected)
 
@@ -402,11 +432,6 @@ class O2PTSolver():
             Hb = Hb / 10
 
         # Calculate datapoints for convective curve
-        p50S = 26.86
-        p50pH = p50S-25.535*(pH-pH0)+10.646*(pH-pH0)**2-1.764*(pH-pH0)**3
-        p50T = p50S+1.435*(T-T0) + np.float_power(4.163, -2)*(T-T0)**2 + np.float_power(6.86, -4)*(T-T0)**3
-        p50 = p50S * (p50pH/p50S) * (p50T/p50S)
-        
         n = 2.7
         y2 = Q * 1.34 * Hb * (SaO2/100 - ((PvO2/p50)**n) / (1+(PvO2/p50)**n)) * 10
 
