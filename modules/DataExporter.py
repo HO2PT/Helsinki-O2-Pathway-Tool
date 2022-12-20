@@ -12,6 +12,7 @@ from objects.envDetails import EnvDetails
 from objects.test import Test
 from objects.app import app
 from objects.workLoadDetails import WorkLoadDetails
+from objects.subject import Subject
 from modules.notification import notification
 from modules.ProjectDataImporter import DataMenuElem
 from modules.O2PTSolver import O2PTSolver
@@ -65,6 +66,9 @@ class DataExporter(object):
             self.vars = []
             loadMode = app.settings.getTestDef()['loadMode']
 
+            checkStyle = ttk.Style()
+            checkStyle.configure('Sub2.TCheckbutton', font='Arial 9')
+
             temp = WorkLoadDetails(name='dummy')
             for i, key in enumerate(temp.getWorkLoadDetails().keys()):
                 if '_unit' not in key and '_MC' not in key and key != 'id' and key != 'p50':
@@ -76,7 +80,7 @@ class DataExporter(object):
                             if '2' in key:
                                 key = key.replace('2', '\u2082')
 
-                            ttk.Checkbutton(self.testContainer, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+                            ttk.Checkbutton(self.testContainer, text=key, variable=var, style='Sub2.TCheckbutton').grid(column=0, row=i, sticky='nw')
                     else: # Velocity&Incline
                         if key != 'Load':
                             var = IntVar(value=1, name=key)
@@ -85,7 +89,7 @@ class DataExporter(object):
                             if '2' in key:
                                 key = key.replace('2', '\u2082')
 
-                            ttk.Checkbutton(self.testContainer, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+                            ttk.Checkbutton(self.testContainer, text=key, variable=var, style='Sub2.TCheckbutton').grid(column=0, row=i, sticky='nw')
             self.testContainer.grid_rowconfigure(len(temp.getWorkLoadDetails().keys()), weight=1)
             ttk.Button(self.testContainer, text='Select All', command=lambda: self.selectAll(0)).grid(column=0, row=len(temp.getWorkLoadDetails().keys()), sticky='s', pady=(10,0))
             ttk.Button(self.testContainer, text='Deselect All', command=lambda: self.deselectAll(0)).grid(column=1, row=len(temp.getWorkLoadDetails().keys()), sticky='s', pady=(10,0))
@@ -104,7 +108,7 @@ class DataExporter(object):
                     if '2' in key:
                         key = key.replace('2', '\u2082')
 
-                    ttk.Checkbutton(self.envContainer, text=key, variable=var).grid(column=0, row=i, sticky='nw')
+                    ttk.Checkbutton(self.envContainer, text=key, variable=var, style='Sub2.TCheckbutton').grid(column=0, row=i, sticky='nw')
             self.envContainer.grid_rowconfigure(len(temp.getDetails().keys()), weight=1)
             ttk.Button(self.envContainer, text='Select All', command=lambda: self.selectAll(1)).grid(column=0, row=len(temp.getDetails().keys()), sticky='s', pady=(10,0))
             ttk.Button(self.envContainer, text='Deselect All', command=lambda: self.deselectAll(1)).grid(column=1, row=len(temp.getDetails().keys()), sticky='s', pady=(10,0))
@@ -139,6 +143,9 @@ class DataExporter(object):
 
                     for s in self.sheetNames:
                         DataMenuElem(self, menu, self.menuButton, s, isExporter=True)
+                    
+                    # Create a sheet
+                    DataMenuElem(self, menu, self.menuButton, 'Create new sheet', isExporter=True)
 
                     self.menuButton['menu'] = menu
                     
@@ -558,8 +565,10 @@ class DataExporter(object):
         return df
 
     def exportToSelected(self):
-        excel = deepcopy(app.getActiveProject().data)
-        ordered, units, mcs = self.getSortedData()
+        project = deepcopy(app.getActiveProject())
+        excel = project.data
+        ordered, units, mcs = self.getSortedData(project)
+        noErrors = True
 
         if self.onlyPlots == True: # Export only created plots
             self.createDfsOfPlots()
@@ -601,160 +610,193 @@ class DataExporter(object):
 
         else: # Export all values and plots to excel file
             if self.importDataMode == 'long':
-                for key, value in ordered.items():
-                    if 'C(a-v)O2' in key:
-                        key0 = 'C(a-v)O\u2082'
-                        key1 = key.split('-')[2]
-                        key = f'{key0}-{key1}'
-                        unit = units['C(a-v)O2']
-                        mc = mcs['C(a-v)O2']
-                    else:
-                        unit = units[f'{key.split("-")[0]}']
-                        mc = mcs[f'{key.split("-")[0]}']
+                if self.selectedSheet != 'Create new sheet': 
+                    for key, value in ordered.items():
+                        if 'C(a-v)O2' in key:
+                            key0 = 'C(a-v)O\u2082'
+                            key1 = key.split('-')[2]
+                            key = f'{key0}-{key1}'
+                            unit = units['C(a-v)O2']
+                            mc = mcs['C(a-v)O2']
+                        else:
+                            unit = units[f'{key.split("-")[0]}']
+                            mc = mcs[f'{key.split("-")[0]}']
 
-                    if mc == 1:
-                        mc = 'Calculated'
-                    elif mc == 0:
-                        mc = 'Measured'
-                    else:
-                        mc = ''
+                        if mc == 1:
+                            mc = 'Calculated'
+                        elif mc == 0:
+                            mc = 'Measured'
+                        else:
+                            mc = ''
 
-                    # Change 2's to subscript
-                    if '2' in key.split('-')[0]:
-                        key0 = key.split('-')[0].replace('2', '\u2082')
-                        key1 = key.split('-')[1]
-                        key = f'{key0}-{key1}'
+                        # Change 2's to subscript
+                        if '2' in key.split('-')[0]:
+                            key0 = key.split('-')[0].replace('2', '\u2082')
+                            key1 = key.split('-')[1]
+                            key = f'{key0}-{key1}'
 
-                    value = self.formatValue(value, unit)
-                    value.insert(0, f'{key} ({unit})-{mc}')
-                    excel[self.selectedSheet][key] = value
-            else: # 'wide'
-                excelTemp = pd.DataFrame.from_dict(excel[self.selectedSheet])
-
-                for key, value in ordered.items():
-                    if 'C(a-v)O2' in key:
-                        key0 = 'C(a-v)O\u2082'
-                        key1 = key.split('-')[2]
-                        key = f'{key0}-{key1}'
-                        unit = units['C(a-v)O2']
-                        mc = mcs['C(a-v)O2']
-                    else:
-                        unit = units[f'{key.split("-")[0]}']
-                        mc = mcs[f'{key.split("-")[0]}']
-
-                    if mc == 1:
-                        mc = 'Calculated'
-                    elif mc == 0:
-                        mc = 'Measured'
-                    else:
-                        mc = ''
-
-                    # Change 2's to subscript
-                    if '2' in key.split('-')[0]:
-                        key0 = key.split('-')[0].replace('2', '\u2082')
-                        key1 = key.split('-')[1]
-                        key = f'{key0}-{key1}'
-
-                    value = self.formatValue(value, unit)
-                    value.insert(0, f'{key} ({unit})-{mc}')
-                    value = pd.Series(value, index=range(len(excelTemp.columns)))
-                    excelTemp = pd.concat([excelTemp, value.to_frame().T], axis=0, ignore_index=True)
-
-                excel[self.selectedSheet] = excelTemp
-
-            # Create project plots
-            if self.statsVar0.get() == 1:
-                df = self.createProjectPlots('Mean(SD)')
-                excel['Mean(SD)'] = df
-                self.sheetNames.append('Mean(SD)')
-
-            if self.statsVar1.get() == 1:
-                df = self.createProjectPlots('Median(IQR)', iqr=True)
-                excel['Median(IQR)'] = df
-                self.sheetNames.append('Median(IQR)')
-
-            if self.statsVar2.get() == 1:
-                df = self.createProjectPlots('Mean(CI95%)', ci95=True)
-                excel['Mean(CI95%)'] = df
-                self.sheetNames.append('Mean(CI95%)')
-
-            # Create plots for subjects
-            if self.plotVar.get() == 0:
-                subjects = app.getActiveProject().getSubjects()
-                plotsDf = pd.DataFrame()
-                for s in subjects:
-                    tests = s.getTests()
-                    self.images[s.id] = []
-
-                    for t in tests:
-                        loads = t.workLoads
-
-                        # Filter possible empty loads
-                        filteredLoads = []
-                        for i, l in enumerate(loads):
-                            detailsDict = l.getDetails().getWorkLoadDetails()
-                            
-                            if i == 0 or detailsDict['Load'] != 0:
-                                filteredLoads.append(l.details)
-
-                        self.createPlot(filteredLoads, t.id)
-                        self.images[s.id].append(str(t.id))
-
-                excel['Plots'] = plotsDf
-                self.sheetNames.append('Plots')
-
-            try:
-                saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
-                if saveFile:
-                    # Create excel
-                    with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
-                        for sheet in self.sheetNames:
-                            df = pd.DataFrame.from_dict(excel[sheet])
-                            df.to_excel(writer, sheet_name=sheet, index=False, header=False)
-
-                            if sheet == 'Plots':
-                                worksheet = writer.sheets[sheet]
-                                for i, (key, value) in enumerate(self.images.items()):
-                                    imgDest = f'{os.getcwd()}\plot{value[0]}.png'
-                                    if i != 0:
-                                        worksheet.write(f'A{i*20+3}', f'Test ID: {value[0]}')
-                                        worksheet.insert_image(f'A{i*20+4}', imgDest)
-                                    else:
-                                        worksheet.write('A1', f'Test ID: {value[0]}')
-                                        worksheet.insert_image('A2', imgDest)
-                            if sheet == 'Median(IQR)':
-                                worksheet = writer.sheets[sheet]
-                                imgDest = f'{os.getcwd()}\plot-Median(IQR)-Project Median(IQR).png'
-                                worksheet.insert_image('H1', imgDest)
-                            elif sheet == 'Mean(SD)':
-                                worksheet = writer.sheets[sheet]
-                                imgDest = f'{os.getcwd()}\plot-Mean(SD)-Project Mean(SD).png'
-                                worksheet.insert_image('H1', imgDest)
-                            elif sheet == 'Mean(CI95%)':
-                                worksheet = writer.sheets[sheet]
-                                imgDest = f'{os.getcwd()}\plot-Mean(CI95%)-Project mean(95% CI).png'
-                                worksheet.insert_image('H1', imgDest)
-                        
-                    notification.create('info', 'Data successfully exported', 5000)
+                        value = self.formatValue(value, unit)
+                        try:
+                            value.insert(0, f'{key} ({unit})-{mc}')
+                        except:
+                            notification.create('error', 'Mismatch of data shape.', 5000)
+                            noErrors = False
+                    try:
+                        excel[self.selectedSheet][key] = value
+                    except:
+                        notification.create('error', 'Mismatch of data shape.', 5000)
+                        noErrors = False
                 else:
-                    self.cancel()
+                    excel['Data'] = self.createDataDumpSheet(project)
+                    self.sheetNames.append('Data')
+            else: # 'wide'
+                if self.selectedSheet != 'Create new sheet':    
+                    excelTemp = pd.DataFrame.from_dict(excel[self.selectedSheet])
+
+                    for key, value in ordered.items():
+                        if 'C(a-v)O2' in key:
+                            key0 = 'C(a-v)O\u2082'
+                            key1 = key.split('-')[2]
+                            key = f'{key0}-{key1}'
+                            unit = units['C(a-v)O2']
+                            mc = mcs['C(a-v)O2']
+                        else:
+                            unit = units[f'{key.split("-")[0]}']
+                            mc = mcs[f'{key.split("-")[0]}']
+
+                        if mc == 1:
+                            mc = 'Calculated'
+                        elif mc == 0:
+                            mc = 'Measured'
+                        else:
+                            mc = ''
+
+                        # Change 2's to subscript
+                        if '2' in key.split('-')[0]:
+                            key0 = key.split('-')[0].replace('2', '\u2082')
+                            key1 = key.split('-')[1]
+                            key = f'{key0}-{key1}'
+
+                        value = self.formatValue(value, unit)
+                        value.insert(0, f'{key} ({unit})-{mc}')
+                        try:
+                            value = pd.Series(value, index=range(len(excelTemp.columns)))
+                            excelTemp = pd.concat([excelTemp, value.to_frame().T], axis=0, ignore_index=True)
+                        except:
+                            notification.create('error', 'Mismatch of data shape.', 5000)
+                            noErrors = False
+
+                    excel[self.selectedSheet] = excelTemp
+                else:
+                    excel['Data'] = self.createDataDumpSheet(project)
+                    self.sheetNames.append('Data')
+            if noErrors:
+                # Create project plots
+                if self.statsVar0.get() == 1:
+                    df = self.createProjectPlots('Mean(SD)')
+                    excel['Mean(SD)'] = df
+                    self.sheetNames.append('Mean(SD)')
+
+                if self.statsVar1.get() == 1:
+                    df = self.createProjectPlots('Median(IQR)', iqr=True)
+                    excel['Median(IQR)'] = df
+                    self.sheetNames.append('Median(IQR)')
+
+                if self.statsVar2.get() == 1:
+                    df = self.createProjectPlots('Mean(CI95%)', ci95=True)
+                    excel['Mean(CI95%)'] = df
+                    self.sheetNames.append('Mean(CI95%)')
+
+            if noErrors:
+                # Create plots for subjects
+                if self.plotVar.get() == 0:
+                    subjects = project.getSubjects()
+                    plotsDf = pd.DataFrame()
+                    try:
+                        for s in subjects:
+                            tests = s.getTests()
+                            self.images[s.id] = []
+
+                            try:
+                                for t in tests:
+                                    loads = t.workLoads
+
+                                    # Filter possible empty loads
+                                    filteredLoads = []
+                                    for i, l in enumerate(loads):
+                                        detailsDict = l.getDetails().getWorkLoadDetails()
+                                        print(detailsDict)
+                                        if i == 0 or detailsDict['Load'] != 0:
+                                            filteredLoads.append(l.details)
+                                    try:
+                                        self.createPlot(filteredLoads, t.id)
+                                        self.images[s.id].append(str(t.id))
+                                    except:
+                                        raise ValueError()
+                            except:
+                                raise ValueError()
+
+                        excel['Plots'] = plotsDf
+                        self.sheetNames.append('Plots')
+                    except:
+                        noErrors = False
+                        notification.create('error', 'Data not valid', 5000)
+
+            if noErrors:
+                try:
+                    saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
+                    if saveFile:
+                        # Create excel
+                        with pd.ExcelWriter(f'{saveFile}.xlsx', engine='xlsxwriter') as writer:
+                            for sheet in self.sheetNames:
+                                df = pd.DataFrame.from_dict(excel[sheet])
+                                df.to_excel(writer, sheet_name=sheet, index=False, header=False)
+
+                                if sheet == 'Plots':
+                                    worksheet = writer.sheets[sheet]
+                                    for i, (key, value) in enumerate(self.images.items()):
+                                        imgDest = f'{os.getcwd()}\plot{value[0]}.png'
+                                        if i != 0:
+                                            worksheet.write(f'A{i*20+3}', f'Test ID: {value[0]}')
+                                            worksheet.insert_image(f'A{i*20+4}', imgDest)
+                                        else:
+                                            worksheet.write('A1', f'Test ID: {value[0]}')
+                                            worksheet.insert_image('A2', imgDest)
+                                if sheet == 'Median(IQR)':
+                                    worksheet = writer.sheets[sheet]
+                                    imgDest = f'{os.getcwd()}\plot-Median(IQR)-{project.id}(Median).png'
+                                    worksheet.insert_image('H1', imgDest)
+                                elif sheet == 'Mean(SD)':
+                                    worksheet = writer.sheets[sheet]
+                                    imgDest = f'{os.getcwd()}\plot-Mean(SD)-{project.id}(Mean).png'
+                                    worksheet.insert_image('H1', imgDest)
+                                elif sheet == 'Mean(CI95%)':
+                                    worksheet = writer.sheets[sheet]
+                                    imgDest = f'{os.getcwd()}\plot-Mean(CI95%)-{project.id}(95% CI).png'
+                                    worksheet.insert_image('H1', imgDest)
+                                elif sheet == 'Data':
+                                    worksheet = writer.sheets[sheet]
+
+                        notification.create('info', 'Data successfully exported', 5000)
+                    else:
+                        self.cancel()
+                        notification.create('error', 'Data not exported', 5000)
+                except:
                     notification.create('error', 'Data not exported', 5000)
-            except:
-                notification.create('error', 'Data not exported', 5000)
 
-            # Delete images
-            if self.plotVar.get() == 0:
-                for s in subjects:
-                    tests = s.getTests()
-                    for t in tests:
-                        os.remove(f'{os.getcwd()}\plot{t.id}.png')
+                # Delete images
+                if self.plotVar.get() == 0:
+                    for s in subjects:
+                        tests = s.getTests()
+                        for t in tests:
+                            os.remove(f'{os.getcwd()}\plot{t.id}.png')
 
-            if self.statsVar0.get() == 1:
-                os.remove(f'{os.getcwd()}\plot-Mean(SD)-Project Mean(SD).png')
-            if self.statsVar1.get() == 1:
-                os.remove(f'{os.getcwd()}\plot-Median(IQR)-Project Median(IQR).png')
-            if self.statsVar2.get() == 1:
-                os.remove(f'{os.getcwd()}\plot-Mean(CI95%)-Project mean(95% CI).png')
+                if self.statsVar0.get() == 1:
+                    os.remove(f'{os.getcwd()}\plot-Mean(SD)-{project.id}(Mean).png')
+                if self.statsVar1.get() == 1:
+                    os.remove(f'{os.getcwd()}\plot-Median(IQR)-{project.id}(Median).png')
+                if self.statsVar2.get() == 1:
+                    os.remove(f'{os.getcwd()}\plot-Mean(CI95%)-{project.id}(95% CI).png')
             
             try:
                 self.overLay.destroy()
@@ -762,13 +804,13 @@ class DataExporter(object):
                 pass
             self.exportOptions.destroy()
 
-    def getSortedData(self):
+    def getSortedData(self, project):
         temp= {}
         units = {}
         mcs = {}
 
         # Get number of loads in project
-        p = deepcopy(app.getActiveProject())
+        p = project
         try:
             nLoads = len(p.loadLoc)
         except:
@@ -880,8 +922,8 @@ class DataExporter(object):
         plot = plt.subplots(constrained_layout=True)
         fig, ax = plot
 
-        ax.set_title('O\u2082 Pathway')
-        ax.set_xlabel('PvO\u2082 (mmHg)')
+        ax.set_title(r'O$_2$ Pathway')
+        ax.set_xlabel(r'PvO$_2$ (mmHg)')
         ax.set_ylim(top=5000, bottom=0)
         ax.set_xlim(left=0, right=100)
 
@@ -901,9 +943,9 @@ class DataExporter(object):
         yfmt = ticker.FuncFormatter(numfmt)
         plt.gca().yaxis.set_major_formatter(yfmt)
         if vo2unit == 'l/min':
-            plt.gca().yaxis.set_label_text('VO\u2082 (l/min)')
+            plt.gca().yaxis.set_label_text(r'VO$_2$ (l/min)')
         elif vo2unit == 'ml/min':
-            plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
+            plt.gca().yaxis.set_label_text(r'VO$_2$ (ml/min)')
 
         for i, w in enumerate(workLoads):
             coords = w.getCoords()
@@ -1063,7 +1105,7 @@ class DataExporter(object):
         return df
 
     def createProjectPlots(self, label=None, iqr=False, ci95=False):
-        dummyTest = Test()
+        dummyTest = Test(parentSubject=Subject(parentProject=app.activeProject))
         subjects = app.getActiveProject().getSubjects()
         
         app.plotMean(test=dummyTest, subjects=subjects, plotProject=True, iqr=iqr, ci95=ci95, export=True)

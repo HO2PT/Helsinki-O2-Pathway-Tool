@@ -28,7 +28,7 @@ class EnvDetails(object):
             'FiO2': self.fio2,
             'Temperature': self.temp,
             'Rh': self.rh,
-            'PiO2Method': self.pio2Method,
+            'PiO2 Method': self.pio2Method,
             'Elevation_unit': self.elevationUnit,
             'ATM_unit': self.atmUnit,
             'FiO2_unit': self.fio2Unit,
@@ -53,5 +53,5 @@ class EnvDetails(object):
             self.tempUnit = value
         elif detail == 'Rh':
             self.rh = value
-        elif detail == 'PiO2Method':
+        elif detail == 'PiO2 Method':
             self.pio2Method = value

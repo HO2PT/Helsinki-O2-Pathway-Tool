@@ -46,8 +46,12 @@ class EnvDetailModule(ttk.Labelframe):
         self.labels.append(self.rhLabel)
         self.detailRows.append(self.rhDetail)
 
-        self.calcMethod = ttk.Labelframe(self.container, text='')
-        self.calcMetodRow = envDetailRow(self.calcMethod, 'PiO2Method', 1, 5)
+        style = ttk.Style()
+        style.configure("Bold.TLabel", font=("Arial 9"))
+        self.label = ttk.Label(text="", style="Bold.TLabel")
+
+        self.calcMethod = ttk.Labelframe(self.container, labelwidget=self.label)
+        self.calcMetodRow = envDetailRow(self.calcMethod, 'PiO2 Method', 1, 5)
 
     def refresh(self):
         self.dummy.destroy()
@@ -76,8 +80,8 @@ class EnvDetailModule(ttk.Labelframe):
                 self.labels[i].configure(text=v)
 
         # PiO2 calculation method
-        self.calcMethod.configure(text='PiO\u2082 calculation method')
-        self.calcMetodRow.var.set(self.envDetails['PiO2Method'])
+        self.label.configure(text='PiO\u2082 calculation method')
+        self.calcMetodRow.var.set(self.envDetails['PiO2 Method'])
 
 class envDetailRow(object):
     def __init__(self, container, label, col, row):
@@ -90,7 +94,7 @@ class envDetailRow(object):
         self.var = StringVar()
         self.var.trace('w', self.updateVar)
 
-        if label == 'PiO2Method':  
+        if label == 'PiO2 Method':  
             self.radio1 = ttk.Radiobutton(self.container, text='U.S SA', value=0, variable=self.var)
             self.radio1.pack(anchor='w')
 

@@ -175,11 +175,14 @@ class TestList(object):
         app.envDetailModule.refresh()
 
     def editTest(self):
-        if len(self.testList.curselection()) < 2:
-            index = self.testList.curselection()[0]
-            Options(self, 'edit', index)
-        else:
-            notification.create('error', 'Select only 1 test to edit', 5000)
+        try:
+            if len(self.testList.curselection()) < 2:
+                index = self.testList.curselection()[0]
+                Options(self, 'edit', index)
+            else:
+                notification.create('error', 'Select only 1 test to edit', 5000)
+        except:
+            notification.create('error', 'Select at least 1 test to edit', 5000)
 
     def deleteTest(self):
         if len(self.testList.curselection()) > 0:

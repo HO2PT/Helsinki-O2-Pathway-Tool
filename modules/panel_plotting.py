@@ -3,6 +3,7 @@ from tkinter import ttk
 import math
 import numpy as np
 import copy
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import (
@@ -152,10 +153,10 @@ class PlotTab(ttk.Frame):
         yfmt = ticker.FuncFormatter(self.numfmt)
         plt.gca().yaxis.set_major_formatter(yfmt)
         if vo2unit == 'l/min':
-            plt.gca().yaxis.set_label_text('VO\u2082 (L/min)')
+            plt.gca().yaxis.set_label_text(r'VO$_2$ (L/min)')
             yLimit = self.plot[1].get_ylim()[1] / 1000
         elif vo2unit == 'ml/min':
-            plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
+            plt.gca().yaxis.set_label_text(r'VO$_2$ (ml/min)')
             yLimit = self.plot[1].get_ylim()[1]
 
         # Custom figure tools container
@@ -344,8 +345,11 @@ class PlotTab(ttk.Frame):
         self.plot = plt.subplots(constrained_layout=True)
         self.fig, self.ax = self.plot
 
-        self.ax.set_title('O\u2082 Pathway')
-        self.ax.set_xlabel('PvO\u2082 (mmHg)')
+        matplotlib.rcParams['font.sans-serif'] = "Arial"
+        matplotlib.rcParams['font.family'] = "sans-serif"
+
+        self.ax.set_title(r'O$_2$ Pathway')
+        self.ax.set_xlabel(r'PvO$_2$ (mmHg)')
         self.ax.set_xlim(left=0, right=100)
         self.handles = []
         ylim = []
@@ -1148,10 +1152,10 @@ class LoadMenuElem(object):
                     yValue = float(yValueVar.get())
 
                     if unit == 'l/min':
-                        plt.gca().yaxis.set_label_text('VO\u2082 (L/min)')
+                        plt.gca().yaxis.set_label_text(r'VO$_2$(L/min)')
                         yValueVar.set(yValue/1000)
                     elif unit == 'ml/min':
-                        plt.gca().yaxis.set_label_text('VO\u2082 (ml/min)')
+                        plt.gca().yaxis.set_label_text(r'VO$_2$ (ml/min)')
                         yValueVar.set(yValue*1000)
 
                     figure = app.getPlottingPanel().plots[plotIndex].plot[0]

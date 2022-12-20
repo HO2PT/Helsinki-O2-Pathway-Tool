@@ -89,16 +89,26 @@ class ProjectList(object):
         self.projectList.selection_set(self.startSel, endSel)
 
     def editProject(self):
-        if len(self.projectList.curselection()) < 2:
-            index = self.projectList.curselection()[0]
-            Options(self, 'edit', index)
-        else:
-            notification.create('error', 'Select only 1 project to edit', 5000)
+        try:
+            if len(self.projectList.curselection()) < 2:
+                index = self.projectList.curselection()[0]
+                Options(self, 'edit', index)
+            else:
+                notification.create('error', 'Select only 1 project to edit', 5000)
+        except:
+            notification.create('error', 'Select at least 1 project to edit', 5000)
 
     def deleteProject(self):
         if len(self.projectList.curselection()) > 0:
-            index = self.projectList.curselection()[0]
-            app.deleteProject(index)
+            toBeDeleted = []
+
+            for p in self.projectList.curselection():
+                toBeDeleted.append(p)
+
+            sortedToBeDeleted = sorted(toBeDeleted, reverse=True)
+            for i in sortedToBeDeleted:
+                del app.projects[i]
+            
             self.refreshList()
             app.activeProject = None
             app.activeSubject = None

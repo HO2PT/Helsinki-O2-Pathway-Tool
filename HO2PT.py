@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter.messagebox import askokcancel
-from tkinter import ttk
+from tkinter import ttk, font
 from objects.app import app
 from objects.settings import Settings
 from modules.menubar import MenuBar
@@ -10,6 +10,11 @@ from modules.panel_details import DetailsPanel
 from modules.panel_plotting import PlottingPanel
 
 root = Tk()
+
+app.defaultFont = font.nametofont("TkDefaultFont")
+app.defaultFont.configure(family="Arial",size=9)
+root.option_add("*Font", "Arial 9")
+
 root.title("Helsinki O\u2082 Pathway Tool")
 root.geometry('750x500')
 

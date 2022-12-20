@@ -12,10 +12,6 @@ class Help():
         self.window.geometry('750x500')
         self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file='Img/ho2pt.png'))
 
-        windowX = app.root.winfo_rootx() + (app.root.winfo_reqwidth()/2)
-        windowY = app.root.winfo_rooty() + (app.root.winfo_reqheight()/10)
-        self.window.geometry("+%d+%d" % ( windowX, windowY ))
-
         # Left panel
         self.leftPanel = ttk.Frame(self.window)
         self.leftPanel.pack(side=LEFT, fill=Y)
@@ -63,6 +59,10 @@ class Help():
         self.pixs = []
         self.index = 1
         self.doc = fitz.open('userInstructions.pdf')
+
+        windowX = app.root.winfo_rootx() + (app.root.winfo_width()/2) - self.window.winfo_width()/2
+        windowY = app.root.winfo_rooty() + (app.root.winfo_height()/2) - self.window.winfo_height()/2
+        self.window.geometry("+%d+%d" % ( windowX, windowY ))
 
         self.window.mainloop()
 

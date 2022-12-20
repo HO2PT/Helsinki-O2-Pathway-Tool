@@ -605,6 +605,8 @@ class Settings(object):
 
             app.testDetailModule.refreshTestDetails()
             app.envDetailModule.refresh()
+            
+        app.projectDetailModule.refreshDetails()
         self.createNotification('info', 'Settings saved', 2000)
 
     def updatePhAndTemp(self, test):
@@ -680,14 +682,14 @@ class Settings(object):
             pass
         else:
             style = ttk.Style()
-            style.configure('settings.TLabel', font=('TkDefaultFont', 12))
+            style.configure('settings.TLabel')
             
             if type == 'info':
                 style.configure('settings.TLabel', background="green", foreground="white", anchor="CENTER")
             if type == 'error':
                 style.configure('settings.TLabel', background="red", foreground="white", anchor="CENTER")
 
-            self.notif = ttk.Label(self.notification, style='settings.TLabel', text=text)
+            self.notif = ttk.Label(self.notification, style='settings.TLabel', text=text, font='Arial 12')
             self.notif.pack(fill=X)
             self.notifications.append(self.notif)
             self.notif.after(timeout, destroy)

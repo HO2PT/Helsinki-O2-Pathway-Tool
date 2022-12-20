@@ -147,11 +147,14 @@ class SubjectList(object):
         app.envDetailModule.refresh()
 
     def editSubject(self):
-        if len(self.subjectList.curselection()) < 2:
-            index = self.subjectList.curselection()[0]
-            Options(self, 'edit', index)
-        else:
-            notification.create('error', 'Select only 1 subject to edit', 5000)
+        try:
+            if len(self.subjectList.curselection()) < 2:
+                index = self.subjectList.curselection()[0]
+                Options(self, 'edit', index)
+            else:
+                notification.create('error', 'Select only 1 subject to edit', 5000)
+        except:
+            notification.create('error', 'Select at least 1 subject to edit', 5000)
 
     def deleteSubject(self):
         if len(self.subjectList.curselection()) > 0:

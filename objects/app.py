@@ -27,6 +27,8 @@ class App(object):
         self.menu = None
         self.root = None
 
+        self.defaultFont = None
+
     def setActiveTest(self, test):
         self.activeTest = test
 
@@ -232,7 +234,7 @@ class App(object):
             if iqr == True:
                 self.meanTestObject.setId(f'{self.meanTestObject.parentSubject.parentProject.id}(Median)')
             elif ci95 == True:
-                self.meanTestObject.setId('Project mean(95% CI)')
+                self.meanTestObject.setId(f'{self.meanTestObject.parentSubject.parentProject.id}(95% CI)')
             else:
                 self.meanTestObject.setId(f'{self.meanTestObject.parentSubject.parentProject.id}(Mean)')
         else:
