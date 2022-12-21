@@ -62,7 +62,10 @@ class Help():
 
         self.pixs = []
         self.index = 1
-        self.doc = fitz.open('userInstructions.pdf')
+        if app.platform == 'darwin':
+            self.doc = fitz.open(f'{app.path}/userInstructions.pdf')
+        else:
+            self.doc = fitz.open('userInstructions.pdf')
 
         self.window.update_idletasks()
         windowX = app.root.winfo_rootx() + (app.root.winfo_width()/2) - self.window.winfo_width()/2

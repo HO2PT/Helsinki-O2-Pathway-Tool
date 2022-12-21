@@ -8,8 +8,8 @@ a = Analysis(
     ['O2PathwayTool.py'],
     pathex=[],
     binaries=[],
-    datas=[('Img', 'Img'), ('templates', 'Templates'), ('userInstructions.pdf', '.')],
-    hiddenimports=['PIL._tkinter_finder'],
+    datas=[('Img', 'Img'), ('userInstructions.pdf', '.')],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -48,4 +48,10 @@ coll = COLLECT(
     upx=True,
     upx_exclude=[],
     name='O2PathwayTool',
+)
+app = BUNDLE(
+    coll,
+    name='O2PathwayTool.app',
+    icon='Img/ho2pt.ico',
+    bundle_identifier=None,
 )

@@ -27,6 +27,7 @@ class App(object):
         self.menu = None
         self.root = None
         self.platform = None
+        self.path = None
 
         self.defaultFont = None
 

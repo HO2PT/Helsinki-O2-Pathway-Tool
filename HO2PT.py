@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.messagebox import askokcancel
 from tkinter import ttk, font
 from sys import platform
+from os import path
 from objects.app import app
 from objects.settings import Settings
 from modules.menubar import MenuBar
@@ -19,6 +20,7 @@ if platform == 'linux':
 elif platform == 'darwin':
     root = ThemedTk(theme='arc')
     root.configure(bg='#F5F6F7')
+    app.path = path.abspath(path.dirname(__file__))
 else:
     root = Tk()
 
@@ -121,7 +123,10 @@ def on_closing():
         root.quit()
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
-root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='Img/ho2pt.png'))
+if app.platform == 'darwin':
+    root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file=f'{app.path}/Img/ho2pt.png'))
+else:
+    root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='/Img/ho2pt.png'))
 
 if __name__ == '__main__':
     root.mainloop()
