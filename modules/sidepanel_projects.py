@@ -16,7 +16,22 @@ class ProjectList(object):
         self.container.pack(fill = BOTH, expand=TRUE)
         self.container.configure(cursor='arrow')
 
-        self.projectList = Listbox(self.container, exportselection=FALSE, height=1, activestyle='none')
+        if app.platform == 'darwin':
+            self.projectList = Listbox(
+                self.container,
+                exportselection=FALSE, 
+                height=1, 
+                activestyle='none', 
+                background='#F5F6F7',
+                highlightbackground='#F5F6F7',
+                fg='black')
+        else:
+            self.projectList = Listbox(
+                self.container, 
+                exportselection=FALSE, 
+                height=1, 
+                activestyle='none')
+        
         self.projectList.pack(fill = BOTH, expand=TRUE)
 
         self.projectList.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
@@ -238,6 +253,9 @@ class Options():
         if app.platform == 'linux':
             container = Frame(self.win, bd=0, bg='#EFEBE7')
             footer = Frame(self.win, bd=0, bg='#EFEBE7')
+        elif app.platform == 'darwin':
+            container = Frame(self.win, bd=0, bg='#F5F6F7')
+            footer = Frame(self.win, bd=0, bg='#F5F6F7')
         else:
             container = Frame(self.win, bd=0)
             footer = Frame(self.win, bd=0)

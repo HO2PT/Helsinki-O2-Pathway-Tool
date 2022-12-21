@@ -170,6 +170,11 @@ class PlotTab(ttk.Frame):
             self.toolbar._message_label.config(background='#EFEBE7')
             for c in self.toolbar.winfo_children():
                 c.config(background='#EFEBE7')
+        elif app.platform == 'darwin':
+            self.toolbar.configure(bg='#F5F6F7')
+            self.toolbar._message_label.config(background='#F5F6F7', foreground='black')
+            for c in self.toolbar.winfo_children():
+                c.config(background='#F5F6F7', highlightbackground='#F5F6F7')
         self.toolbar.update()
         self.toolbar.pack(fill=X)
         
@@ -249,10 +254,13 @@ class PlotTab(ttk.Frame):
         self.canvas.draw()
 
     def changeCursor(self, e):
+        print(e.y)
         if self.loadNotebookFrame.identify(e.x, e.y) == 'border':
-            self.loadNotebookFrame.configure(cursor='sb_h_double_arrow')
+            if e.y > 25:
+                self.loadNotebookFrame.configure(cursor='sb_h_double_arrow')
         else:
             self.loadNotebookFrame.configure(cursor='arrow')
+            self.loadNotebook.configure(cursor='arrow')
     
     def numfmt(self, x, pos=None):
             vo2unit = self.workLoadDetailsObjects[0].VO2_unit
@@ -319,12 +327,18 @@ class PlotTab(ttk.Frame):
                 width = self.loadNotebookFrame.winfo_width()
 
                 if width < minWidth:
-                    self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
+                    if app.platform == 'darwin':
+                        self.indicator.configure(text='<', foreground='white', background='#4eb1ff')
+                    else: 
+                        self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
                 else:
                     self.indicator.configure(text='', background=app.root.cget('bg'))
             else:
                 self.loadNotebookFrame.configure(width=10)
-                self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
+                if app.platform == 'darwin':
+                    self.indicator.configure(text='<', foreground='white', background='#4eb1ff')
+                else:
+                    self.indicator.configure(text='\u2B9C', foreground='white', background='#4eb1ff')
 
     def resize(self, event):
         self.loadNotebookFrame.pack_propagate(False)
@@ -514,7 +528,10 @@ class PlotLoadTab(ttk.Frame):
         self.upperPart = ttk.Frame(self)
         self.upperPart.pack(fill=Y, expand=True, anchor='nw')
 
-        self.canvas = Canvas(self.upperPart)
+        if app.platform == 'darwin':
+            self.canvas = Canvas(self.upperPart, highlightbackground='#F5F6F7')
+        else:
+            self.canvas = Canvas(self.upperPart)
         self.scrollbar = ttk.Scrollbar(self.upperPart, orient=VERTICAL, command=self.canvas.yview)
         self.contentWrapper = ttk.Frame(self.canvas)
         self.contentWrapper.bind(
@@ -693,6 +710,8 @@ class PlotOptions(object):
         self.lineTypeMenuButton = ttk.Menubutton(self.plotOptions)
         if app.platform == 'linux':
             lineTypeMenu = Menu(self.lineTypeMenuButton, tearoff=False, background='#EFEBE7')
+        elif app.platform == 'darwin':
+            lineTypeMenu = Menu(self.lineTypeMenuButton, tearoff=False, background='#F5F6F7')
         else:
             lineTypeMenu = Menu(self.lineTypeMenuButton, tearoff=False)
         lineTypeMenu.add_command(label='Solid', command=lambda: self.changeLineType(0))
@@ -718,6 +737,8 @@ class PlotOptions(object):
 
         if app.platform == 'linux':
             lineColorMenu = Menu(self.lineColorMenuButton, tearoff=False, background='#EFEBE7')
+        elif app.platform == 'darwin':
+            lineColorMenu = Menu(self.lineColorMenuButton, tearoff=False, background='#F5F6F7')
         else:
             lineColorMenu = Menu(self.lineColorMenuButton, tearoff=False)
         lineColorMenu.add_command(label='Blue', command=lambda: self.changeColor(0))
@@ -906,6 +927,8 @@ class LoadTabRow(ttk.Frame):
                         self.menuButton.config(text=self.envDetails[f'{self.label}_unit'])
                     if app.platform == 'linux':
                         tempMenu = Menu(self.menuButton, tearoff=False, background='#EFEBE7')
+                    elif app.platform == 'darwin':
+                        tempMenu = Menu(self.menuButton, tearoff=False, background='#F5F6F7')
                     else:
                         tempMenu = Menu(self.menuButton, tearoff=False)
 

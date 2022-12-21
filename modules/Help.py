@@ -16,7 +16,11 @@ class Help():
         self.leftPanel = ttk.Frame(self.window)
         self.leftPanel.pack(side=LEFT, fill=Y)
 
-        self.progressionList = Listbox(self.leftPanel, width=25)
+        if app.platform == 'darwin':
+            self.progressionList = Listbox(self.leftPanel, width=25, bg='#F5F6F7', fg='black')
+        else:
+            self.progressionList = Listbox(self.leftPanel, width=25)
+        
         options = [
             'Modeling',
             'Layout',

@@ -98,12 +98,18 @@ class SidePanel(ttk.Frame):
                 containerWidth = self.sidePanel.winfo_width()
 
                 if containerWidth < minWidth:
-                    self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
+                    if app.platform == 'darwin':
+                        self.indicator.configure(text='>', foreground='white', background='#4eb1ff')
+                    else:
+                        self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
                 else:
                     self.indicator.configure(text='', background=app.root.cget('bg'))
             else:
                 self.sidePanel.configure(height=self.sidePanel.winfo_height(), width=10)
-                self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
+                if app.platform == 'darwin':
+                    self.indicator.configure(text='>', foreground='white', background='#4eb1ff')
+                else:
+                    self.indicator.configure(text='\u2B9E', foreground='white', background='#4eb1ff')
 
     def defSize(self, event):
         self.indicator.configure(text='', background=app.root.cget('bg'))

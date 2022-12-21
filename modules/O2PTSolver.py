@@ -392,6 +392,7 @@ class O2PTSolver():
 
         if self.preventCorrection:
             PvO2_corrected = PvO2_calc
+            p50 = self.d['p50']
         else:
             # Modeling from 37/7.4 -> 38.5/7.03 should produce same results as 38.5/7.03
             if (pH0 == pH and T0 == T):

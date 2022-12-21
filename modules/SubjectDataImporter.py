@@ -202,9 +202,18 @@ class SubjectDataImporter(object):
 
             # Progression
             ttk.Label(self.leftPanel, text='Subject import steps').pack()
-            self.progressionList = Listbox(self.leftPanel, yscrollcommand=self.yScroll.set, activestyle='none')
+            if app.platform == 'darwin':
+                self.progressionList = Listbox(self.leftPanel, yscrollcommand=self.yScroll.set, activestyle='none', bg='#F5F6F7', fg='black')
+            else:
+                self.progressionList = Listbox(self.leftPanel, yscrollcommand=self.yScroll.set, activestyle='none')
+
+            if app.platform == 'darwin':
+                self.arrow = '\U000021E6'
+            else:
+                self.arrow = '\U0001F878'
+            
             options = [
-                'Test ID(s) * \U0001F878',
+                f'Test ID(s) * {self.arrow}',
                 'Load(s) *',
                 'VO\u2082 *',
                 '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015',
@@ -307,6 +316,9 @@ class SubjectDataImporter(object):
             self.dataTable.rowheader.clearSelected()
             self.dataTable.setSelectedCol(-1)
             self.dataTable.setSelectedRow(-1)
+
+            if app.platform == 'darwin':
+                self.dataTable.tablecolheader = self.dataTable.colheader
             
             self.dataTable.tablecolheader.bind('<Button-1>', self.selectCol)
             self.dataTable.tablecolheader.bind('<Control-Button-1>', self.handleColCtrlSelection)
@@ -630,7 +642,10 @@ class SubjectDataImporter(object):
     def getInput(self):
         col = self.dataTable.getSelectedColumn()
         row = self.dataTable.getSelectedRow()
-        rows = self.dataTable.getSelectedRows()
+        if app.platform == 'darwin':
+            rows = self.dataTable.getSelectedRowData()
+        else:
+            rows = self.dataTable.getSelectedRows()
         colList = self.dataTable.multiplecollist
         rowList = self.dataTable.multiplerowlist
         self.colValues = []
@@ -658,7 +673,10 @@ class SubjectDataImporter(object):
 
             self.options.bind('<Configure>', move)
 
-            container = Frame(self.options, bd=0, padx=10, pady=10)
+            if app.platform == 'darwin':
+                container = Frame(self.options, bd=0, padx=10, pady=10, bg='#F5F6F7')
+            else:
+                container = Frame(self.options, bd=0, padx=10, pady=10)
             container.pack()            
             var = IntVar()
             ttk.Label(container, text='Selection contains single ID or multiple IDs?').pack()
@@ -1182,15 +1200,15 @@ class SubjectDataImporter(object):
 
     def moveArrow(self, from_, to):
         value = self.progressionList.get(from_)
-        if '\U0001F878' in value:
-            value = value.replace('\U0001F878','')
+        if self.arrow in value:
+            value = value.replace(self.arrow,'')
             value = value.strip()
         self.progressionList.delete(from_)
         self.progressionList.insert(from_, value)
 
         value = self.progressionList.get(to)
-        if '\U0001F878' not in value:
-            value = f'{value} \U0001F878'
+        if self.arrow not in value:
+            value = f'{value} {self.arrow}'
         self.progressionList.delete(to)
         self.progressionList.insert(to, value)
 

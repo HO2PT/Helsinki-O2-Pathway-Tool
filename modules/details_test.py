@@ -263,6 +263,9 @@ class LoadNotebook(object):
         if app.platform == 'linux':
             container = Frame(editscreen, bd=0, padx=10, pady=10,bg='#EFEBE7')
             footer = Frame(editscreen, bd=0, padx=10, bg='#EFEBE7')
+        elif app.platform == 'darwin':
+            container = Frame(editscreen, bd=0, padx=10, pady=10,bg='#F5F6F7')
+            footer = Frame(editscreen, bd=0, padx=10, bg='#F5F6F7')
         else:
             container = Frame(editscreen, bd=0, padx=10, pady=10)
             footer = Frame(editscreen, bd=0, padx=10)

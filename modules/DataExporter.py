@@ -55,6 +55,8 @@ class DataExporter(object):
 
             if app.platform == 'linux':
                 self.exportOptions = Toplevel(borderwidth=10, bg='#EFEBE7')
+            elif app.platform == 'darwin':
+                self.exportOptions = Toplevel(borderwidth=10, bg='#F5F6F7')
             else:
                 self.exportOptions = Toplevel(borderwidth=10)
             self.exportOptions.title("Export options")
@@ -390,12 +392,12 @@ class DataExporter(object):
 
             # Create excel
             try:
-                if app.platform == 'linux':
+                if app.platform == 'linux' or app.platform == 'darwin':
                     self.exportOptions.withdraw()
                     self.overLay.withdraw()
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                 if saveFile:
-                    if app.platform == 'linux':
+                    if app.platform == 'linux' or app.platform == 'darwin':
                         name = saveFile
                     else:
                         name = f'{saveFile}.xlsx'
@@ -456,12 +458,12 @@ class DataExporter(object):
 
             # Create excel
             try:
-                if app.platform == 'linux':
+                if app.platform == 'linux' or app.platform == 'darwin':
                     self.exportOptions.withdraw()
                     self.overLay.withdraw()
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                 if saveFile:
-                    if app.platform == 'linux':
+                    if app.platform == 'linux' or app.platform == 'darwin':
                         name = saveFile
                     else:
                         name = f'{saveFile}.xlsx'
@@ -595,12 +597,12 @@ class DataExporter(object):
 
             # Create excel
             try:
-                if app.platform == 'linux':
+                if app.platform == 'linux' or app.platform == 'darwin':
                     self.exportOptions.withdraw()
                     self.overLay.withdraw()
                 saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                 if saveFile:
-                    if app.platform == 'linux':
+                    if app.platform == 'linux' or app.platform == 'darwin':
                         name = saveFile
                     else:
                         name = f'{saveFile}.xlsx'
@@ -768,13 +770,13 @@ class DataExporter(object):
 
             if noErrors:
                 try:
-                    if app.platform == 'linux':
+                    if app.platform == 'linux' or app.platform == 'darwin':
                         self.exportOptions.withdraw()
                         self.overLay.withdraw()
                     saveFile = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"), ("All files", "*.*") ))
                     if saveFile:
                         # Create excel
-                        if app.platform == 'linux':
+                        if app.platform == 'linux' or app.platform == 'darwin':
                             name = saveFile
                         else:
                             name = f'{saveFile}.xlsx'

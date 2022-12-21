@@ -45,18 +45,21 @@ class DetailsPanel(ttk.Frame):
         self.buttonWrap = ttk.Frame(self.upPart)
         self.buttonWrap.pack(side=RIGHT, fill=Y)
 
-        s = ttk.Style()
-        s.configure('plotButton.TButton', background='red')
+        #s = ttk.Style()
+        #s.configure('plotButton.TButton', background='red')
 
-        self.plotButton = Button(self.buttonWrap,
-            text='PLOT', 
-            bg='#1d7eb5',
-            fg = 'white',
-            font='Arial 9 bold',
-            bd= 5,
-            relief='raised',
-            command=self.plotData
-        )
+        if app.platform == 'darwin':
+            self.plotButton = ttk.Button(self.buttonWrap,text='PLOT',command=self.plotData)
+        else:
+            self.plotButton = Button(self.buttonWrap,
+                text='PLOT', 
+                bg='#1d7eb5',
+                fg = 'white',
+                font='Arial 9 bold',
+                bd= 5,
+                relief='raised',
+                command=self.plotData
+            )
         self.plotButton.pack(fill=BOTH, expand=True)
 
         if app.platform == 'linux':
@@ -111,12 +114,18 @@ class DetailsPanel(ttk.Frame):
                 containerHeight = self.detailsPanel.winfo_height()
 
                 if containerHeight < minHeight:
-                    self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
+                    if app.platform == 'darwin':
+                        self.indicator.configure(text='\U000002C5', foreground='white', background='#4eb1ff')
+                    else:
+                        self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
                 else:
                     self.indicator.configure(text='', background=app.root.cget('bg'))
             else:
                 self.detailsPanel.configure(height=20, width=self.detailsPanel.winfo_reqwidth())
-                self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
+                if app.platform == 'darwin':
+                    self.indicator.configure(text='\U000002C5', foreground='white', background='#4eb1ff')
+                else:
+                    self.indicator.configure(text='\u2B9F', foreground='white', background='#4eb1ff')
 
     def changeCursor(self, e):
         if e.y > self.detailsPanel.winfo_height() - self.frame_thickness:

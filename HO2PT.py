@@ -16,7 +16,9 @@ app.platform = platform
 if platform == 'linux':
     root = ThemedTk(theme='clearlooks')
     root.configure(bg='#EFEBE7')
-    
+elif platform == 'darwin':
+    root = ThemedTk(theme='arc')
+    root.configure(bg='#F5F6F7')
 else:
     root = Tk()
 

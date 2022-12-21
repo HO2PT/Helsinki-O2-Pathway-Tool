@@ -46,11 +46,10 @@ class EnvDetailModule(ttk.Labelframe):
         self.labels.append(self.rhLabel)
         self.detailRows.append(self.rhDetail)
 
-        style = ttk.Style()
-        style.configure("Bold.TLabel", font=("Arial 9"))
-        self.label = ttk.Label(text="", style="Bold.TLabel")
+        self.style = ttk.Style()
+        self.style.configure("pio2.TLabelframe.Label", font=("Arial 9"))
 
-        self.calcMethod = ttk.Labelframe(self.container, labelwidget=self.label)
+        self.calcMethod = ttk.Labelframe(self.container, style='pio2.TLabelframe')
         self.calcMetodRow = envDetailRow(self.calcMethod, 'PiO2 Method', 1, 5)
 
     def refresh(self):
@@ -80,7 +79,7 @@ class EnvDetailModule(ttk.Labelframe):
                 self.labels[i].configure(text=v)
 
         # PiO2 calculation method
-        self.label.configure(text='PiO\u2082 calculation method')
+        self.calcMethod.configure(text='PiO\u2082 calculation method')
         self.calcMetodRow.var.set(self.envDetails['PiO2 Method'])
 
 class envDetailRow(object):

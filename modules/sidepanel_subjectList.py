@@ -15,7 +15,21 @@ class SubjectList(object):
         self.container.configure(cursor='arrow')
         self.startSel = None
 
-        self.subjectList = Listbox(self.container, exportselection=FALSE, height=1, activestyle='none')
+        if app.platform == 'darwin':
+            self.subjectList = Listbox(
+                self.container, 
+                exportselection=FALSE, 
+                height=1, 
+                activestyle='none', 
+                background='#F5F6F7',
+                highlightbackground='#F5F6F7',
+                fg='black')
+        else:
+            self.subjectList = Listbox(
+                self.container, 
+                exportselection=FALSE, 
+                height=1, 
+                activestyle='none')
         self.subjectList.pack(fill = BOTH, expand=TRUE)
         self.subjectList.bind( '<<ListboxSelect>>', self.handleListboxSelect)
         self.subjectList.bind('<Control-Button-1>', self.handleCtrlSelect)
@@ -307,6 +321,9 @@ class Options():
         if app.platform == 'linux':
             container = Frame(self.win, bd=0, bg='#EFEBE7')
             footer = Frame(self.win, bd=0, bg='#EFEBE7')
+        elif app.platform == 'darwin':
+            container = Frame(self.win, bd=0, bg='#F5F6F7')
+            footer = Frame(self.win, bd=0, bg='#F5F6F7')
         else:
             container = Frame(self.win, bd=0)
             footer = Frame(self.win, bd=0)

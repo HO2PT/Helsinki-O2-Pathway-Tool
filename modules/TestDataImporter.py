@@ -318,6 +318,9 @@ class TestDataImporter():
             self.dataTable.clearSelected()
             self.dataTable.rowheader.clearSelected()
 
+            if app.platform == 'darwin':
+                self.dataTable.tablecolheader = self.dataTable.colheader
+
             # Override original bindings
             self.dataTable.tablecolheader.bind('<1>', self.handle_col_left_click)
             self.dataTable.tablecolheader.bind('<Double-Button-1>', self.collapseCol)

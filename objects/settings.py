@@ -314,7 +314,10 @@ class Settings(object):
         initY = int(app.root.winfo_screenheight()) * 0.5 - int(self.settingsWindow.winfo_height()) * 0.5
         self.settingsWindow.geometry("+%d+%d" % ( initX, initY ))
         
-        self.sideMenu = Listbox(self.settingsWindow, exportselection=FALSE, width=20)
+        if app.platform == 'darwin':
+            self.sideMenu = Listbox(self.settingsWindow, exportselection=FALSE, width=20, background='#F5F6F7', highlightbackground='#F5F6F7', fg='black')
+        else:
+            self.sideMenu = Listbox(self.settingsWindow, exportselection=FALSE, width=20)
         self.sideMenu.pack(side=LEFT, fill=Y)
         self.sideMenu.pack_propagate(False)
         self.sideMenu.bind( '<<ListboxSelect>>', lambda e: self.handleListboxSelect() )
@@ -326,6 +329,8 @@ class Settings(object):
         self.notification = ttk.Frame(self.rightContainer, height=20)
         if app.platform == 'linux':
             self.canvas = Canvas(self.rightContainer, bg='#EFEBE7')
+        elif app.platform == 'darwin':
+            self.canvas = Canvas(self.rightContainer, bg='#F5F6F7', highlightbackground='#F5F6F7')
         else:
             self.canvas = Canvas(self.rightContainer)
         self.scrollbar = ttk.Scrollbar(self.rightContainer, orient=VERTICAL, command=self.canvas.yview)
@@ -459,6 +464,8 @@ class Settings(object):
 
             if app.platform == 'linux':
                 elevMenu = Menu(elevMenuButton, tearoff=False, background='#EFEBE7')
+            elif app.platform == 'darwin':
+                elevMenu = Menu(elevMenuButton, tearoff=False, background='#F5F6F7')
             else:
                 elevMenu = Menu(elevMenuButton, tearoff=False)
             for i, u in enumerate(units):
@@ -480,6 +487,8 @@ class Settings(object):
 
             if app.platform == 'linux':
                 atmMenu = Menu(atmMenuButton, tearoff=False, background='#EFEBE7')
+            elif app.platform == 'darwin':
+                atmMenu = Menu(atmMenuButton, tearoff=False, background='#F5F6F7')
             else:
                 atmMenu = Menu(atmMenuButton, tearoff=False)
             for i, u in enumerate(units):
@@ -508,6 +517,8 @@ class Settings(object):
 
             if app.platform == 'linux':
                 tempMenu = Menu(tempMenuButton, tearoff=False, background='#EFEBE7')
+            elif app.platform == 'darwin':
+                tempMenu = Menu(tempMenuButton, tearoff=False, background='#F5F6F7')
             else:
                 tempMenu = Menu(tempMenuButton, tearoff=False)
             for i, u in enumerate(units):
@@ -745,6 +756,8 @@ class SettingsRow(object):
             if len(settings.units[f"{label}_units"]) != 1:
                 if app.platform == 'linux':
                     menu = Menu(self.menuButton, tearoff=False, background='#EFEBE7')
+                elif app.platform == 'darwin':
+                    menu = Menu(self.menuButton, tearoff=False, background='#F5F6F7')
                 else:
                     menu = Menu(self.menuButton, tearoff=False)
                 units = settings.units[f"{label}_units"]

@@ -17,7 +17,23 @@ class TestList(object):
         self.startSel = None
         self.prevSelected = None
 
-        self.testList = Listbox(self.container, exportselection=FALSE, height=1, selectmode=SINGLE, activestyle='none')
+        if app.platform == 'darwin':
+            self.testList = Listbox(
+                self.container, 
+                exportselection=FALSE, 
+                height=1, 
+                selectmode=SINGLE, 
+                activestyle='none', 
+                background='#F5F6F7',
+                highlightbackground='#F5F6F7',
+                fg='black')
+        else:
+            self.testList = Listbox(
+                self.container, 
+                exportselection=FALSE, 
+                height=1, 
+                selectmode=SINGLE, 
+                activestyle='none')
         self.testList.pack(fill = BOTH, expand=TRUE)
         self.testList.bind('<Double-1>', self.handleListboxSelect)
         self.testList.bind('<1>', self.setStartSel)
@@ -336,6 +352,9 @@ class Options():
         if app.platform == 'linux':
             container = Frame(self.win, bd=0, bg='#EFEBE7')
             footer = Frame(self.win, bd=0, bg='#EFEBE7')
+        elif app.platform == 'darwin':
+            container = Frame(self.win, bd=0, bg='#F5F6F7')
+            footer = Frame(self.win, bd=0, bg='#F5F6F7')
         else:
             container = Frame(self.win, bd=0)
             footer = Frame(self.win, bd=0)
