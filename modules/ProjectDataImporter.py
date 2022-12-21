@@ -330,7 +330,7 @@ class ProjectDataImporter(object):
             self.dataTable.setSelectedCol(-1)
             self.dataTable.setSelectedRow(-1)
 
-            if app.platform == 'darwin':
+            if app.platform == 'linux' or app.platform == 'darwin':
                 self.dataTable.tablecolheader = self.dataTable.colheader
             
             self.dataTable.tablecolheader.bind('<Button-1>', self.selectCol)
@@ -653,7 +653,7 @@ class ProjectDataImporter(object):
     def getInput(self):
         col = self.dataTable.getSelectedColumn()
         row = self.dataTable.getSelectedRow()
-        if app.platform == 'darwin':
+        if app.platform == 'linux' or app.platform == 'darwin':
             rows = self.dataTable.getSelectedRowData()
         else:
             rows = self.dataTable.getSelectedRows()
@@ -684,7 +684,9 @@ class ProjectDataImporter(object):
 
             self.options.bind('<Configure>', move)
 
-            if app.platform == 'darwin':
+            if app.platform == 'linux':
+                container = Frame(self.options, bd=0, padx=10, pady=10, bg='#EFEBE7')
+            elif app.platform == 'darwin':
                 container = Frame(self.options, bd=0, padx=10, pady=10, bg='#F5F6F7')
             else:
                 container = Frame(self.options, bd=0, padx=10, pady=10)

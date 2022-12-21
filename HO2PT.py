@@ -126,7 +126,7 @@ root.protocol("WM_DELETE_WINDOW", on_closing)
 if app.platform == 'darwin':
     root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file=f'{app.path}/Img/ho2pt.png'))
 else:
-    root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='/Img/ho2pt.png'))
+    root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='Img/ho2pt.png'))
 
 if __name__ == '__main__':
     root.mainloop()

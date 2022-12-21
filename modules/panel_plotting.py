@@ -254,7 +254,6 @@ class PlotTab(ttk.Frame):
         self.canvas.draw()
 
     def changeCursor(self, e):
-        print(e.y)
         if self.loadNotebookFrame.identify(e.x, e.y) == 'border':
             if e.y > 25:
                 self.loadNotebookFrame.configure(cursor='sb_h_double_arrow')

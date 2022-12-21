@@ -170,7 +170,11 @@ class TestDataImporter():
             self.yScroll.pack(side=RIGHT, fill=Y)
 
             # Progression
-            self.treeView = ttk.Treeview(self.leftPanel, selectmode='browse')
+            if app.platform == 'linux':
+                s = ttk.Style().configure('Treeview', fieldbackground='#EFEBE7')
+                self.treeView = ttk.Treeview(self.leftPanel, selectmode='browse', style='Treeview')
+            else:
+                self.treeView = ttk.Treeview(self.leftPanel, selectmode='browse')
 
             # Create initial treeview
             for i, l in enumerate(self.test.workLoads):
@@ -318,7 +322,7 @@ class TestDataImporter():
             self.dataTable.clearSelected()
             self.dataTable.rowheader.clearSelected()
 
-            if app.platform == 'darwin':
+            if app.platform == 'linux' or app.platform == 'darwin':
                 self.dataTable.tablecolheader = self.dataTable.colheader
 
             # Override original bindings
