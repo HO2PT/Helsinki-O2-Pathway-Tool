@@ -120,9 +120,6 @@ class WorkLoadDetails(object):
         if label == 'QaO2_unit': 
             self.QaO2_unit = unit
 
-        if label == 'T_unit': 
-            self.T_unit = unit
-
         if label == 'T @ rest_unit': 
             self.Trest_unit = unit
 
@@ -169,7 +166,7 @@ class WorkLoadDetails(object):
         if label == 'QaO2_MC': 
             self.QaO2_MC = value
 
-        if label == 'Trest_MC': 
+        if label == 'T @ rest_MC': 
             self.Trest_MC = value
 
         if label == 'T_MC': 
@@ -309,13 +306,13 @@ class WorkLoadDetails(object):
             'PvO2_unit': self.PvO2_unit,
             'PvO2_MC': self.PvO2_MC,
 
-            'T': self.T,
-            'T_unit': self.T_unit,
-            'T_MC': self.T_MC,
-
             'T @ rest': self.Trest,
             'T @ rest_unit': self.Trest_unit,
             'T @ rest_MC': self.Trest_MC,
+
+            'T': self.T,
+            'T_unit': self.T_unit,
+            'T_MC': self.T_MC,
 
             'pH @ rest': self.pHrest,
             'pH @ rest_unit': self.pHrest_unit,
