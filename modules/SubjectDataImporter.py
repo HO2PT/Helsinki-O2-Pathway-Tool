@@ -41,6 +41,7 @@ class SubjectDataImporter(object):
         self.newSubject = False
         self.newProject = False
         self.testList = []
+        self.subjectList = []
         self.imported = {
             0: False,
             1: False,
@@ -109,75 +110,67 @@ class SubjectDataImporter(object):
                     'QaO2',
                     'SvO2',
                     'PvO2',
+                    'T @ rest',
                     'T',
+                    'pH @ rest',
                     'pH'
                 ]
 
                 # Check if template excel is used and import data automatically
                 for sheetName, sheet in self.dfList.items():
                     if sheet.loc[0,0] == 'Subject-template':
+                        self.subject = Subject(parentProject=self.project)
                         self.subject.setId(self.dfList[sheetName].loc[2,1]) #loc[y,x]
                         self.cols = []
 
-                        testId = f'{self.subject.id}-{sheetName}'
-                        self.test = Test(id=testId, parentSubject=self.subject)
-                        self.testList.append(self.test)
-
-                        self.test.workLoads = []
-
-                        # Check the number of loads and save column indexes
+                        # Check the number of tests and save column indexes
                         for i, x in enumerate(self.dfList[sheetName].loc[4,:]):
-                            if 'Load' in str(x):
+                            if 'Test' in str(x):
+                                self.cols.append(i)
+                            elif 'Unit' in str(x):
                                 self.cols.append(i)
 
-                        # Import values load by load
+                        # Import values test by test
                         for i in self.cols:
+                            # Check if column is empty
                             colHasValues = False
-
                             for value in self.dfList[sheetName].loc[5:,i]:
                                 if value != '':
                                     colHasValues = True
                             
-                            # If there are values given -> create a workload
+                            # If there are values given -> create a test
                             if colHasValues:
-                                newLoad = self.test.createLoad()
-                                newLoad.setName(sheet.loc[4,i])
-                                newLoad.details.isImported = True
+                                testId = f'Test-{i}'
+                                self.test = Test(id=testId, parentSubject=self.subject)
+                                self.test.workLoads[0].details.isImported = True
                                 
-                                # Start importing from row 5
+                                # Start importing from row 5 (row 6 in excel)
                                 index = 5
                                 for p in params:
                                     value = self.dfList[sheetName].loc[index,i]
                                     
                                     # Replace null values with 0
                                     if value == '':
-                                        value = 0
+                                        if p == 'pH':
+                                            value = float(app.settings.testDefaults['pH'])
+                                        elif p == 'pH @ rest':
+                                            value = float(app.settings.testDefaults['pH @ rest'])
+                                        elif p == 'T':
+                                            value = float(app.settings.testDefaults['T'])
+                                        elif p == 'T @ rest':
+                                            value = float(app.settings.testDefaults['T @ rest'])
+                                        else:
+                                            value = 0
 
-                                    newLoad.details.setValue(p, value)
+                                    self.test.workLoads[0].details.setValue(p, value)
                                     index += 1
+
+                                self.subject.addTest(self.test)
                             else:
                                 continue
-
+                        
+                        self.subjectList.append(self.subject)
                         self.templateUsed = True
-
-                for t in self.testList:
-                    tempAddLinearity = False
-                    pHAddLinearity = False
-
-                    for w in t.workLoads:
-                        details = w.details.getWorkLoadDetails()
-                        if details['T'] == 0:
-                            tempAddLinearity = True
-                        if details['pH'] == 0:
-                            pHAddLinearity = True
-
-                    if tempAddLinearity:
-                        # self.addLinearDistT(t)
-                        self.applyDefaultPHandT(t)
-
-                    if pHAddLinearity:
-                        # self.addLinearDistPH(t)
-                        self.applyDefaultPHandT(t)
                 
             if self.templateUsed:
                 self.closeImporter(mode=1)
@@ -930,15 +923,14 @@ class SubjectDataImporter(object):
 
             # Add subject
             if self.newSubject:
-                app.sidepanel_subjectList.addToList(self.subject)
+                for s in self.subjectList:
+                    self.project.addSubject(s)
+                app.sidepanel_subjectList.refreshList()
                 app.sidepanel_subjectList.updateSelection()
-                self.project.addSubject(self.subject)
-                app.setActiveSubject(self.subject)
+                app.setActiveSubject(self.subjectList[-1])
 
             # Add test
-            for t in self.testList:
-                app.sidepanel_testList.addToList(t.id)
-                self.subject.addTest(t)
+            app.sidepanel_testList.refreshList()
 
             app.projectDetailModule.refreshDetails()
             app.testDetailModule.refreshTestDetails()

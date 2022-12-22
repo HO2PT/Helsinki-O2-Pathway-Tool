@@ -97,7 +97,9 @@ class ProjectDataImporter(object):
                         'QaO2',
                         'SvO2',
                         'PvO2',
+                        'T @ rest',
                         'T',
+                        'pH @ rest',
                         'pH'
                 ]
                     
@@ -139,57 +141,23 @@ class ProjectDataImporter(object):
                                         subject = self.subjectList[subjectIndex]
                                         test = subject.tests[0]
 
-                                        if value != '':
-                                            if 'Rest' in c[5]:
-                                                if 'pH' in c[5]:
-                                                    test.workLoads[0].details.setValue(f'{p} @ rest', value)
-                                                elif 'T' in c[5]:
-                                                    test.workLoads[0].details.setValue(f'{p}c @ rest', value)
-            
-                                                test.workLoads[0].details.setValue(p, value)
-
-                                            elif 'Max' in c[5]:
-                                                test.workLoads[-1].details.setValue(p, value)
-
+                                        if value == '':
+                                            if p == 'pH':
+                                                test.workLoads[0].details.setValue(p, float(app.settings.testDefaults['pH']))
+                                            elif p == 'pH @ rest':
+                                                test.workLoads[0].details.setValue(p, float(app.settings.testDefaults['pH @ rest']))
+                                            elif p == 'T':
+                                                test.workLoads[0].details.setValue(p, float(app.settings.testDefaults['T']))
+                                            elif p == 'T @ rest':
+                                                test.workLoads[0].details.setValue(p, float(app.settings.testDefaults['T @ rest']))
                                             else:
-                                                if c[5] == '[Hb]':
-                                                    for index in range(len(test.workLoads)):
-                                                        test.workLoads[index].details.setValue(p, value)
-                                                else:
-                                                    loadIndex = int(c[5].split('-')[1])
-                                                    test.workLoads[loadIndex].details.setValue(p, value)
+                                                test.workLoads[0].details.setValue(p, 0)
                                         else:
-                                            if 'pH' in p or 'T' in p:
-                                                if 'Rest' in c[5]:
-                                                    test.workLoads[0].details.setValue(p, 0)
-                                                elif 'Max' in c[5]:
-                                                    test.workLoads[-1].details.setValue(p, 0)
-                                                else:
-                                                    loadIndex = int(c[5].split('-')[1])
-                                                    if len(test.workLoads) > loadIndex:
-                                                        test.workLoads[loadIndex].details.setValue(p, 0)
-
+                                            test.workLoads[0].details.setValue(p, value)
+                                        
                     # Add subjects
                     for s in self.subjectList:
                         tempProject.addSubject(s)
-                        tempAddLinearity = False
-                        pHAddLinearity = False
-
-                        # Check if linear distribution in pH or T is needed and apply
-                        for w in s.tests[0].workLoads:
-                            details = w.details.getWorkLoadDetails()
-                            if details['T'] == 0:
-                                tempAddLinearity = True
-                            if details['pH'] == 0:
-                                pHAddLinearity = True
-
-                        if tempAddLinearity:
-                            # self.addLinearDistT(s.tests[0])
-                            self.applyDefaultPHandT(s.tests[0])
-
-                        if pHAddLinearity:
-                            # self.addLinearDistPH(s.tests[0])
-                            self.applyDefaultPHandT(s.tests[0])
                 
             if self.templateUsed:
                 tempProject.data = self.dfList
@@ -1271,65 +1239,6 @@ class ProjectDataImporter(object):
             decimals = app.settings.decimals[test.workLoads[0].details.getWorkLoadDetails()['T_unit']]
             l.details.setValue('T', f'{"{0:.{decimals}f}".format(Tpeak, decimals=decimals)}')
             l.details.setValue('T @ rest', f'{"{0:.{decimals}f}".format(Trest, decimals=decimals)}')
-
-    """ def addLinearDistPH(self, test):
-        pHrest = float(app.settings.testDefaults['pH @ rest'])
-        pHpeak = float(app.settings.testDefaults['pH'])
-        pHDif = float(pHrest) - float(pHpeak)
-
-        # Filter possible empty loads
-        nFilteredLoads = 0
-        filteredLoads = []
-        for i, l in enumerate(test.workLoads):
-            detailsDict = l.getDetails().getWorkLoadDetails()
-                        
-            if i == 0 or detailsDict['Load'] != 0:
-                nFilteredLoads += 1
-                filteredLoads.append(l)
-
-        if nFilteredLoads > 1:
-            if pHrest != pHpeak:
-                test.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
-
-            pHstep = pHDif / (nFilteredLoads-1)
-        else:
-            pHstep = 0
-        
-        # Add linear distribution
-        for i, w in enumerate(filteredLoads):
-            details = w.getDetails()
-            pHValue = pHrest - (i * pHstep)
-            details.setValue('pH', f'{"{0:.2f}".format(pHValue)}')
-    
-    def addLinearDistT(self, test):
-        Trest = float(app.settings.testDefaults['T @ rest'])
-        Tpeak = float(app.settings.testDefaults['T'])
-        Tdif = float(Tpeak) - float(Trest)
-
-        # Filter possible empty loads
-        nFilteredLoads = 0
-        filteredLoads = []
-        for i, l in enumerate(test.workLoads):
-            detailsDict = l.getDetails().getWorkLoadDetails()
-                        
-            if i == 0 or detailsDict['Load'] != 0:
-                nFilteredLoads += 1
-                filteredLoads.append(l)
-
-        if nFilteredLoads > 1:
-            if Trest != Tpeak:
-                test.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
-
-            Tstep = Tdif / (nFilteredLoads-1)
-        else:
-            Tstep = 0
-
-        # Add linear distribution
-        for i, w in enumerate(filteredLoads):
-            details = w.getDetails()
-
-            Tvalue = Trest + (i * Tstep)
-            details.setValue('T', f'{"{0:.1f}".format(Tvalue)}') """
         
 class DataMenuElem(object):
     def __init__(self, importer, menu, menuButton, option, isExporter = False):

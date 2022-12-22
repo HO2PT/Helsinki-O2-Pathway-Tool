@@ -12,7 +12,7 @@ from objects.app import app
 from modules.notification import notification
 
 ##
-# This class is used to import data for a single test.
+# This class is used to import data for a test.
 # The class is initialized from the menubar (menubar.py) or from the 
 # sidepanel's testlist (sidepanel_testList.py)
 ##
@@ -78,7 +78,9 @@ class TestDataImporter():
                     'QaO2',
                     'SvO2',
                     'PvO2',
+                    'T @ rest',
                     'T',
+                    'pH @ rest',
                     'pH'
                 ]
 
@@ -87,12 +89,9 @@ class TestDataImporter():
                     if sheet.loc[0,0] == 'Test-template':
                         self.cols = []
 
-                        testId = f'{self.subject.id}-Test-{len(self.subject.getTests())+1}'
+                        testId = self.dfList[sheetName].loc[2,1]
                         self.test = Test(id=testId, parentSubject=self.subject)
-                        self.testList.append(self.test)
-
                         self.test.workLoads = []
-                        self.test.id = self.dfList[sheetName].loc[2,1]
 
                         # Check the number of loads and save column indexes
                         for i, x in enumerate(self.dfList[sheetName].loc[4,:]):
@@ -120,33 +119,23 @@ class TestDataImporter():
                                     
                                     # Replace null values with 0
                                     if value == '':
-                                        value = 0
+                                        if p == 'pH':
+                                            value = float(app.settings.testDefaults['pH'])
+                                        elif p == 'pH @ rest':
+                                            value = float(app.settings.testDefaults['pH @ rest'])
+                                        elif p == 'T':
+                                            value = float(app.settings.testDefaults['T'])
+                                        elif p == 'T @ rest':
+                                            value = float(app.settings.testDefaults['T @ rest'])
+                                        else:
+                                            value = 0
                                     
                                     newLoad.details.setValue(p, value)
                                     index += 1
                             else:
                                 continue
-
+                        self.testList.append(self.test)
                         self.templateUsed = True
-
-                for t in self.testList:
-                    tempAddLinearity = False
-                    pHAddLinearity = False
-
-                    for w in t.workLoads:
-                        details = w.details.getWorkLoadDetails()
-                        if details['T'] == 0:
-                            tempAddLinearity = True
-                        if details['pH'] == 0:
-                            pHAddLinearity = True
-
-                    if tempAddLinearity:
-                        # self.addLinearDistT(t)
-                        self.applyDefaultPHandT(t)
-
-                    if pHAddLinearity:
-                        # self.addLinearDistPH(t)
-                        self.applyDefaultPHandT(t)
                 
             if self.templateUsed:
                 self.closeImporter(mode=1)
