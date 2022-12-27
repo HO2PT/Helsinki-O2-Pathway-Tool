@@ -59,6 +59,9 @@ class PlottingPanel(ttk.Frame):
 
             # Create tab for the plot
             plotTabObject = PlotTab(self.plotNotebook, self.workLoadDetailsObjects, copy.deepcopy(app.activeTest))
+            
+            # Prevent mac version from segmentation faulting
+            self.update_idletasks()
 
             # Add plot to the notebook and objects list of plots
             self.plotNotebook.add(plotTabObject, text=app.getActiveTest().id)
@@ -92,7 +95,7 @@ class PlotTab(ttk.Frame):
         ttk.Frame.__init__(self, parentFrame, *args, **kwargs)
         self.pack(expand=TRUE)
         self.parentFrame = parentFrame
-        
+
         self.plot = None
         self.loadTabs = []
         self.activeTest = test
@@ -366,6 +369,10 @@ class PlotTab(ttk.Frame):
         self.plot = plt.subplots(constrained_layout=True)
         self.fig, self.ax = self.plot
 
+        # Prevent macOS from changing app icon
+        if app.platform == 'darwin':
+            app.root.tk.call('wm', 'iconphoto', app.root._w, PhotoImage(file=f'{app.path}/Img/ho2pt.png'))
+
         matplotlib.rcParams['font.sans-serif'] = "Arial"
         matplotlib.rcParams['font.family'] = "sans-serif"
 
@@ -393,9 +400,12 @@ class PlotTab(ttk.Frame):
                 curve, = self.ax.plot(PvO2, y2, scalex=True, lw=2, color=f'C{i}', label=w.name)
                 dot, = self.ax.plot(xi, yi, 'o', scalex=True, color='red', label=w.name)
 
-                line.set_picker(5)
-                curve.set_picker(5)
-                dot.set_picker(5)
+                #line.set_picker(5)
+                #curve.set_picker(5)
+                #dot.set_picker(5)
+                line.set_pickradius(5)
+                curve.set_pickradius(5)
+                dot.set_pickradius(5)
 
                 self.handles.insert(i, line)
 
@@ -416,8 +426,9 @@ class PlotTab(ttk.Frame):
         i = 0
         temp = []
         for legline, origline in zip(self.leg.get_lines(), lines):
-            legline.set_picker(5)  # 5 pts tolerance
-            
+            #legline.set_picker(5)  # 5 pts tolerance
+            legline.set_pickradius(5)
+
             for x in range(0,3):
                 temp.append(lines[i])
                 i += 1

@@ -17,16 +17,19 @@ app.platform = platform
 if platform == 'linux':
     root = ThemedTk(theme='clearlooks')
     root.configure(bg='#EFEBE7')
+    fontSize = 9
 elif platform == 'darwin':
     root = ThemedTk(theme='arc')
     root.configure(bg='#F5F6F7')
     app.path = path.abspath(path.dirname(__file__))
+    fontSize = 12
 else:
     root = Tk()
+    fontSize = 9
 
 app.defaultFont = font.nametofont("TkDefaultFont")
-app.defaultFont.configure(family="Arial",size=9)
-root.option_add("*Font", "Arial 9")
+app.defaultFont.configure(family="Arial",size=fontSize)
+root.option_add("*Font", f"Arial {fontSize}")
 
 root.title("Helsinki O\u2082 Pathway Tool")
 root.geometry('750x500')

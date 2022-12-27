@@ -168,7 +168,10 @@ class ProjectDataImporter(object):
             self.window.title('Project import')
             self.window.geometry('750x500')
             self.window.update_idletasks()
-            self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file='Img/ho2pt.png'))
+            if app.platform == 'darwin':
+                self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file=f'{app.path}/Img/ho2pt.png'))
+            else:
+                self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file='Img/ho2pt.png'))
             windowX = int(self.window.winfo_screenwidth()) * 0.5 - int(self.window.winfo_width()) * 0.5
             windowY = int(self.window.winfo_screenheight()) * 0.5 - int(self.window.winfo_height()) * 0.5
             self.window.geometry("+%d+%d" % ( windowX, windowY ))

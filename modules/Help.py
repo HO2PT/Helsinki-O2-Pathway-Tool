@@ -10,7 +10,10 @@ class Help():
         self.window = Toplevel()
         self.window.title('Help')
         self.window.geometry('750x500')
-        self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file='Img/ho2pt.png'))
+        if app.platform == 'darwin':
+            self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file=f'{app.path}/Img/ho2pt.png'))
+        else:
+            self.window.tk.call('wm', 'iconphoto', self.window._w, PhotoImage(file='Img/ho2pt.png'))
 
         # Left panel
         self.leftPanel = ttk.Frame(self.window)

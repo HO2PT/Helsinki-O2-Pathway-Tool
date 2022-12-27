@@ -30,14 +30,14 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='Img/ho2pt.ico',
+    icon=['Img/ho2pt.ico'],
 )
 coll = COLLECT(
     exe,
@@ -45,7 +45,7 @@ coll = COLLECT(
     a.zipfiles,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='HO2PT',
 )
@@ -53,5 +53,5 @@ app = BUNDLE(
     coll,
     name='HO2PT.app',
     icon='Img/ho2pt.ico',
-    bundle_identifier=None,
+    bundle_identifier='HO2PT',
 )

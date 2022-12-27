@@ -237,6 +237,9 @@ class LoadNotebook(object):
             self.loadbook.pack(fill=BOTH,expand=True)
             self.addButton.pack(side=LEFT, expand=TRUE, fill=X)
             self.editButton.pack(side=LEFT, expand=TRUE, fill=X)
+
+        if app.platform == 'darwin':
+            self.loadbook.focus_force()
             
     def editLoad(self):
         index = self.loadbook.index('current')

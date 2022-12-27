@@ -62,7 +62,10 @@ class DataExporter(object):
             self.exportOptions.title("Export options")
             #self.exportOptions.focus_force()
             self.exportOptions.protocol("WM_DELETE_WINDOW", self.closeOptions)
-            self.exportOptions.tk.call('wm', 'iconphoto', self.exportOptions._w, PhotoImage(file='Img/ho2pt.png'))
+            if app.platform == 'darwin':
+                self.exportOptions.tk.call('wm', 'iconphoto', self.exportOptions._w, PhotoImage(file=f'{app.path}/Img/ho2pt.png'))
+            else:
+                self.exportOptions.tk.call('wm', 'iconphoto', self.exportOptions._w, PhotoImage(file='Img/ho2pt.png'))
 
             # Choose test details to be exported
             self.testContainer = ttk.LabelFrame(self.exportOptions,text='Choose values to be exported', padding=(10, 10))
