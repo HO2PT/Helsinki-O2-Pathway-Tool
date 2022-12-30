@@ -8,7 +8,10 @@ class Settings(object):
         self.vars = []
         self.notifications = []
         try:
-            settingsFile = open('settings.pkl', "rb")
+            if app.platform == 'darwin':
+                settingsFile = open(f'{app.path}/settings.pkl', "rb")
+            else:
+                settingsFile = open('settings.pkl', "rb")
             self.data = pickle.load(settingsFile)
             settingsFile.close()
             self.processData()
@@ -137,11 +140,17 @@ class Settings(object):
                 }
             }
 
-            settingsFile = open('settings.pkl', 'wb')
+            if app.platform == 'darwin':
+                settingsFile = open(f'{app.path}/settings.pkl', "wb")
+            else:
+                settingsFile = open('settings.pkl', 'wb')
             pickle.dump(defData, settingsFile)
             settingsFile.close()
 
-            settingsFile = open('settings.pkl', "rb")
+            if app.platform == 'darwin':
+                settingsFile = open(f'{app.path}/settings.pkl', "rb")
+            else:
+                settingsFile = open('settings.pkl', "rb")
             self.data = pickle.load(settingsFile)
             settingsFile.close()
             self.processData()
@@ -299,7 +308,10 @@ class Settings(object):
         self.data['layout']['testDetails'] = test
         self.data['layout']['envDetails'] = env
 
-        settingsFile = open('settings.pkl', 'wb')
+        if app.platform == 'darwin':
+            settingsFile = open(f'{app.path}/settings.pkl', "wb")
+        else:
+            settingsFile = open('settings.pkl', 'wb')
         pickle.dump(self.data, settingsFile)
         settingsFile.close()
 
@@ -610,8 +622,10 @@ class Settings(object):
                                     for key, val in self.envDefaults.items():
                                         l.envDetails.setDetail(key, val)
                             
-
-        settingsFile = open('settings.pkl', 'wb')
+        if app.platform == 'darwin':
+            settingsFile = open(f'{app.path}/settings.pkl', "wb")
+        else:
+            settingsFile = open('settings.pkl', 'wb')
         pickle.dump(self.data, settingsFile)
         settingsFile.close()
 
@@ -634,6 +648,7 @@ class Settings(object):
             
         app.projectDetailModule.refreshDetails()
         self.createNotification('info', 'Settings saved', 2000)
+        self.settingsWindow.destroy()
 
     def updatePhAndTemp(self, test):
         # Add linear change in pH and T

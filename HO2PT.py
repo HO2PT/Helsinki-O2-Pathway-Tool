@@ -1,8 +1,12 @@
 from tkinter import *
 from tkinter.messagebox import askokcancel
 from tkinter import ttk, font
-from sys import platform
-from os import path
+from pathlib import Path
+import sys
+#from os import path
+import syslog
+syslog.openlog('Python')
+
 from objects.app import app
 from objects.settings import Settings
 from modules.menubar import MenuBar
@@ -13,19 +17,25 @@ from modules.panel_plotting import PlottingPanel
 
 from ttkthemes import ThemedTk
 
-app.platform = platform
-if platform == 'linux':
+app.platform = sys.platform
+if sys.platform == 'linux':
     root = ThemedTk(theme='clearlooks')
     root.configure(bg='#EFEBE7')
     fontSize = 9
-elif platform == 'darwin':
+elif sys.platform == 'darwin':
     root = ThemedTk(theme='arc')
     root.configure(bg='#F5F6F7')
-    app.path = path.abspath(path.dirname(__file__))
+    #app.path = path.abspath(path.dirname(__file__))
+    if hasattr(sys, '_MEIPASS'):
+        app.path = Path(sys._MEIPASS)
+    else:
+        app.path = Path(__file__).parent
     fontSize = 12
 else:
     root = Tk()
     fontSize = 9
+
+syslog.syslog(syslog.LOG_ALERT, f'HO2PT: {app.path}')
 
 app.defaultFont = font.nametofont("TkDefaultFont")
 app.defaultFont.configure(family="Arial",size=fontSize)
@@ -124,6 +134,9 @@ def on_closing():
         settings.saveLayout(side, details, project, test, env)
         root.destroy()
         root.quit()
+
+        if app.platform == 'darwin':
+            exit()
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 if app.platform == 'darwin':

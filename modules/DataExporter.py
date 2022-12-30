@@ -36,6 +36,11 @@ class DataExporter(object):
         self.images = {}
         self.dfs= {}
 
+        if app.platform == 'darwin':
+            self.dest = app.path
+        else:
+            self.dest = os.getcwd()
+
     def closeOptions(self):
         try:
             self.overLay.destroy()
@@ -75,7 +80,10 @@ class DataExporter(object):
             loadMode = app.settings.getTestDef()['loadMode']
 
             checkStyle = ttk.Style()
-            checkStyle.configure('Sub2.TCheckbutton', font='Arial 9')
+            if app.platform == 'darwin':
+                checkStyle.configure('Sub2.TCheckbutton', font='Arial 12')
+            else:
+                checkStyle.configure('Sub2.TCheckbutton', font='Arial 9')
 
             temp = WorkLoadDetails(name='dummy')
             for i, key in enumerate(temp.getWorkLoadDetails().keys()):
@@ -297,7 +305,10 @@ class DataExporter(object):
                 coef = 1 + (legSize.width/100)/5.4
                 p.plot[0].set(figwidth=5.4*coef, figheight=4)
 
-                img = p.plot[0].savefig(f'plot{i}.png')
+                if app.platform == 'darwin':
+                    img = p.plot[0].savefig(f'{app.path}/plot{i}.png')
+                else:
+                    img = p.plot[0].savefig(f'plot{i}.png')
                 imgs.append( img )
                 columns = []
                 for l in p.workLoadDetailsObjects:
@@ -408,7 +419,7 @@ class DataExporter(object):
                         for i, (key, value) in enumerate(self.dfs.items()):
                             value.to_excel(writer, sheet_name=str(key)[0:30], index=False, header=False)
                             worksheet = writer.sheets[str(key)[0:30]]
-                            imgDest = f'{os.getcwd()}/plot{i}.png'
+                            imgDest = f'{self.dest}/plot{i}.png'
                             worksheet.insert_image('N1', imgDest)
 
                     notification.create('info', 'Data successfully exported', 5000)
@@ -420,7 +431,7 @@ class DataExporter(object):
 
             # Delete images
             for i, img in enumerate(imgs):
-                os.remove(f'{os.getcwd()}/plot{i}.png')
+                os.remove(f'{self.dest}/plot{i}.png')
             
             self.overLay.destroy()
             self.exportOptions.destroy()
@@ -478,7 +489,7 @@ class DataExporter(object):
                             for subjectId, testId in list(self.images.items()):
                                 if key == subjectId:
                                     for ti, t in enumerate(reversed(testId)):
-                                        imgDest = f'{os.getcwd()}/plot-{key}-{t}.png'
+                                        imgDest = f'{self.dest}/plot-{key}-{t}.png'
                                         
                                         if ti == 0:   
                                             worksheet.insert_image('N1', imgDest)
@@ -496,7 +507,7 @@ class DataExporter(object):
             # Delete images
             for subjectId, testId in self.images.items():
                 for ti, t in enumerate(testId):
-                    os.remove(f'{os.getcwd()}/plot-{subjectId}-{testId[ti]}.png')
+                    os.remove(f'{self.dest}/plot-{subjectId}-{testId[ti]}.png')
 
             self.exportOptions.destroy()
 
@@ -617,7 +628,7 @@ class DataExporter(object):
                             for i, (key, value) in enumerate(self.dfs.items()):
                                 if sheet == str(key)[0:30]:
                                     worksheet = writer.sheets[sheet]
-                                    imgDest = f'{os.getcwd()}/plot{key}.png'
+                                    imgDest = f'{self.dest}/plot{key}.png'
                                     worksheet.insert_image('N1', imgDest)
 
                     notification.create('info', 'Data successfully exported', 5000)
@@ -629,7 +640,7 @@ class DataExporter(object):
 
             # Delete images
             for i, (key, value) in enumerate(self.dfs.items()):
-                os.remove(f'{os.getcwd()}/plot{key}.png')
+                os.remove(f'{self.dest}/plot{key}.png')
             
             try:
                 self.overLay.destroy()
@@ -791,7 +802,7 @@ class DataExporter(object):
                                 if sheet == 'Plots':
                                     worksheet = writer.sheets[sheet]
                                     for i, (key, value) in enumerate(self.images.items()):
-                                        imgDest = f'{os.getcwd()}/plot{value[0]}.png'
+                                        imgDest = f'{self.dest}/plot{value[0]}.png'
                                         if i != 0:
                                             worksheet.write(f'A{i*20+3}', f'Test ID: {value[0]}')
                                             worksheet.insert_image(f'A{i*20+4}', imgDest)
@@ -800,15 +811,15 @@ class DataExporter(object):
                                             worksheet.insert_image('A2', imgDest)
                                 if sheet == 'Median(IQR)':
                                     worksheet = writer.sheets[sheet]
-                                    imgDest = f'{os.getcwd()}/plot-Median(IQR)-{project.id}(Median).png'
+                                    imgDest = f'{self.dest}/plot-Median(IQR)-{project.id}(Median).png'
                                     worksheet.insert_image('H1', imgDest)
                                 elif sheet == 'Mean(SD)':
                                     worksheet = writer.sheets[sheet]
-                                    imgDest = f'{os.getcwd()}/plot-Mean(SD)-{project.id}(Mean).png'
+                                    imgDest = f'{self.dest}/plot-Mean(SD)-{project.id}(Mean).png'
                                     worksheet.insert_image('H1', imgDest)
                                 elif sheet == 'Mean(CI95%)':
                                     worksheet = writer.sheets[sheet]
-                                    imgDest = f'{os.getcwd()}/plot-Mean(CI95%)-{project.id}(95% CI).png'
+                                    imgDest = f'{self.dest}/plot-Mean(CI95%)-{project.id}(95% CI).png'
                                     worksheet.insert_image('H1', imgDest)
                                 elif sheet == 'Data':
                                     worksheet = writer.sheets[sheet]
@@ -825,14 +836,14 @@ class DataExporter(object):
                     for s in subjects:
                         tests = s.getTests()
                         for t in tests:
-                            os.remove(f'{os.getcwd()}/plot{t.id}.png')
+                            os.remove(f'{self.dest}/plot{t.id}.png')
 
                 if self.statsVar0.get() == 1:
-                    os.remove(f'{os.getcwd()}/plot-Mean(SD)-{project.id}(Mean).png')
+                    os.remove(f'{self.dest}/plot-Mean(SD)-{project.id}(Mean).png')
                 if self.statsVar1.get() == 1:
-                    os.remove(f'{os.getcwd()}/plot-Median(IQR)-{project.id}(Median).png')
+                    os.remove(f'{self.dest}/plot-Median(IQR)-{project.id}(Median).png')
                 if self.statsVar2.get() == 1:
-                    os.remove(f'{os.getcwd()}/plot-Mean(CI95%)-{project.id}(95% CI).png')
+                    os.remove(f'{self.dest}/plot-Mean(CI95%)-{project.id}(95% CI).png')
             
             try:
                 self.overLay.destroy()
@@ -1013,9 +1024,15 @@ class DataExporter(object):
         fig.set(figwidth=5.4*coef, figheight=4)
         
         if sid == None:
-            fig.savefig(f'plot{id}.png')
+            if app.platform == 'darwin':
+                fig.savefig(f'{app.path}/plot{id}.png')
+            else:
+                fig.savefig(f'plot{id}.png')
         else:
-            fig.savefig(f'plot-{sid}-{id}.png')
+            if app.platform == 'darwin':
+                fig.savefig(f'{app.path}/plot-{sid}-{id}.png')
+            else:
+                fig.savefig(f'plot-{sid}-{id}.png')
         fig.clear()
         plt.close(fig)
 

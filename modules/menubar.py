@@ -89,7 +89,12 @@ class MenuBar(object):
         self.view.add_command(label =f'{text} all details', command = lambda: self.hideAllDetails())
 
         # Create demo graph
-        self.menuBar.add_command(label ='Create demo graph', command=lambda: self.createDemoGraph())
+        if app.platform == 'darwin':
+            demoGraph = Menu(self.menuBar, tearoff = 0)
+            self.menuBar.add_cascade(label ='Create demo graph', menu = demoGraph)
+            demoGraph.add_command(label ='Create demo graph', command=lambda: self.createDemoGraph())
+        else:
+            self.menuBar.add_command(label ='Create demo graph', command=lambda: self.createDemoGraph())
 
         # About
         #options = Menu(self.menuBar, tearoff = 0)
