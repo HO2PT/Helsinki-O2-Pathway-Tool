@@ -27,7 +27,7 @@ class Settings(object):
                 "envDefaults": {
                     "Elevation": 1000,
                     "Atm": 101,
-                    "FiO2": 21,
+                    "FIO2": 21,
                     "Temp": 20,
                     "Rh": 40
                 },
@@ -61,7 +61,7 @@ class Settings(object):
                     "DO2": 'ml/min/mmHg',
                     "Elevation": 'm',
                     "ATM": 'kPa',
-                    "FiO2": '%',
+                    "FIO2": '%',
                     "Temperature": '\N{DEGREE SIGN}C',
                     "Rh": "%"
                 },
@@ -88,7 +88,7 @@ class Settings(object):
                     "DO2": ["ml/min/mmHg"],
                     "Elevation": ['m', 'km', 'ft'],
                     "ATM": ['kPa', 'bar', 'psi', 'mmHg'],
-                    "FiO2": ["%"],
+                    "FIO2": ["%"],
                     "Temperature": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "Rh": ["%"]
                 },
@@ -113,13 +113,13 @@ class Settings(object):
                 },
                 "decimals":{
                     'l/min': 2,
-                    'ml/min': 2,
-                    'ml/l':  2,
+                    'ml/min': 0,
+                    'ml/l':  1,
                     'ml/dl': 2,
                     'ml/min/mmHg': 1,
-                    'g/l': 1,
+                    'g/l': 0,
                     'g/dl': 1,
-                    'mmHg': 2,
+                    'mmHg': 1,
                     '\N{DEGREE SIGN}C': 1,
                     'K': 1,
                     'F': 1,
@@ -167,7 +167,7 @@ class Settings(object):
         self.envDefaults = {
             'Elevation': self.data['envDefaults']['Elevation'],
             'Atm': self.data['envDefaults']['Atm'],
-            'FiO2': self.data['envDefaults']['FiO2'],
+            'FIO2': self.data['envDefaults']['FIO2'],
             'Temp': self.data['envDefaults']['Temp'],
             'Rh': self.data['envDefaults']['Rh']
         }
@@ -203,7 +203,7 @@ class Settings(object):
             "DO2_unit": self.data['unitDefaults']['DO2'],
             "Elevation_unit": self.data['unitDefaults']['Elevation'],
             "ATM_unit": self.data['unitDefaults']['ATM'],
-            "FiO2_unit": self.data['unitDefaults']['FiO2'],
+            "FIO2_unit": self.data['unitDefaults']['FIO2'],
             "Temperature_unit": self.data['unitDefaults']['Temperature']
         }
 
@@ -230,7 +230,7 @@ class Settings(object):
             "DO2_units": self.data['units']['DO2'],
             "Elevation_units": self.data['units']['Elevation'],
             "ATM_units": self.data['units']['ATM'],
-            "FiO2_units": self.data['units']['FiO2'],
+            "FIO2_units": self.data['units']['FIO2'],
             "Temperature_units": self.data['units']['Temperature'],
             "Rh_units": '%'
         }
@@ -511,11 +511,11 @@ class Settings(object):
             atmMenuButton['menu']=atmMenu
             atmMenuButton.grid(column=2, row=1)
 
-            # FiO2
-            ttk.Label(container, text='FiO\u2082').grid(column=0, row=2)
-            self.fio2Entry = ttk.Entry(container, width=7)
-            self.fio2Entry.insert(0, self.envDefaults['FiO2'])
-            self.fio2Entry.grid(column=1, row=2)
+            # FIO2
+            ttk.Label(container, text='FIO\u2082').grid(column=0, row=2)
+            self.FIO2Entry = ttk.Entry(container, width=7)
+            self.FIO2Entry.insert(0, self.envDefaults['FIO2'])
+            self.FIO2Entry.grid(column=1, row=2)
             ttk.Label(container, text='%').grid(column=2, row=2)
 
             #### Temperature
@@ -589,7 +589,7 @@ class Settings(object):
             # Values
             self.envDefaults['Elevation'] = self.elevEntry.get()
             self.envDefaults['Atm'] = self.atmEntry.get()
-            self.envDefaults['FiO2'] = self.fio2Entry.get()
+            self.envDefaults['FIO2'] = self.FIO2Entry.get()
             self.envDefaults['Temp'] = self.tempEntry.get()
             self.envDefaults['Rh'] = self.rhEntry.get()
 
@@ -603,7 +603,7 @@ class Settings(object):
             # Save changes to settings.pkl-file
             self.data['envDefaults']['Elevation'] = self.elevEntry.get()
             self.data['envDefaults']['Atm'] = self.atmEntry.get()
-            self.data['envDefaults']['FiO2'] = self.fio2Entry.get()
+            self.data['envDefaults']['FIO2'] = self.FIO2Entry.get()
             self.data['envDefaults']['Temp'] = self.tempEntry.get()
             self.data['envDefaults']['Rh'] = self.rhEntry.get()
 

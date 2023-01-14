@@ -3,10 +3,6 @@ from tkinter.messagebox import askokcancel
 from tkinter import ttk, font
 from pathlib import Path
 import sys
-#from os import path
-import syslog
-syslog.openlog('Python')
-
 from objects.app import app
 from objects.settings import Settings
 from modules.menubar import MenuBar
@@ -23,6 +19,8 @@ if sys.platform == 'linux':
     root.configure(bg='#EFEBE7')
     fontSize = 9
 elif sys.platform == 'darwin':
+    import syslog
+    syslog.openlog('Python')
     root = ThemedTk(theme='arc')
     root.configure(bg='#F5F6F7')
     #app.path = path.abspath(path.dirname(__file__))
@@ -31,11 +29,10 @@ elif sys.platform == 'darwin':
     else:
         app.path = Path(__file__).parent
     fontSize = 12
+    syslog.syslog(syslog.LOG_ALERT, f'HO2PT: {app.path}')
 else:
     root = Tk()
     fontSize = 9
-
-syslog.syslog(syslog.LOG_ALERT, f'HO2PT: {app.path}')
 
 app.defaultFont = font.nametofont("TkDefaultFont")
 app.defaultFont.configure(family="Arial",size=fontSize)

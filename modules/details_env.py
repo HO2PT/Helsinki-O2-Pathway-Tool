@@ -9,7 +9,7 @@ class EnvDetailModule(ttk.Labelframe):
 
         self.labels = []
         self.detailRows = []
-        self.vars = ['Elevation', 'ATM', 'FiO2', 'Temperature', 'Rh']
+        self.vars = ['Elevation', 'ATM', 'FIO2', 'Temperature', 'Rh']
 
         if app.settings.visDefaults['envDetails']:
             self.pack(side = LEFT, padx=(5,5), anchor='n')
@@ -31,10 +31,10 @@ class EnvDetailModule(ttk.Labelframe):
         self.labels.append(self.atmLabel)
         self.detailRows.append(self.atmDetail)
 
-        self.fio2Label = ttk.Label(self.container, text='')
-        self.fio2Detail = envDetailRow(self.container, 'FiO2', 1, 2)
-        self.labels.append(self.fio2Label)
-        self.detailRows.append(self.fio2Detail)
+        self.FIO2Label = ttk.Label(self.container, text='')
+        self.FIO2Detail = envDetailRow(self.container, 'FIO2', 1, 2)
+        self.labels.append(self.FIO2Label)
+        self.detailRows.append(self.FIO2Detail)
 
         self.tempLabel = ttk.Label(self.container, text='')
         self.tempDetail = envDetailRow(self.container, 'Temperature', 1, 3)
@@ -57,7 +57,7 @@ class EnvDetailModule(ttk.Labelframe):
         self.container.grid()
         self.elevLabel.grid(column=0, row=0)
         self.atmLabel.grid(column=0, row=1)
-        self.fio2Label.grid(column=0, row=2)
+        self.FIO2Label.grid(column=0, row=2)
         self.tempLabel.grid(column=0, row=3)
         self.rhLabel.grid(column=0, row=4)
         self.calcMethod.grid(column=0, row=5, columnspan=3)
@@ -71,8 +71,8 @@ class EnvDetailModule(ttk.Labelframe):
         for i, v in enumerate(self.vars):
             self.detailRows[i].var.set(self.envDetails[v])
             self.detailRows[i].menuButton.config(text=self.envDetails[f'{v}_unit'])
-            if v == 'FiO2':
-                self.labels[i].configure(text='FiO\u2082')
+            if v == 'FIO2':
+                self.labels[i].configure(text='FIO\u2082')
             elif v == 'Rh':
                 self.labels[i].configure(text=f'{v}%')
             else:

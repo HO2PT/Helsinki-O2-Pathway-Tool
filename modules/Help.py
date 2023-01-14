@@ -110,8 +110,8 @@ class Help():
         self.content.bind('<Configure>', self.scale)
         self.canvas.bind('<MouseWheel>', self.handleMouseWheel)
 
-        if index == 0: # Modelling s.5-7
-            for page in self.doc.pages(4, 7, 1):
+        if index == 0: # Modelling s.6-8
+            for page in self.doc.pages(5, 8, 1):
                 self.pixs.append(page)
             
             self.pix = self.pixs[0].get_pixmap()
@@ -126,8 +126,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 1: # Layout s.9-10
-            for page in self.doc.pages(8, 10, 1):
+        elif index == 1: # Layout s.10-11
+            for page in self.doc.pages(9, 11, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -142,8 +142,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 2: # Side Panel s.11-14
-            for page in self.doc.pages(10, 14, 1):
+        elif index == 2: # Side Panel s.12-15
+            for page in self.doc.pages(11, 15, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -158,8 +158,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 3: # Details panel s.15-18
-            for page in self.doc.pages(14, 18, 1):
+        elif index == 3: # Details panel s.16-20
+            for page in self.doc.pages(15, 20, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -174,8 +174,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 4: # Plotting panel s.19-22
-            for page in self.doc.pages(18, 22, 1):
+        elif index == 4: # Plotting panel s.21-24
+            for page in self.doc.pages(20, 24, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -190,8 +190,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 5: # Data import s.25-32
-            for page in self.doc.pages(24, 32, 1):
+        elif index == 5: # Data import s.27-34
+            for page in self.doc.pages(26, 34, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -206,8 +206,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 6: # Data export s.33-37
-            for page in self.doc.pages(32, 37, 1):
+        elif index == 6: # Data export s.35-41
+            for page in self.doc.pages(34, 41, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -222,8 +222,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 7: # Settings s.23-24
-            for page in self.doc.pages(22, 24, 1):
+        elif index == 7: # Settings s.25-26
+            for page in self.doc.pages(24, 26, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -238,8 +238,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
 
-        elif index == 8: # How to s.38-49
-            for page in self.doc.pages(37, 49, 1):
+        elif index == 8: # How to s.42-57
+            for page in self.doc.pages(41, 57, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()
@@ -254,8 +254,8 @@ class Help():
             self.canvas.create_image(0, 0, anchor=NW, image=self.tkimg)
             self.currentPageLabel.config(text=f'{self.index}/{len(self.pixs)}')
         
-        elif index == 9: # Troubleshooting s.50-51
-            for page in self.doc.pages(49, 51, 1):
+        elif index == 9: # Troubleshooting s.58-59
+            for page in self.doc.pages(57, 59, 1):
                 self.pixs.append(page)
 
             self.pix = self.pixs[0].get_pixmap()

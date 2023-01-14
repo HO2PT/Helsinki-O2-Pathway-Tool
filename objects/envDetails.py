@@ -7,13 +7,13 @@ class EnvDetails(object):
 
         self.elevation = envDefaults['Elevation']
         self.atm = envDefaults['Atm']
-        self.fio2 = envDefaults['FiO2']
+        self.FIO2 = envDefaults['FIO2']
         self.temp = envDefaults['Temp']
         self.rh = envDefaults['Rh']
 
         self.elevationUnit = app.settings.getUnitDef()['Elevation_unit']
         self.atmUnit = app.settings.getUnitDef()['ATM_unit']
-        self.fio2Unit = '%'
+        self.FIO2Unit = '%'
         self.tempUnit = app.settings.getUnitDef()['Temperature_unit']
         self.rhUnit = '%'
 
@@ -25,13 +25,13 @@ class EnvDetails(object):
         return {
             'Elevation': self.elevation,
             'ATM': self.atm,
-            'FiO2': self.fio2,
+            'FIO2': self.FIO2,
             'Temperature': self.temp,
             'Rh': self.rh,
             'PiO2 Method': self.pio2Method,
             'Elevation_unit': self.elevationUnit,
             'ATM_unit': self.atmUnit,
-            'FiO2_unit': self.fio2Unit,
+            'FIO2_unit': self.FIO2Unit,
             'Temperature_unit': self.tempUnit,
             'Rh_unit': self.rhUnit
         }
@@ -45,8 +45,8 @@ class EnvDetails(object):
             self.atm = value
         elif detail == 'ATM_unit':
             self.atmUnit = value
-        elif detail == 'FiO2':
-            self.fio2 = value
+        elif detail == 'FIO2':
+            self.FIO2 = value
         elif detail == 'Temperature':
             self.temp = value
         elif detail == 'Temperature_unit':
