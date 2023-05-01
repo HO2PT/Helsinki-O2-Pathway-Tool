@@ -365,7 +365,7 @@ class PlotTab(ttk.Frame):
         self.plot[0].canvas.draw()
 
     def createPlot(self):
-        PvO2 = np.arange(0,100,0.1)
+        PvO2 = np.arange(0.01,100.01,0.1)
         self.plot = plt.subplots(constrained_layout=True)
         self.fig, self.ax = self.plot
 
@@ -400,12 +400,12 @@ class PlotTab(ttk.Frame):
                 curve, = self.ax.plot(PvO2, y2, scalex=True, lw=2, color=f'C{i}', label=w.name)
                 dot, = self.ax.plot(xi, yi, 'o', scalex=True, color='red', label=w.name)
 
-                #line.set_picker(5)
-                #curve.set_picker(5)
-                #dot.set_picker(5)
-                line.set_pickradius(5)
-                curve.set_pickradius(5)
-                dot.set_pickradius(5)
+                line.set_picker(5)
+                curve.set_picker(5)
+                dot.set_picker(5)
+                # line.set_pickradius(5)
+                # curve.set_pickradius(5)
+                # dot.set_pickradius(5)
 
                 self.handles.insert(i, line)
 
@@ -426,8 +426,8 @@ class PlotTab(ttk.Frame):
         i = 0
         temp = []
         for legline, origline in zip(self.leg.get_lines(), lines):
-            #legline.set_picker(5)  # 5 pts tolerance
-            legline.set_pickradius(5)
+            legline.set_picker(5)  # 5 pts tolerance
+            # legline.set_pickradius(5)
 
             for x in range(0,3):
                 temp.append(lines[i])
@@ -644,6 +644,11 @@ class PlotLoadTab(ttk.Frame):
         self.do2Row = LoadTabRow(self, self.contentWrapper, 'DO2', do2Value, 13, self.index, self.detailsObject)
         self.rowElements.append(self.do2Row)
 
+        # k
+        do2Value = self.details['k']
+        self.kRow = LoadTabRow(self, self.contentWrapper, 'k', do2Value, 14, self.index, self.detailsObject)
+        self.rowElements.append(self.kRow)
+
         # T0
         tValue = float(self.details['T @ rest'])
         if self.details['T_unit'] == 'F':
@@ -651,7 +656,7 @@ class PlotLoadTab(ttk.Frame):
         elif self.details['T_unit'] == 'K':
             tValue = tValue - 273.15
         else:
-            self.tRestRow = LoadTabRow(self, self.contentWrapper, 'T @ rest', tValue, 14, self.index, self.detailsObject)
+            self.tRestRow = LoadTabRow(self, self.contentWrapper, 'T @ rest', tValue, 15, self.index, self.detailsObject)
         self.rowElements.append(self.tRestRow)
 
         # T
@@ -661,29 +666,29 @@ class PlotLoadTab(ttk.Frame):
         elif self.details['T_unit'] == 'K':
             tValue = tValue - 273.15
         else:
-            self.tRow = LoadTabRow(self, self.contentWrapper, 'T', tValue, 15, self.index, self.detailsObject)
+            self.tRow = LoadTabRow(self, self.contentWrapper, 'T', tValue, 16, self.index, self.detailsObject)
         self.rowElements.append(self.tRow)
 
         # pH0
         phValue = self.details['pH @ rest']
-        self.phRestRow = LoadTabRow(self, self.contentWrapper, 'pH @ rest', phValue, 16, self.index, self.detailsObject)
+        self.phRestRow = LoadTabRow(self, self.contentWrapper, 'pH @ rest', phValue, 17, self.index, self.detailsObject)
         self.rowElements.append(self.phRestRow)
 
         # pH
         phValue = self.details['pH']
-        self.phRow = LoadTabRow(self, self.contentWrapper, 'pH', phValue, 17, self.index, self.detailsObject)
+        self.phRow = LoadTabRow(self, self.contentWrapper, 'pH', phValue, 18, self.index, self.detailsObject)
         self.rowElements.append(self.phRow)
 
         # Add environmental details
-        self.elevationRow = LoadTabRow(self, self.contentWrapper, 'Elevation', self.envDetails['Elevation'], 18, self.index, envDetailsObject=self.envDetailsObject)
+        self.elevationRow = LoadTabRow(self, self.contentWrapper, 'Elevation', self.envDetails['Elevation'], 19, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.elevationRow)
-        self.ATMRow = LoadTabRow(self, self.contentWrapper, 'ATM', self.envDetails['ATM'], 19, self.index, envDetailsObject=self.envDetailsObject)
+        self.ATMRow = LoadTabRow(self, self.contentWrapper, 'ATM', self.envDetails['ATM'], 20, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.ATMRow)
-        self.FIO2Row = LoadTabRow(self, self.contentWrapper, 'FIO2', self.envDetails['FIO2'], 20, self.index, envDetailsObject=self.envDetailsObject)
+        self.FIO2Row = LoadTabRow(self, self.contentWrapper, 'FIO2', self.envDetails['FIO2'], 21, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.FIO2Row)
-        self.TemperatureRow = LoadTabRow(self, self.contentWrapper, 'Temperature', self.envDetails['Temperature'], 21, self.index, envDetailsObject=self.envDetailsObject)
+        self.TemperatureRow = LoadTabRow(self, self.contentWrapper, 'Temperature', self.envDetails['Temperature'], 22, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.TemperatureRow)
-        self.RhRow = LoadTabRow(self, self.contentWrapper, 'Rh', self.envDetails['Rh'], 22, self.index, envDetailsObject=self.envDetailsObject)
+        self.RhRow = LoadTabRow(self, self.contentWrapper, 'Rh', self.envDetails['Rh'], 23, self.index, envDetailsObject=self.envDetailsObject)
         self.rowElements.append(self.RhRow)
 
         ##
@@ -925,11 +930,11 @@ class LoadTabRow(ttk.Frame):
         self.entry = ttk.Label(self.parent, textvariable=self.var, width=7, anchor='center')
         self.entry.grid(column=1, row=row)
 
-        if self.label != 'pH':
+        if self.label != 'pH' and self.label != 'k':
             units = app.settings.getUnits()[f'{self.label}_units']
             if len(units) != 1:
                 # Unit entry
-                if self.label != 'pH':
+                if self.label != 'pH' and self.label != 'k':
                     self.menuButton = ttk.Menubutton(self.parent)
                     if self.mode == 0:
                         self.menuButton.config(text=self.details[f'{self.label}_unit'])

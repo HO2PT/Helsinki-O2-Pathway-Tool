@@ -100,51 +100,6 @@ class LoadNotebook(object):
         self.addButton = ttk.Button(parent, text='Add', command=lambda: self.addLoad())
         self.editButton = ttk.Button(parent, text='Edit...', command=lambda: self.editLoad())
 
-    """ def updatePhAndTemp(self):
-        activeTest = app.getActiveTest()
-
-        # Add linear change in pH and T
-        # pHrest = float(app.settings.testDefaults['pH @ rest'])
-        if len(activeTest.getWorkLoads()) == 1:
-            # print('VAIN YKSI')
-            pHrest = float(app.settings.testDefaults['pH @ rest'])
-            Trest = float(app.settings.testDefaults['T @ rest'])
-        else:
-            # print('USEITA')
-            pHrest = float(activeTest.workLoads[0].details.pHrest)
-            Trest = float(activeTest.workLoads[0].details.Trest)
-        
-        pHpeak = float(app.settings.testDefaults['pH'])
-        Tpeak = float(app.settings.testDefaults['T'])
-        pHDif = float(pHrest) - float(pHpeak)
-        Tdif = float(Tpeak) - float(Trest)
-
-        if len(activeTest.getWorkLoads()) > 0:
-            if pHrest != pHpeak:
-                activeTest.getWorkLoads()[-1].getDetails().setValue('pH', pHpeak)
-
-            if Trest != Tpeak:
-                activeTest.getWorkLoads()[-1].getDetails().setValue('T', Tpeak)
-
-            pHstep = pHDif / (len(activeTest.getWorkLoads())-1)
-            pHvalues = []
-
-            Tstep = Tdif / (len(activeTest.getWorkLoads())-1)
-            Tvalues = []
-
-        # Add linear change
-        for i, w in enumerate(activeTest.getWorkLoads()):
-            details = w.getDetails()
-            pHValue = float(f'{"{0:.2f}".format(pHrest - (i * pHstep))}')
-            pHvalues.append(pHValue)
-            details.setValue('pH', pHValue)
-
-            Tvalue = float(f'{"{0:.1f}".format(Trest + (i * Tstep))}')
-            Tvalues.append(Tvalue)
-            details.setValue('T', Tvalue)
-
-        return pHvalues, Tvalues """
-
     def addLoad(self):
         # Add load to active test
         activeTest = app.getActiveTest()
@@ -343,7 +298,7 @@ class LoadTab(object):
 
         temp = []
         items1 = ['VO2','[Hb]','SaO2']
-        items2 = ['CaO2', 'CvO2','C(a-v)O2','QaO2','SvO2','PvO2']
+        items2 = ['CaO2', 'CvO2','C(a-v)O2','QaO2','SvO2','PaO2','PvO2', 'k']
         items3 = ['T @ rest', 'T', 'pH @ rest', 'pH']
 
         loadDetails = self.details.getWorkLoadDetails()
@@ -470,7 +425,7 @@ class TestDetailRow(ttk.Frame):
         # Unit
         units = app.settings.getUnits()[f'{self.label}_units']
         if len(units) != 1:
-            if self.label != 'pH':
+            if self.label != 'pH' and self.label != 'k':
                 self.tempMenuButton = ttk.Menubutton(rowFrame)
                 self.tempMenuButton.config(text=self.unit)
 

@@ -350,7 +350,7 @@ class DataExporter(object):
                         except KeyError:
                             mc = None
                         self.temp[f'{v}'].append(value)
-                        if v.startswith('pH'):
+                        if v.startswith('pH') or v == 'k':
                             self.units[v] = ''
                         else:
                             self.units[v] = unit
@@ -765,7 +765,6 @@ class DataExporter(object):
                                     filteredLoads = []
                                     for i, l in enumerate(loads):
                                         detailsDict = l.getDetails().getWorkLoadDetails()
-                                        print(detailsDict)
                                         if i == 0 or detailsDict['Load'] != 0:
                                             filteredLoads.append(l.details)
                                     try:
@@ -965,7 +964,7 @@ class DataExporter(object):
         return ordered, units, mcs
 
     def createPlot(self, workLoads, id, sid=None): #workloads = workloaddetails object
-        PvO2 = np.arange(0,100,0.1)
+        PvO2 = np.arange(0.01,100.01,0.1)
         plot = plt.subplots(constrained_layout=True)
         fig, ax = plot
 
@@ -1091,7 +1090,7 @@ class DataExporter(object):
                     mc = None
 
                 self.temp[f'{v}'].append(value)
-                if v.startswith('pH'):
+                if v.startswith('pH') or v == 'k':
                     self.units[v] = ''
                 else:
                     self.units[v] = unit
@@ -1213,7 +1212,7 @@ class DataExporter(object):
                     except KeyError:
                         mc = None
                     self.temp[f'{v}'].append(value)
-                    if v.startswith('pH'):
+                    if v.startswith('pH') or v == 'k':
                         self.units[v] = ''
                     else:
                         self.units[v] = unit
@@ -1278,6 +1277,9 @@ class DataExporter(object):
             return res
         except:
             for v in value:
-                v = '{0:.2f}'.format(float(v))
+                if (unit == '' and (v == 0 or v == 1)):
+                    v = '{0:.0f}'.format(float(v))
+                else:
+                    v = '{0:.2f}'.format(float(v))
                 res.append(v)
             return res

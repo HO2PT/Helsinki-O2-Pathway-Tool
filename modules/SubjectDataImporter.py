@@ -714,7 +714,6 @@ class SubjectDataImporter(object):
                     self.tests = {}
 
                     if len(rows) > 1 and col == -1: # multiple rows
-                        # print('USEAMPI RIVI')
                         if self.stage == 0: # ids
                             for i, id in enumerate(self.rowNames):
                                 test = Test()

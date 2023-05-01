@@ -36,7 +36,8 @@ class Settings(object):
                     "T @ rest": 37,
                     "T": 37,
                     "pH @ rest": 7.4,
-                    "pH": 7.4
+                    "pH": 7.4,
+                    "k": 2
                 },
                 "unitDefaults":{
                     "Load": 'W',
@@ -57,6 +58,8 @@ class Settings(object):
                     "T @ rest": '\N{DEGREE SIGN}C',
                     "pH @ rest": '',
                     "pH": '',
+                    "k": '',
+                    "PaO2": 'mmHg',
                     "PvO2": 'mmHg',
                     "DO2": 'ml/min/mmHg',
                     "Elevation": 'm',
@@ -84,6 +87,8 @@ class Settings(object):
                     "T @ rest": ['\N{DEGREE SIGN}C', 'F', 'K'],
                     "pH": [""],
                     "pH @ rest": [""],
+                    "k": [""],
+                    "PaO2": ["mmHg"],
                     "PvO2": ["mmHg"],
                     "DO2": ["ml/min/mmHg"],
                     "Elevation": ['m', 'km', 'ft'],
@@ -108,6 +113,8 @@ class Settings(object):
                     "T @ rest": 0,
                     "pH": 0,
                     "pH @ rest": 0,
+                    "k": 0,
+                    "PaO2": 0,
                     "PvO2": 0,
                     "DO2": 1
                 },
@@ -177,7 +184,8 @@ class Settings(object):
             "T @ rest": self.data['testDefaults']['T @ rest'],
             "T": self.data['testDefaults']['T'],
             "pH @ rest": self.data['testDefaults']['pH @ rest'],
-            "pH": self.data['testDefaults']['pH']
+            "pH": self.data['testDefaults']['pH'],
+            "k": self.data['testDefaults']['k']
         }
 
         self.unitDefaults = {
@@ -199,6 +207,8 @@ class Settings(object):
             "T @ rest_unit": self.data['unitDefaults']['T @ rest'],
             "pH_unit": '',
             "pH @ rest_unit": self.data['unitDefaults']['pH @ rest'],
+            "k_unit": '',
+            "PaO2_unit": self.data['unitDefaults']['PaO2'],
             "PvO2_unit": self.data['unitDefaults']['PvO2'],
             "DO2_unit": self.data['unitDefaults']['DO2'],
             "Elevation_unit": self.data['unitDefaults']['Elevation'],
@@ -226,6 +236,8 @@ class Settings(object):
             "T @ rest_units": self.data['units']['T @ rest'],
             "pH_units": '',
             "pH @ rest_units": self.data['units']['pH @ rest'],
+            "k_units": '',
+            "PaO2_units": self.data['units']['PaO2'],
             "PvO2_units": self.data['units']['PvO2'],
             "DO2_units": self.data['units']['DO2'],
             "Elevation_units": self.data['units']['Elevation'],
@@ -251,6 +263,8 @@ class Settings(object):
             "T_mc": self.data['mcDefaults']['T'],
             "pH @ rest_mc": self.data['mcDefaults']['pH @ rest'],
             "pH_mc": self.data['mcDefaults']['pH'],
+            "k_mc": self.data['mcDefaults']['k'],
+            "PaO2_mc": self.data['mcDefaults']['PaO2'],
             "PvO2_mc": self.data['mcDefaults']['PvO2'],
             "DO2_mc": self.data['mcDefaults']['DO2']
         }
@@ -449,11 +463,13 @@ class Settings(object):
                 'T',
                 'pH @ rest',
                 'pH',
+                'k',
+                'PaO2',
                 'PvO2'
             ]
 
             for i, v in enumerate(vars):
-                if v == 'T @ rest' or v == 'T' or v == 'pH @ rest' or v == 'pH':
+                if v == 'T @ rest' or v == 'T' or v == 'pH @ rest' or v == 'pH' or v == 'k':
                     SettingsRow(self, container, v, 1, i+1)
                 else:
                     SettingsRow(self, container, v, 0, i+1)
@@ -645,10 +661,10 @@ class Settings(object):
 
             app.testDetailModule.refreshTestDetails()
             app.envDetailModule.refresh()
-            
+
         app.projectDetailModule.refreshDetails()
         self.createNotification('info', 'Settings saved', 2000)
-        self.settingsWindow.destroy()
+        # self.settingsWindow.destroy()
 
     def updatePhAndTemp(self, test):
         # Add linear change in pH and T
@@ -779,7 +795,7 @@ class SettingsRow(object):
                 else:
                     menu = Menu(self.menuButton, tearoff=False)
                 units = settings.units[f"{label}_units"]
-                if units != None and label != 'pH' and label != 'pH @ rest':
+                if units != None and label != 'pH' and label != 'pH @ rest' and label != 'k':
                     for i, u in enumerate(units):
                         MenuElem(menu, self.menuButton, u, i, units)
                     self.menuButton['menu']=menu

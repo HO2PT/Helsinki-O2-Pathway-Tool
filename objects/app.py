@@ -82,9 +82,7 @@ class App(object):
         self.pH0List = []
         self.TList = []
         self.T0List = []
-        self.p50List = []
-        
-        # print(f'LENGTH OF SUBJECTS: {len(subjects)}')
+        # self.p50List = []
 
         for s in subjects:
             tests = s.getTests()
@@ -92,7 +90,6 @@ class App(object):
 
             for t in tests:
                 # Find last workload with values
-                # print(f'LENGTH OF WORKLOADS: {len(t.workLoads)}')
                 for l in reversed(t.workLoads):
                     if l.details.getWorkLoadDetails()['Load'] != 0:
                         wOrig = l
@@ -131,9 +128,7 @@ class App(object):
                 self.TList.append(float(details['T']))
                 self.T0List.append(float(details['T @ rest']))
 
-                self.p50List.append(float(details['p50']))
-
-        # print(f'VO2LIST: {self.vo2List}')
+                # self.p50List.append(float(details['p50']))
 
         self.VO2mean = np.mean(self.vo2List)
         self.VO2q75, self.VO2q50, self.VO2q25 = np.percentile(self.vo2List, [75, 50, 25])
@@ -186,8 +181,8 @@ class App(object):
         self.T0mean = np.mean(self.T0List)
         self.T0q75, self.T0q50, self.T0q25 = np.percentile(self.T0List, [75, 50, 25])
 
-        self.p50mean = np.mean(self.p50List)
-        self.p50q75, self.p50q50, self.p50q25 = np.percentile(self.p50List, [75, 50, 25])
+        # self.p50mean = np.mean(self.p50List)
+        # self.p50q75, self.p50q50, self.p50q25 = np.percentile(self.p50List, [75, 50, 25])
 
         self.HRstd = np.std(self.hrList)
         self.SVstd = np.std(self.svList)
@@ -207,7 +202,7 @@ class App(object):
         self.pH0std = np.std(self.pH0List)
         self.Tstd = np.std(self.TList)
         self.T0std = np.std(self.T0List)
-        self.p50std = np.std(self.p50List)
+        # self.p50std = np.std(self.p50List)
 
         if plotProject == True:
             self.activeProject.VO2max = max(self.vo2List)
@@ -224,8 +219,6 @@ class App(object):
 
         if plotProject == True:
             self.projectDetailModule.refreshDetails()
-
-        # print(f'MEANS: {self.VO2mean, self.Qmean, self.HBmean, self.SAO2mean}')
 
         return self.VO2mean, self.Qmean, self.HBmean, self.SAO2mean
 
@@ -308,10 +301,6 @@ class App(object):
         maxLoad.details.xi = -1
         maxLoad.details.yi = -1
 
-        # print(f'minload: {minLoad.details.getWorkLoadDetails()}')
-        # print(f'avgload: {avgLoad.details.getWorkLoadDetails()}')
-        # print(f'maxload: {maxLoad.details.getWorkLoadDetails()}')
-
         if export == False:
             self.plottingPanel.plotProject()
 
@@ -348,7 +337,7 @@ class App(object):
             load.getDetails().setValue('pH @ rest', self.pH0q50)
             load.getDetails().setValue('T', self.Tq50)
             load.getDetails().setValue('T @ rest', self.T0q50)
-            load.getDetails().setValue('p50', self.p50q50)
+            # load.getDetails().setValue('p50', self.p50q50)
 
         else:
             load.getDetails().setValue('VO2', self.VO2mean)
@@ -368,7 +357,7 @@ class App(object):
             load.getDetails().setValue('pH @ rest', self.pH0mean)
             load.getDetails().setValue('T', self.Tmean)
             load.getDetails().setValue('T @ rest', self.T0mean)
-            load.getDetails().setValue('p50', self.p50mean)
+            # load.getDetails().setValue('p50', self.p50mean)
 
         if mode == 'min':
             if iqr == True:
@@ -389,7 +378,7 @@ class App(object):
                 load.getDetails().setValue('pH @ rest', self.pH0q25)
                 load.getDetails().setValue('T', self.Tq25)
                 load.getDetails().setValue('T @ rest', self.T0q25)
-                load.getDetails().setValue('p50', self.p50q25)
+                # load.getDetails().setValue('p50', self.p50q25)
 
             elif ci95 == True:
                 load.getDetails().setValue('VO2', self.VO2mean-(1.96*self.VO2std))
@@ -409,7 +398,7 @@ class App(object):
                 load.getDetails().setValue('pH @ rest', self.pH0mean-(1.96*self.pH0std))
                 load.getDetails().setValue('T', self.Tmean-(1.96*self.Tstd))
                 load.getDetails().setValue('T @ rest', self.T0mean-(1.96*self.T0std))
-                load.getDetails().setValue('p50', self.p50mean-(1.96*self.p50std))
+                # load.getDetails().setValue('p50', self.p50mean-(1.96*self.p50std))
 
             else:
                 load.getDetails().setValue('VO2', self.VO2mean-self.VO2std)
@@ -429,7 +418,7 @@ class App(object):
                 load.getDetails().setValue('pH @ rest', self.pH0mean-self.pH0std)
                 load.getDetails().setValue('T', self.Tmean-self.Tstd)
                 load.getDetails().setValue('T @ rest', self.T0mean-self.T0std)
-                load.getDetails().setValue('p50', self.p50mean-self.p50std)
+                # load.getDetails().setValue('p50', self.p50mean-self.p50std)
                 
         elif mode == 'avg':
             if iqr == True:
@@ -450,7 +439,7 @@ class App(object):
                 load.getDetails().setValue('pH @ rest', self.pH0q50)
                 load.getDetails().setValue('T', self.Tq50)
                 load.getDetails().setValue('T @ rest', self.T0q50)
-                load.getDetails().setValue('p50', self.p50q50)
+                # load.getDetails().setValue('p50', self.p50q50)
 
             else:
                 load.getDetails().setValue('VO2', self.VO2mean)
@@ -470,7 +459,7 @@ class App(object):
                 load.getDetails().setValue('pH @ rest', self.pH0mean)
                 load.getDetails().setValue('T', self.Tmean)
                 load.getDetails().setValue('T @ rest', self.T0mean)
-                load.getDetails().setValue('p50', self.p50mean)
+                # load.getDetails().setValue('p50', self.p50mean)
                 
         elif mode == 'max':
             if iqr == True:
@@ -491,7 +480,7 @@ class App(object):
                 load.getDetails().setValue('pH @ rest', self.pH0q75)
                 load.getDetails().setValue('T', self.Tq75)
                 load.getDetails().setValue('T @ rest', self.T0q75)
-                load.getDetails().setValue('p50', self.p50q75)
+                # load.getDetails().setValue('p50', self.p50q75)
 
             elif ci95 == True:
                 load.getDetails().setValue('VO2', self.VO2mean + (1.96*self.VO2std))
@@ -511,7 +500,7 @@ class App(object):
                 load.getDetails().setValue('pH @ rest', self.pH0mean + (1.96*self.pH0std))
                 load.getDetails().setValue('T', self.Tmean + (1.96*self.Tstd))
                 load.getDetails().setValue('T @ rest', self.T0mean + (1.96*self.T0std))
-                load.getDetails().setValue('p50', self.p50mean + (1.96*self.p50std))
+                # load.getDetails().setValue('p50', self.p50mean + (1.96*self.p50std))
 
             else:
                 load.getDetails().setValue('VO2', self.VO2mean + self.VO2std)
@@ -531,29 +520,11 @@ class App(object):
                 load.getDetails().setValue('pH @ rest', self.pH0mean + self.pH0std)
                 load.getDetails().setValue('T', self.Tmean + self.Tstd)
                 load.getDetails().setValue('T @ rest', self.T0mean + self.T0std)
-                load.getDetails().setValue('p50', self.p50mean + self.p50std)
+                # load.getDetails().setValue('p50', self.p50mean + self.p50std)
                 
     def calcCoords(self, load):
         temp = load.getDetails().getWorkLoadDetails()
-        # solver = O2PTSolver(load.details, temp)
-        # solver.calc()
-        PvO2 = np.arange(0,100,0.1)
-        p50 = float(temp['p50'])
-        n = 2.7
-        y = 2 * temp['DO2'] * PvO2
-        y2 = temp['Q'] * 1.34 * temp['[Hb]'] * (temp['SaO2']/100 - ((PvO2/p50)**n) / (1+(PvO2/p50)**n))
-
-        if 'Median' in load.details.name or 'Mean' in load.details.name:
-            idx = np.argwhere(np.diff(np.sign(y - y2))).flatten()
-            xi = idx/10+0.05
-            yi = temp['Q'] * 1.34 * temp['[Hb]'] * (temp['SaO2']/100 - ((xi/p50)**n) / (1+(xi/p50)**n))
-            load.getDetails().xi = xi
-            load.getDetails().yi = yi
-        else:
-            load.getDetails().xi = -1
-            load.getDetails().yi = -1
-
-        load.getDetails().y = y
-        load.getDetails().y2 = y2
+        solver = O2PTSolver(load.details, temp)
+        solver.calc()
 
 app = App()
