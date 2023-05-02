@@ -346,7 +346,7 @@ class DataExporter(object):
                         value = details[v]
                         unit = details[f'{v}_unit']
                         try:
-                            mc = details[f'{v}_MC']
+                            mc = details[f'{v}_MC'] if v != 'k' else None
                         except KeyError:
                             mc = None
                         self.temp[f'{v}'].append(value)
@@ -391,6 +391,7 @@ class DataExporter(object):
                         key = key.replace('2', '\u2082')
 
                     value = self.formatValue(value, unit)
+                    value = list(map(lambda v: float(v),value)) # Convert to float values
 
                     value.insert(0, f'{key}')
                     value.insert(len(value), f'{unit}')
@@ -676,6 +677,7 @@ class DataExporter(object):
                             key = f'{key0}-{key1}'
 
                         value = self.formatValue(value, unit)
+                        value = list(map(lambda v: float(v),value)) # Convert to float values
                         try:
                             value.insert(0, f'{key} ({unit})-{mc}')
                         except:
@@ -718,6 +720,7 @@ class DataExporter(object):
                             key = f'{key0}-{key1}'
 
                         value = self.formatValue(value, unit)
+                        value = list(map(lambda v: float(v),value)) # Convert to float values
                         value.insert(0, f'{key} ({unit})-{mc}')
                         try:
                             value = pd.Series(value, index=range(len(excelTemp.columns)))
@@ -1085,7 +1088,7 @@ class DataExporter(object):
                 value = updatedDetails[v]
                 unit = updatedDetails[f'{v}_unit']
                 try:
-                    mc = updatedDetails[f'{v}_MC']
+                    mc = updatedDetails[f'{v}_MC'] if v != 'k' else None
                 except KeyError:
                     mc = None
 
@@ -1144,6 +1147,7 @@ class DataExporter(object):
                 key = key.replace('2', '\u2082')
 
             value = self.formatValue(value, unit)
+            value = list(map(lambda v: float(v),value)) # Convert to float values
 
             value.insert(0, f'{key}')
             value.insert(len(value), f'{unit}')
@@ -1208,7 +1212,7 @@ class DataExporter(object):
                     value = details[v]
                     unit = details[f'{v}_unit']
                     try:
-                        mc = details[f'{v}_MC']
+                        mc = details[f'{v}_MC'] if v != 'k' else None
                     except KeyError:
                         mc = None
                     self.temp[f'{v}'].append(value)
@@ -1255,6 +1259,7 @@ class DataExporter(object):
                     key = key.replace('2', '\u2082')
 
                 value = self.formatValue(value, unit)
+                value = list(map(lambda v: float(v),value)) # Convert to float values
 
                 value.insert(0, f'{key}')
                 value.insert(len(value), f'{unit}')

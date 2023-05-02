@@ -455,41 +455,19 @@ class O2PTSolver():
             Hb = Hb / 10
 
         # Calculate datapoints for convective curve
-        # n = 2.7
-        # y2 = Q * 1.34 * Hb * (SaO2/100 - ((PvO2/p50)**n) / (1+(PvO2/p50)**n)) * 10
-        y2 = Q * 1.34 * Hb * (SaO2/100 - 1/((23400/(np.float_power(PvO2,3)+150*PvO2))+1))*10
-
-        # Add the shift
-        if abs(PvO2_err) >= 0.1:
-            if np.sign(PvO2_err) > 0:
-                y2 = Q * 1.34 * Hb * (SaO2/100 - 1/((23400/(np.float_power(PvO2,3)+150*PvO2))+1))*10
-                target_size = round(len(y2) * PvO2_coef)
-                indices = np.linspace(0, len(y2) - 1, target_size, dtype=int)
-                y2 = [y2[i] for i in indices]
-                y2 = y2[0:1000]
-            elif np.sign(PvO2_err) < 0:
-                target_size = round(len(y2) * PvO2_coef)
-                indices = np.linspace(0, len(y2) - 1, target_size, dtype=int)
-                y2 = [y2[i] for i in indices]
-
-                endpoint_x = len(y2)/10
-                endpoint_y = y2[-1]
-
-                i = [endpoint_x, 99.9]
-                j = [endpoint_y, 0]
-                k = np.polyfit(i,j,1)
-                p = np.poly1d(k)
-                xp = np.arange(endpoint_x,99.9,0.1)
-
-                if len(xp) > 0:
-                    if np.sign(PvO2_err) < 0:
-                        y2 = np.concatenate((y2,p(xp)))
+        y2 = lambda x: Q * 1.34 * Hb * (SaO2/100 - 1/((23400/(np.float_power(x,3)+150*x))+1))*10
+        x2 = self.phTempCorrection(pH, pH0, T, T0, PvO2)
+        y2 = y2(x2)
         y2 = [0 if i <= 0 else i for i in y2] #Replace negative values with 0
         
         # Calculation of intersection point
         idx = np.argwhere(np.diff(np.sign(y - y2))).flatten()
         xi = idx/10+0.05
-        yi = y2[idx[0]]
+        try:
+            yi = y2[idx[0]]
+        except:
+            self.validValues = False
+            return self.validValues
 
         if self.d['[Hb]_unit'] == 'g/l': # g/dl -> g/l
             Hb = Hb * 10

@@ -442,7 +442,7 @@ class TestDetailRow(ttk.Frame):
             ttk.Label(rowFrame, text=units[0]).grid(column=2, row=row)
 
         # Measured/Calculated
-        if self.radio != None:
+        if self.radio != None and self.label != 'k':
             self.mcVar = IntVar(value=self.radio)
             self.vars.append(self.mcVar)
             self.radio1 = ttk.Radiobutton(rowFrame, value=0, variable=self.mcVar)

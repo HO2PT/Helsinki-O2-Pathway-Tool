@@ -955,7 +955,7 @@ class LoadTabRow(ttk.Frame):
             else:
                 ttk.Label(self.parent, text=units[0]).grid(column=2, row=row)
         
-        if self.mode == 0:
+        if self.mode == 0 and self.label != 'k':
             # M/C Radiobuttons
             self.mcVar = IntVar(value=self.details[f'{self.label}_MC'])
 
