@@ -5,6 +5,8 @@ from modules.O2PTSolver import O2PTSolver
 
 class App(object):
     def __init__(self):
+        self.version = 1.5
+        
         self.activeProject = None
         self.activeSubject = None
         self.activeTest = None

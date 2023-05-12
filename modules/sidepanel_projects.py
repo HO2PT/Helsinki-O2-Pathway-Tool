@@ -129,6 +129,7 @@ class ProjectList(object):
             app.activeSubject = None
             app.sidepanel_subjectList.refreshList()
             app.sidepanel_testList.refreshList()
+            app.projectDetailModule.refreshDetails()
         else:
             notification.create('error', 'Select project to be deleted', 5000)
 

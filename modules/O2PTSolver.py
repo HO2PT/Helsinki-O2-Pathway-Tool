@@ -361,10 +361,10 @@ class O2PTSolver():
                     VO2 = VO2 / 1000
                 
                 # return VO2 / 2 / PvO2 * 1000
-                return VO2 / k / PvO2 * 1000
+                return [VO2 / k / PvO2 * 1000, VO2 / k / PvO2 * 1000]
             else:
-                # return DO2
-                return VO2 / k / PvO2 * 1000
+                return [DO2, VO2 / k / PvO2 * 1000]
+                # return VO2 / k / PvO2 * 1000
         except:
             self.validValues = False
             return self.validValues
@@ -402,10 +402,14 @@ class O2PTSolver():
             return self.validValues
 
         # pH + temp correction
-        pH = float(self.d['pH'])
-        pH0 = float(self.d['pH @ rest'])
-        T = self.formatT('T')
-        T0 = self.formatT('T @ rest')
+        try:
+            pH = float(self.d['pH'])
+            pH0 = float(self.d['pH @ rest'])
+            T = self.formatT('T')
+            T0 = self.formatT('T @ rest')
+        except:
+            self.validValues = False
+            return self.validValues
 
         if self.preventCorrection:
             PvO2_corrected = PvO2_calc
@@ -436,7 +440,7 @@ class O2PTSolver():
                 PvO2_corrected = self.phTempCorrection(pH0, pH, T0, T, PvO2_calc)
                 # p50 = self.solveP50(pH0, pH, T0, T)
 
-        DO2 = self.solveDO2(VO2, PvO2_corrected)
+        [DO2, DO2_graph] = self.solveDO2(VO2, PvO2_corrected) # Two values to improve graphical display accuracy
 
         # Compute the coefficient for convection curve shift
         PvO2_coef = PvO2_corrected/PvO2_calc
@@ -445,7 +449,8 @@ class O2PTSolver():
         # Calculate datapoints for diffusion line
         PvO2 = np.arange(0.01,100.01,0.1)
         k = float(self.d['k'])
-        y = k * DO2 * PvO2
+        # y = k * DO2 * PvO2
+        y = k * DO2_graph * PvO2
 
         # Convert to l/min
         if self.d['Q_unit'] == 'ml/min':
@@ -458,7 +463,6 @@ class O2PTSolver():
         y2 = lambda x: Q * 1.34 * Hb * (SaO2/100 - 1/((23400/(np.float_power(x,3)+150*x))+1))*10
         x2 = self.phTempCorrection(pH, pH0, T, T0, PvO2)
         y2 = y2(x2)
-        y2 = [0 if i <= 0 else i for i in y2] #Replace negative values with 0
         
         # Calculation of intersection point
         idx = np.argwhere(np.diff(np.sign(y - y2))).flatten()
