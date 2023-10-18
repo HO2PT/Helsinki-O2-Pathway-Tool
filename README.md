@@ -1,76 +1,36 @@
 # Helsinki O2 Pathway Tool
 
-Helsinki O2 Pathway Tool is a tool for modeling oxygen pathway visually and numerically with non-invasive or invasive measurement data.
-The tool combines Fick's law of diffusion and Fick's principle to calculate oxygen diffusion in the muscle. The model estimates
-partial pressure of oxygen in venous blood taking also the core temperature and arterial blood's pH into account. The tool was 
-designed and developed as a healthtech engineering bachelor's thesis work. The tool was designed and developed in collaboration 
-with exercise physiologists in Helsingin Urheilulääkäriasema in Helsinki, Finland.
-
-The Helsinki O2 Pathway Tool uses information about (at least): 
-- oxygen consumption (VO2)
-- heart rate (HR)
-- stroke volume (SV)
-- cardiac output (Q)
-- hemoglobin concentration ([Hb])
-- oxygen saturation of arterial blood (SaO2). 
-
-You can also input information about:
-- oxygen content of arterial blood (CaO2)
-- oxygen content of venous blood (CvO2)
-- difference of oxygen content in arterial-venous blood (CavO2)
-- oxygen saturation of venous blood (SvO2)
-- partial pressure of oxygen in venous blood (PvO2)
-- oxygen convection (QaO2)
-- core temperature
-- pH
+The HO2PT is intended to be used to analyze V̇O2, its components, and their alterations of a single test subject or a group-level dataset. It is intended to be used as a tool for anyone researching V̇O2, for example, in the fields of scientific research, education, athlete’s physical performance testing and coaching. It can also be used in research of pulmonary, cardiovascular, and skeletal muscle conditions and disorders, for example, for identifying and monitoring factors limiting aerobic capacity and physical performance. Thus, if the tool and the information it provides will be demonstrated by future peer-reviewed original studies to be suitable for appropriate patient groups in clinical patient work as a part of diagnostics, monitoring, and decision-making, one of its intended use environments may be clinical patient work in the future. The tool can also be used to study effects of environmental factors and medications on physiological responses.
 
 <p>See the more detailed information about the tool and its function in the userInstructions.pdf or inside the tool's Help menu</p>
 
 <h2>How to get started?</h2>
 
-<h3>Windows</h3>
 <ul>
 <li>1. Download the Helsinki O2 Pathway Tool</li>
     <ul>
         <li>1. Click "Releases" on the right side of this page</li>
         <li>2. Click "Assets"-dropdownmenu on the latest version</li>
-        <li>3. Click "HO2PT_Windows.rar"</li>
-        <li>4. Download should start automatically</li>
+        <li>3. Download version of HO2PT according to your operating system</li>
+        <li>4. Unpack the downloaded file</li>
     </ul>
-<li>2. Unpack the downloaded file</li>
-<li>3. Execute O2PathwayTool.exe</li>
-<li>4. Happy modeling!</li>
 </ul>
 
-<h3>Linux</h3>
+<h3>Windows/Linux</h3>
 <ul>
-<li>1. Download the Helsinki O2 Pathway Tool</li>
-    <ul>
-        <li>1. Click "Releases" on the right side of this page</li>
-        <li>2. Click "Assets"-dropdownmenu on the latest version</li>
-        <li>3. Click "HO2PT_Linux.rar"</li>
-        <li>4. Download should start automatically</li>
-    </ul>
-<li>2. Unpack the downloaded file</li>
-<li>3. Execute O2PathwayTool.exe</li>
-<li>4. Happy modeling!</li>
+    <li>1. Inside the HO2PT folder of the unpacked file, double left click on the “HO2PT.exe” file to run the tool.</li>
+    <li>2. If Windows warns you “Windows protected your machine”, click “Details”</li>
+    <li>3. Click “Run anyway”</li>
 </ul>
 
 <h3>MacOS</h3>
-<p>Due to the inexperience in MacOS of the developers the Helsinki O2 Pathway Tool app does not run as intended. To start the tool you must use the executable file inside the O2PathwayTool.app contents.</p>
 <ul>
-<li>1. Download the Helsinki O2 Pathway Tool</li>
-    <ul>
-        <li>1. Click "Releases" on the right side of this page</li>
-        <li>2. Click "Assets"-dropdownmenu on the latest version</li>
-        <li>3. Click "HO2PT_macOS.rar"</li>
-        <li>4. Download should start automatically</li>
-    </ul>
-<li>2. Unpack the downloaded file</li>
-<li>3. Right click on the O2PathwayTool.app</li>
-<li>4. Click "Show package contents"</li>
-<li>5. Run the O2PathwayTool in "Contents/MacOS"</li>
-<li>6. Happy modeling!</li>
+    <li>1. Move the HO2PT.app to your Applications folder.</li>
+    <li>2. Double left click HO2PT to run the tool.</li>
+    <li>3. When using the tool for the first time, macOS might warn you “HO2PT.app can’t be opened because Apple cannot check it for malicious software”.</li>
+    <li>4. Click “Ok” and the warning is closed.</li>
+    <li>5. Right click HO2PT and select “Open”.</li>
+    <li>6. The same warning is shown but this time click “Open”.</li>
 </ul>
 
 <h3>What kind of data can I use?</h3>
