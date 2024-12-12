@@ -25,8 +25,6 @@ class WorkLoadDetails(object):
         self.pH = testDefaults['pH']
         self.PaO2 = 0
         self.PvO2 = 0
-        self.PvO2_coef = 0
-        self.PvO2_err = 0
         self.DO2 = 0
         self.p50 = 0
         self.k = testDefaults['k']
@@ -367,7 +365,7 @@ class WorkLoadDetails(object):
             'yi': self.yi
         }
 
-    def setCalcResults(self, y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, Trest, T, pHrest, pH, PvO2, DO2, PvO2_coef, PvO2_err):
+    def setCalcResults(self, y, y2, xi, yi, VO2, Q, Hb, SaO2, CaO2, SvO2, CvO2, CavO2, QaO2, Trest, T, pHrest, pH, PvO2, DO2):
         self.y = y
         self.y2 = y2
         self.xi = xi
@@ -386,10 +384,7 @@ class WorkLoadDetails(object):
         self.pHrest = pHrest
         self.pH = pH
         self.PvO2 = PvO2
-        self.PvO2_coef = PvO2_coef
-        self.PvO2_err = PvO2_err
         self.DO2 = DO2
-        # self.p50 = p50
 
     def setImported(self, bool):
         self.isImported = bool

@@ -365,7 +365,7 @@ class PlotTab(ttk.Frame):
         self.plot[0].canvas.draw()
 
     def createPlot(self):
-        PvO2 = np.arange(0.01,100.01,0.1)
+        PvO2 = np.arange(0.0,100.01,0.1)
         self.plot = plt.subplots(constrained_layout=True)
         self.fig, self.ax = self.plot
 

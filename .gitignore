@@ -1,5 +1,6 @@
 /build
 /dist
 /O2
+__pycache__/
 README.md
 Entitlements.plist
